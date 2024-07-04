@@ -1,0 +1,10 @@
+[project]
+name = "blender-plugin-playground"
+authors = ["jollywatt <jo.alex.w@gmail.com>"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[tasks]
+
+[dependencies]
+python = ">=3.12.4,<3.13"
