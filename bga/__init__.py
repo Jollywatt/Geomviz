@@ -20,7 +20,7 @@ class IconPanel(bpy.types.Panel):
 classes = [
 	server.StartServer,
 	server.StopServer,
-	panels.GAPanel,
+	panels.ServerPanel,
 	IconPanel
 ]
 
