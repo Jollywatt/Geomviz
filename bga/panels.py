@@ -2,12 +2,11 @@ import bpy
 from . import server
 
 class ServerPanel(bpy.types.Panel):
-	"""Creates a Panel in the Object properties window"""
-	bl_label = "Geometric algebra server"
-	bl_idname = "COLLECTION_PT_ga_panel"
+	bl_label = "Geometric algebra scene"
+	bl_idname = "SCENE_PT_ga_panel"
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
-	bl_context = "collection"
+	bl_context = "scene"
 
 	def draw(self, context):
 		layout = self.layout
