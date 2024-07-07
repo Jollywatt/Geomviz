@@ -9,15 +9,6 @@ def compile_rig(collection):
 	RIG_FUNCTIONS[name] = {}
 	exec(code, RIG_FUNCTIONS[name])
 
-class Compile(bpy.types.Operator):
-	bl_label = "Compile"
-	bl_idname = "ga.compile_rig"
-
-	def execute(self, context):
-		compile_rig(context.collection)
-
-		return {'FINISHED'}
-
 
 def copy_rig(original : bpy.types.Collection):
 
@@ -37,6 +28,17 @@ def copy_rig(original : bpy.types.Collection):
 					setattr(constraint, k, new_objects[v])
 
 	return new
+
+class Copy(bpy.types.Operator):
+	bl_label = "Copy rig"
+	bl_idname = "ga.copy_rig"
+
+	def execute(self, context):
+		original = context.scene.ga_inventory_item
+		new = copy_rig(original)
+		context.scene.ga_collection.children.link(new)
+
+		return {'FINISHED'}
 
 
 class SuffixDict(dict):

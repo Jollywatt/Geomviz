@@ -1,10 +1,11 @@
 import bpy
 from . import server
 from . import assets
+from . import rigs
 
 class ServerPanel(bpy.types.Panel):
-	bl_label = "Geometric algebra scene"
-	bl_idname = 'SCENE_PT_ga_panel'
+	bl_label = "Geometric algebra server"
+	bl_idname = 'SCENE_PT_ga_server'
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
 	bl_context = 'scene'
@@ -29,15 +30,41 @@ class ServerPanel(bpy.types.Panel):
 		row.prop(context.scene, 'ga_server_port')
 
 		row = layout.row()
-		row.prop(context.scene, 'ga_scene_collection')
-
-
-		row = layout.row()
 		with server.lock:
 			row.label(text=f"Current data: {server.data_server.data}")
 
 		row = layout.row()
 		row.operator('ga.get_stuff')
+
+
+class ScenePanel(bpy.types.Panel):
+	bl_label = "Geometric algebra scene"
+	bl_idname = 'SCENE_PT_ga_scene'
+	bl_space_type = 'PROPERTIES'
+	bl_region_type = 'WINDOW'
+	bl_context = 'scene'
+
+	hello = None
+
+	def draw(self, context):
+		layout = self.layout
+
+
+		row = layout.row()
+		row.prop(context.scene, 'ga_inventory_scene', text="Import from")
+
+		row = layout.row()
+		row.prop(context.scene, 'ga_collection', text="Import to")
+
+		row = layout.row()
+		row.prop(context.scene, 'ga_inventory_item', text="Item")
+
+		row = layout.row()
+		row.operator(rigs.Copy.bl_idname, text="Import item")
+
+
+
+
 
 class RigPanel(bpy.types.Panel):
 	bl_label = "Geometric algebra rig"
@@ -54,11 +81,7 @@ class RigPanel(bpy.types.Panel):
 		row.prop(context.collection, 'ga_rig_script')
 
 		row = layout.row()
-		row.operator(assets.CompileRig.bl_idname)
-
-		row = layout.row()
 		row.prop(context.collection, 'ga_rig_script_input')
 
 		row = layout.row()
 		row.operator(assets.PoseRig.bl_idname)
-		

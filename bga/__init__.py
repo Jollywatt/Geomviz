@@ -8,11 +8,12 @@ from . import assets
 classes = [
 	server.StartServer,
 	server.StopServer,
+	panels.ScenePanel,
 	panels.ServerPanel,
 	panels.RigPanel,
 	assets.GetStuff,
-	rigs.Compile,
 	rigs.Pose,
+	rigs.Copy,
 ]
 
 def register():
@@ -23,4 +24,7 @@ def register():
 
 def unregister():
 	for c in classes:
-		bpy.utils.unregister_class(c)
+		try:
+			bpy.utils.unregister_class(c)
+		except Exception as e:
+			print(f"Failed to unregister: {e}")

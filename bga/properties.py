@@ -1,7 +1,6 @@
 import bpy
 from bpy import props
 
-
 def register():
 	bpy.types.Scene.ga_server_port = props.IntProperty(
 		name="Server Port",
@@ -11,10 +10,24 @@ def register():
 		max=65535
 	)
 
-	bpy.types.Scene.ga_scene_collection = props.PointerProperty(
+	bpy.types.Scene.ga_inventory_scene = props.PointerProperty(
+		type=bpy.types.Scene,
+		name="Inventory scene for GA objects",
+		description="Scene which holds GA object templates"
+	)
+
+	bpy.types.Scene.ga_inventory_item = props.PointerProperty(
 		type=bpy.types.Collection,
-		name="Destination",
-		description="Collection to populate with GA objects"
+		name="Inventory item",
+		description="A GA object template collection",
+		poll=lambda self, collection: collection.name in self.ga_inventory_scene.collection.children,
+	)
+
+	bpy.types.Scene.ga_collection = props.PointerProperty(
+		type=bpy.types.Collection,
+		name="Destination for GA objects",
+		description="Collection to populate with generated GA objects",
+		poll=lambda self, collection: collection.name in self.collection.children,
 	)
 
 	bpy.types.Collection.ga_rig_script = props.PointerProperty(
