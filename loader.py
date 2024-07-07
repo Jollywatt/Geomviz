@@ -11,6 +11,7 @@ if d not in sys.path:
 
 import bga
 importlib.reload(bga.assets)
+importlib.reload(bga.rigs)
 importlib.reload(bga.panels)
 importlib.reload(bga.properties)
 importlib.reload(bga.server)

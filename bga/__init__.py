@@ -2,6 +2,7 @@ import bpy
 from . import server
 from . import panels
 from . import properties
+from . import rigs
 from . import assets
 
 classes = [
@@ -10,8 +11,8 @@ classes = [
 	panels.ServerPanel,
 	panels.RigPanel,
 	assets.GetStuff,
-	assets.CompileRig,
-	assets.PoseRig,
+	rigs.Compile,
+	rigs.Pose,
 ]
 
 def register():
