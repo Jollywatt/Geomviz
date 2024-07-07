@@ -1,6 +1,7 @@
 import bpy
 
 RIG_FUNCTIONS = {}
+RIG_OBJECTS = {}
 
 def compile_rig(collection):
 	code = collection.ga_rig_script.as_string()
@@ -18,19 +19,32 @@ class Compile(bpy.types.Operator):
 		return {'FINISHED'}
 
 
-def copy_rig(original_collection, parent_collection, suffix=None):
+def copy_rig(original : bpy.types.Collection):
 
-	new_collection = original_collection.copy()
-	for child in original_collection.children.values():
-		new_child = child.copy()
-		if suffix is not None:
-			new_child.name = f"{child.name}.{suffix}"
+	new = original.copy() # want to preserve properties
 
-		new_collection.children.link(new_child)
-		new_collection.children.unlink(child)
-		
-	parent_collection.children.link(new_collection)
+	new_objects = {obj:obj.copy() for obj in original.objects}
 
+	for obj, new_obj in new_objects.items():
+		new.objects.unlink(obj)
+		new.objects.link(new_obj)
+
+		# update object pointers in constraints
+		for constraint in new_obj.constraints:
+			for k in constraint.rna_type.properties.keys():
+				v = getattr(constraint, k)
+				if v in new_objects:
+					setattr(constraint, k, new_objects[v])
+
+	return new
+
+
+class SuffixDict(dict):
+	def __getitem__(self, key):
+		for k, v in self.items():
+			if k.startswith(key):
+				return v
+		super().__getitem__(key)
 
 
 class Pose(bpy.types.Operator):
@@ -46,8 +60,10 @@ class Pose(bpy.types.Operator):
 		print("Posing with input:", pose_fn_input)
 
 		pose_fn = RIG_FUNCTIONS[name]['pose']
-		objects = context.collection.objects
+		objects = SuffixDict(context.collection.objects)
+
 		pose_fn(pose_fn_input, objects)
+		# print(objects)
 
 
 		return {'FINISHED'}
