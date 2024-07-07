@@ -5,6 +5,10 @@ channels = ["conda-forge"]
 platforms = ["osx-arm64"]
 
 [tasks]
+blend = "/Applications/Blender.app/Contents/MacOS/Blender"
 
 [dependencies]
-python = ">=3.12.4,<3.13"
+python = ">=3.11,<3.12"
+
+[pypi-dependencies]
+bpy = "*"
