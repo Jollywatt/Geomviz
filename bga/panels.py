@@ -84,4 +84,4 @@ class RigPanel(bpy.types.Panel):
 		row.prop(context.collection, 'ga_rig_script_input')
 
 		row = layout.row()
-		row.operator(assets.PoseRig.bl_idname)
+		row.operator(rigs.Pose.bl_idname)

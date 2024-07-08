@@ -1,7 +1,6 @@
 import bpy
 
 RIG_FUNCTIONS = {}
-RIG_OBJECTS = {}
 
 def compile_rig(collection):
 	code = collection.ga_rig_script.as_string()
@@ -9,6 +8,11 @@ def compile_rig(collection):
 	RIG_FUNCTIONS[name] = {}
 	exec(code, RIG_FUNCTIONS[name])
 
+def replace_object_properties(data_block, mapping):
+	for attr in data_block.rna_type.properties.keys():
+		value = getattr(data_block, attr)
+		if type(value) == bpy.types.Object and value in mapping:
+			setattr(data_block, attr, mapping[value])
 
 def copy_rig(original : bpy.types.Collection):
 
@@ -20,12 +24,13 @@ def copy_rig(original : bpy.types.Collection):
 		new.objects.unlink(obj)
 		new.objects.link(new_obj)
 
-		# update object pointers in constraints
+		new_obj.ga_copied_from = obj
+
+		# update object pointers in modifiers and constraints
+		for modifier in new_obj.modifiers:
+			replace_object_properties(modifier, new_objects)
 		for constraint in new_obj.constraints:
-			for k in constraint.rna_type.properties.keys():
-				v = getattr(constraint, k)
-				if v in new_objects:
-					setattr(constraint, k, new_objects[v])
+			replace_object_properties(constraint, new_objects)
 
 	return new
 
@@ -41,14 +46,6 @@ class Copy(bpy.types.Operator):
 		return {'FINISHED'}
 
 
-class SuffixDict(dict):
-	def __getitem__(self, key):
-		for k, v in self.items():
-			if k.startswith(key):
-				return v
-		super().__getitem__(key)
-
-
 class Pose(bpy.types.Operator):
 	bl_label = "Pose"
 	bl_idname = "ga.pose_rig"
@@ -59,13 +56,10 @@ class Pose(bpy.types.Operator):
 			compile_rig(context.collection)
 
 		pose_fn_input = eval(context.collection.ga_rig_script_input)
-		print("Posing with input:", pose_fn_input)
 
 		pose_fn = RIG_FUNCTIONS[name]['pose']
-		objects = SuffixDict(context.collection.objects)
+		objects = {obj.name if obj.ga_copied_from is None else obj.ga_copied_from.name:obj for obj in context.collection.objects}
 
 		pose_fn(pose_fn_input, objects)
-		# print(objects)
-
 
 		return {'FINISHED'}
