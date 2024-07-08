@@ -3,17 +3,25 @@ from os import path
 
 assets_file = path.join(path.dirname(__file__), "assets.blend")
 
-def load_asset(target_collection):
+def load_assets_scene():
+	scenes = ['GA Objects']
 	with bpy.data.libraries.load(assets_file) as (data_from, data_to):
-		data_to.scenes = ['GA Objects']
+		data_to.scenes = scenes
+
+	return scenes[0]
 
 
-class GetStuff(bpy.types.Operator):
-	bl_label = "Get stuff"
+class LoadInventory(bpy.types.Operator):
+	bl_label = "Load GA assets scene"
 	bl_idname = "ga.get_stuff"
 
 	def execute(self, context):
-		load_asset(context.scene.ga_scene_collection)
-		print('boop', context.scene.ga_scene_collection)
+		scene = load_assets_scene()
+
+		context.scene.ga_inventory_scene = scene
+		try:
+			context.scene.ga_inventory_item = scene.collection.children[0]
+		except IndexError:
+			context.scene.ga_inventory_item = None
 
 		return {'FINISHED'}

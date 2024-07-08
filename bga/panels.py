@@ -48,19 +48,23 @@ class ScenePanel(bpy.types.Panel):
 
 	def draw(self, context):
 		layout = self.layout
+		layout.use_property_split = True
+
+		row = layout.row()
+		row.operator(assets.LoadInventory.bl_idname, text="Import default inventory")
 
 
 		row = layout.row()
-		row.prop(context.scene, 'ga_inventory_scene', text="Import from")
-
-		row = layout.row()
-		row.prop(context.scene, 'ga_collection', text="Import to")
+		row.prop(context.scene, 'ga_inventory_scene', text="Inventory")
 
 		row = layout.row()
 		row.prop(context.scene, 'ga_inventory_item', text="Item")
 
 		row = layout.row()
-		row.operator(rigs.Copy.bl_idname, text="Import item")
+		row.prop(context.scene, 'ga_collection', text="Copy to")
+
+		row = layout.row()
+		row.operator(rigs.Copy.bl_idname, text="Copy inventory item")
 
 
 
@@ -77,6 +81,10 @@ class RigPanel(bpy.types.Panel):
 
 		layout = self.layout
 
+		if context.collection.ga_copied_from is not None:
+			row = layout.row()
+			row.label(text=f"Copied from collection {context.collection.ga_copied_from.name!r}.")
+
 		row = layout.row()
 		row.prop(context.collection, 'ga_rig_script')
 
@@ -84,4 +92,4 @@ class RigPanel(bpy.types.Panel):
 		row.prop(context.collection, 'ga_rig_script_input')
 
 		row = layout.row()
-		row.operator(rigs.Pose.bl_idname)
+		row.operator(rigs.Pose.bl_idname, text="Compile and run")

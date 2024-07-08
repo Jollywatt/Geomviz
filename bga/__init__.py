@@ -11,7 +11,7 @@ classes = [
 	panels.ScenePanel,
 	panels.ServerPanel,
 	panels.RigPanel,
-	assets.GetStuff,
+	assets.LoadInventory,
 	rigs.Pose,
 	rigs.Copy,
 ]

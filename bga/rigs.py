@@ -1,12 +1,19 @@
 import bpy
 
 RIG_FUNCTIONS = {}
+RIG_OBJECTS = {}
 
-def compile_rig(collection):
+def get_original(obj):
+	return obj if obj.ga_copied_from is None else obj.ga_copied_from
+
+
+def compile_rig(collection : bpy.types.Collection):
 	code = collection.ga_rig_script.as_string()
 	name = collection.name
 	RIG_FUNCTIONS[name] = {}
+	print(f"COMPILING FOR {name}")
 	exec(code, RIG_FUNCTIONS[name])
+
 
 def replace_object_properties(data_block, mapping):
 	for attr in data_block.rna_type.properties.keys():
@@ -14,9 +21,25 @@ def replace_object_properties(data_block, mapping):
 		if type(value) == bpy.types.Object and value in mapping:
 			setattr(data_block, attr, mapping[value])
 
+
+def pose(rig : bpy.types.Collection, arg):
+	pose_fn = RIG_FUNCTIONS[rig.name]['pose']
+
+	if rig.name not in RIG_OBJECTS:
+		RIG_OBJECTS[rig.name] = {get_original(obj).name:obj for obj in rig.objects}
+		print("Cached", RIG_OBJECTS[rig.name])
+
+	pose_fn(arg, RIG_OBJECTS[rig.name])
+
+
 def copy_rig(original : bpy.types.Collection):
 
 	new = original.copy() # want to preserve properties
+	new.ga_copied_from = original
+
+	print(original)
+	compile_rig(original)
+	RIG_FUNCTIONS[new.name] = RIG_FUNCTIONS[original.name]
 
 	new_objects = {obj:obj.copy() for obj in original.objects}
 
@@ -34,6 +57,7 @@ def copy_rig(original : bpy.types.Collection):
 
 	return new
 
+
 class Copy(bpy.types.Operator):
 	bl_label = "Copy rig"
 	bl_idname = "ga.copy_rig"
@@ -47,19 +71,13 @@ class Copy(bpy.types.Operator):
 
 
 class Pose(bpy.types.Operator):
-	bl_label = "Pose"
+	bl_label = "Pose rig"
 	bl_idname = "ga.pose_rig"
 
 	def execute(self, context):
-		name = context.collection.name
-		if name not in RIG_FUNCTIONS:
-			compile_rig(context.collection)
+		compile_rig(context.collection)
 
-		pose_fn_input = eval(context.collection.ga_rig_script_input)
-
-		pose_fn = RIG_FUNCTIONS[name]['pose']
-		objects = {obj.name if obj.ga_copied_from is None else obj.ga_copied_from.name:obj for obj in context.collection.objects}
-
-		pose_fn(pose_fn_input, objects)
+		arg = eval(context.collection.ga_rig_script_input)
+		pose(context.collection, arg)
 
 		return {'FINISHED'}

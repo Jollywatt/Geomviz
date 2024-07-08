@@ -36,9 +36,8 @@ def register():
 	)
 
 	bpy.types.Collection.ga_rig_script_input = props.StringProperty(
-		name="Pose data",
+		name="Pose input",
 	)
 
-	bpy.types.Object.ga_copied_from = props.PointerProperty(
-		type=bpy.types.Object,
-	)
+	bpy.types.Collection.ga_copied_from = props.PointerProperty(type=bpy.types.Collection)
+	bpy.types.Object.ga_copied_from = props.PointerProperty(type=bpy.types.Object)
