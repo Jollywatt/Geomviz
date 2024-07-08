@@ -60,12 +60,6 @@ class ServerPanel(bpy.types.Panel):
 		row = layout.row()
 		row.prop(context.scene, 'ga_server_port')
 
-		row = layout.row()
-		with server.lock:
-			print(f"Current data: {server.data_server.data!r}")
-			row.label(text=f"Current data: {server.data_server.data!r}")
-
-
 
 class RigPanel(bpy.types.Panel):
 	bl_label = "Geometric algebra rig"

@@ -2,26 +2,7 @@ import time
 import socket
 from math import sin, cos
 
-def send_data_to_server(data, port=8888):
-    # Create a socket object
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        # Connect to the server
-        client_socket.connect(('127.0.0.1', port))
-
-        # Send data to the server
-        client_socket.sendall(data.encode('utf-8'))
-
-        # Receive data from the server (optional)
-        received_data = client_socket.recv(1024)
-        # print(f"Received from server: {received_data.decode('utf-8')}")
-        print(".", end="", flush=True)
-
-    finally:
-        # Close the socket
-        client_socket.close()
-
+from client import send_object
 
 def frame(t):
     t *= 2
@@ -36,6 +17,7 @@ def frame(t):
         ],
         "Arrow Vector": [
             a,
+            (2*cos(t/3), sin(t/2), cos(t*4/7)),
         ]
     }
 
@@ -45,7 +27,7 @@ def main(fps=10, port=8888):
 
     while True:
         next_frame = t + 1/fps
-        send_data_to_server(repr(frame(t)))
+        send_object(frame(t), show_response=False)
         t = time.time()
         time.sleep(max(0, next_frame - t))
 

@@ -1,6 +1,7 @@
 import bpy
 import threading
 import socket
+import pickle
 
 from . import scene
 
@@ -9,15 +10,15 @@ lock = threading.Lock()
 class InvalidDataException(Exception):
 	pass
 
-def validate_data(text):
-		try:
-			data = eval(text)
-		except Exception as e:
-			raise InvalidDataException(e)
-		else:
-			if type(data) is not dict:
-				raise InvalidDataException(f"Data is of unexpected type {type(data)}.")
-			return data
+def validate_data(binary):
+	try:
+		data = pickle.loads(binary)
+	except Exception as e:
+		raise InvalidDataException(e)
+	else:
+		if type(data) is not dict:
+			raise InvalidDataException(f"Data is of unexpected type {type(data)}.")
+		return data
 
 class DataServer():
 	running = False
@@ -57,15 +58,12 @@ class DataServer():
 	def stop(self):
 		self.running = False
 
-	def __del__(self):
-		self.stop()
-
 	def handle_client(self, conn, addr):
-		message = conn.recv(1024).decode('utf-8')
-		print(f"Received {message!r} from {addr}.")
+		binary = conn.recv(1 << 12)
 
 		try:
-			data = validate_data(message)
+			data = validate_data(binary)
+			print(f"Received {data!r} from {addr}.")
 		except Exception as e:
 			conn.send(f"Your data sucks!\n{e}".encode())
 			conn.close()
@@ -74,10 +72,8 @@ class DataServer():
 			conn.close()
 			with lock:
 				self.data = data
-
 		finally:
 			self.trigger_update()
-	
 
 	def trigger_update(self):
 		if type(self.panel_area) is bpy.types.Area:
@@ -114,4 +110,4 @@ class StopServer(bpy.types.Operator):
 
 		data_server.stop()
 
-		return {'FINISHED'}
+		return {'FINISHED'}>>>>>>>
