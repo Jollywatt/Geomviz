@@ -13,7 +13,7 @@ def load_assets_scene():
 
 class LoadInventory(bpy.types.Operator):
 	bl_label = "Load GA assets scene"
-	bl_idname = "ga.get_stuff"
+	bl_idname = "ga.load_inventory"
 
 	def execute(self, context):
 		scene = load_assets_scene()

@@ -1,18 +1,34 @@
 import bpy
 
 RIG_FUNCTIONS = {}
-RIG_OBJECTS = {}
 
 def get_original(obj):
 	return obj if obj.ga_copied_from is None else obj.ga_copied_from
 
 
-def compile_rig(collection : bpy.types.Collection):
-	code = collection.ga_rig_script.as_string()
+def compile_rig(collection : bpy.types.Collection, recompile=True):
 	name = collection.name
+	if not recompile and name in RIG_FUNCTIONS:
+		return
+
 	RIG_FUNCTIONS[name] = {}
+
+	code = collection.ga_rig_script.as_string()
 	print(f"COMPILING FOR {name}")
 	exec(code, RIG_FUNCTIONS[name])
+
+
+def pose(rig : bpy.types.Collection, arg):
+	if rig.name not in RIG_FUNCTIONS:
+		original = rig.ga_copied_from
+		compile_rig(original, recompile=False)
+		RIG_FUNCTIONS[rig.name] = RIG_FUNCTIONS[original.name]
+
+	pose_fn = RIG_FUNCTIONS[rig.name]['pose']
+
+	objects_by_name = {get_original(obj).name:obj for obj in rig.objects}
+
+	pose_fn(arg, objects_by_name)
 
 
 def replace_object_properties(data_block, mapping):
@@ -22,23 +38,12 @@ def replace_object_properties(data_block, mapping):
 			setattr(data_block, attr, mapping[value])
 
 
-def pose(rig : bpy.types.Collection, arg):
-	pose_fn = RIG_FUNCTIONS[rig.name]['pose']
-
-	if rig.name not in RIG_OBJECTS:
-		RIG_OBJECTS[rig.name] = {get_original(obj).name:obj for obj in rig.objects}
-		print("Cached", RIG_OBJECTS[rig.name])
-
-	pose_fn(arg, RIG_OBJECTS[rig.name])
-
-
-def copy_rig(original : bpy.types.Collection):
+def duplicate(original : bpy.types.Collection):
 
 	new = original.copy() # want to preserve properties
 	new.ga_copied_from = original
 
-	print(original)
-	compile_rig(original)
+	compile_rig(original, recompile=False)
 	RIG_FUNCTIONS[new.name] = RIG_FUNCTIONS[original.name]
 
 	new_objects = {obj:obj.copy() for obj in original.objects}
@@ -64,7 +69,7 @@ class Copy(bpy.types.Operator):
 
 	def execute(self, context):
 		original = context.scene.ga_inventory_item
-		new = copy_rig(original)
+		new = duplicate(original)
 		context.scene.ga_collection.children.link(new)
 
 		return {'FINISHED'}
@@ -80,4 +85,4 @@ class Pose(bpy.types.Operator):
 		arg = eval(context.collection.ga_rig_script_input)
 		pose(context.collection, arg)
 
-		return {'FINISHED'}
+		return {'FINISHED'}>>>>>>>

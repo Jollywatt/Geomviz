@@ -74,6 +74,7 @@ class StartServer(bpy.types.Operator):
 
 		return {'FINISHED'}
 
+
 class StopServer(bpy.types.Operator):
 	"""Stop the external data server"""
 	bl_idname = "ga.stop_server"

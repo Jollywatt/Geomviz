@@ -4,6 +4,7 @@ from . import panels
 from . import properties
 from . import rigs
 from . import assets
+from . import scene
 
 classes = [
 	server.StartServer,

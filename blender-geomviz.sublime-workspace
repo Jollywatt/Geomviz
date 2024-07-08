@@ -1,0 +1,1227 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"RIG",
+				"RIG_FUNCTIONS"
+			],
+			[
+				"SCEN",
+				"SCENE_RIGS"
+			],
+			[
+				"RIG_",
+				"RIG_OBJECTS"
+			],
+			[
+				"ro",
+				"__RIG_OBJECTS__"
+			],
+			[
+				"pose",
+				"pose_fn_input"
+			],
+			[
+				"__",
+				"__RIG_OBJECTS__"
+			],
+			[
+				"new_",
+				"new_objects"
+			],
+			[
+				"Rig",
+				"RIG_OBJECTS"
+			],
+			[
+				"coy",
+				"copy_rig"
+			],
+			[
+				"ga_inve",
+				"ga_inventory_scene"
+			],
+			[
+				"new",
+				"new_objects"
+			],
+			[
+				"origi",
+				"original_objects"
+			],
+			[
+				"ori",
+				"original_obj"
+			],
+			[
+				"RU",
+				"RIG_MODULES"
+			],
+			[
+				"bl",
+				"bl_label"
+			],
+			[
+				"da",
+				"data_server"
+			],
+			[
+				"_ser",
+				"_server_thread"
+			],
+			[
+				"sta",
+				"start_server"
+			],
+			[
+				"encl",
+				"enclosed-nodes"
+			],
+			[
+				"ass",
+				"assert-resolve"
+			],
+			[
+				"firs",
+				"first-coord-implicit"
+			],
+			[
+				"defa",
+				"default-multiline"
+			],
+			[
+				"extr",
+				"extra-anchors"
+			],
+			[
+				"etr",
+				"extra-anchors"
+			],
+			[
+				"v",
+				"vertices-affecting-grid"
+			],
+			[
+				"vert",
+				"vertices-affecting-grid"
+			],
+			[
+				"resolve",
+				"resolve-system"
+			],
+			[
+				"resul",
+				"resulting-system"
+			],
+			[
+				"coord",
+				"coord-depends-on-grid"
+			],
+			[
+				"coor",
+				"coordinate-depends-on-grid"
+			],
+			[
+				"DEB",
+				"DEBUG_COLOR2"
+			],
+			[
+				"inter",
+				"interior-points"
+			],
+			[
+				"DEF",
+				"DEFAULT_MARKS"
+			],
+			[
+				"mark",
+				"mark-stroke"
+			],
+			[
+				"inheri",
+				"inherit-mark"
+			],
+			[
+				"defau",
+				"default-layer"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "pixi.toml",
+			"settings":
+			{
+				"buffer_size": 322,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			},
+			"undo_stack":
+			[
+				[
+					7,
+					1,
+					"insert",
+					{
+						"characters": "geomvis"
+					},
+					"CAAAABoAAAAAAAAAGwAAAAAAAAAAAAAAGwAAAAAAAAAbAAAAAAAAABEAAABwbHVnaW4tcGxheWdyb3VuZBsAAAAAAAAAHAAAAAAAAAAAAAAAHAAAAAAAAAAdAAAAAAAAAAAAAAAdAAAAAAAAAB4AAAAAAAAAAAAAAB4AAAAAAAAAHwAAAAAAAAAAAAAAHwAAAAAAAAAgAAAAAAAAAAAAAAAgAAAAAAAAACEAAAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAGgAAAAAAAAArAAAAAAAAAAAAAAAAAPC/"
+				]
+			]
+		},
+		{
+			"file": "loader.py",
+			"settings":
+			{
+				"buffer_size": 418,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			},
+			"undo_stack":
+			[
+				[
+					16,
+					1,
+					"insert",
+					{
+						"characters": "bgv"
+					},
+					"IAAAAJMBAAAAAAAAlAEAAAAAAAAAAAAAlAEAAAAAAACUAQAAAAAAAAMAAABiZ2GNAQAAAAAAAI4BAAAAAAAAAAAAAI4BAAAAAAAAjgEAAAAAAAADAAAAYmdhcAEAAAAAAABxAQAAAAAAAAAAAABxAQAAAAAAAHEBAAAAAAAAAwAAAGJnYU8BAAAAAAAAUAEAAAAAAAAAAAAAUAEAAAAAAABQAQAAAAAAAAMAAABiZ2EyAQAAAAAAADMBAAAAAAAAAAAAADMBAAAAAAAAMwEAAAAAAAADAAAAYmdhFwEAAAAAAAAYAQAAAAAAAAAAAAAYAQAAAAAAABgBAAAAAAAAAwAAAGJnYfoAAAAAAAAA+wAAAAAAAAAAAAAA+wAAAAAAAAD7AAAAAAAAAAMAAABiZ2HlAAAAAAAAAOYAAAAAAAAAAAAAAOYAAAAAAAAA5gAAAAAAAAADAAAAYmdhhgEAAAAAAACHAQAAAAAAAAAAAACCAQAAAAAAAIMBAAAAAAAAAAAAAGcBAAAAAAAAaAEAAAAAAAAAAAAASAEAAAAAAABJAQAAAAAAAAAAAAAtAQAAAAAAAC4BAAAAAAAAAAAAABQBAAAAAAAAFQEAAAAAAAAAAAAA+QAAAAAAAAD6AAAAAAAAAAAAAADmAAAAAAAAAOcAAAAAAAAAAAAAAI4BAAAAAAAAjwEAAAAAAAAAAAAAiQEAAAAAAACKAQAAAAAAAAAAAABtAQAAAAAAAG4BAAAAAAAAAAAAAE0BAAAAAAAATgEAAAAAAAAAAAAAMQEAAAAAAAAyAQAAAAAAAAAAAAAXAQAAAAAAABgBAAAAAAAAAAAAAPsAAAAAAAAA/AAAAAAAAAAAAAAA5wAAAAAAAADoAAAAAAAAAAAAAAA",
+					"AQAAAAAAAAAIAAAA5QAAAAAAAADoAAAAAAAAAAAAAAAAAPC/+gAAAAAAAAD9AAAAAAAAAAAAAAAAAPC/FwEAAAAAAAAaAQAAAAAAAAAAAAAAAPC/MgEAAAAAAAA1AQAAAAAAAAAAAAAAAPC/TwEAAAAAAABSAQAAAAAAAAAAAAAAAPC/cAEAAAAAAABzAQAAAAAAAAAAAAAAAPC/jQEAAAAAAACQAQAAAAAAAAAAAAAAAPC/kwEAAAAAAACWAQAAAAAAAAAAAAAAAPC/"
+				]
+			]
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"rename",
+				"Rename File"
+			],
+			[
+				"rena",
+				"Rename File"
+			],
+			[
+				"rens",
+				"Preferences: Settings"
+			],
+			[
+				"renam",
+				"Rename File"
+			],
+			[
+				"mark",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"mar",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"liverel",
+				"Snippet: Insert livereload.js script"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"ma",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"ww",
+				"Word Wrap: Toggle"
+			],
+			[
+				"1",
+				"Rot13 Selection"
+			],
+			[
+				"exa",
+				"Exact Quick Find: Toggle Whole Word"
+			],
+			[
+				"sche",
+				"UI: Select Color Scheme"
+			],
+			[
+				"ssju",
+				"Set Syntax: Julia"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"sskdl",
+				"Set Syntax: KDL"
+			],
+			[
+				"prefeq",
+				"Preferences: Exact Quick Find Key Bindings"
+			],
+			[
+				"sstyp",
+				"Set Syntax: Typst"
+			],
+			[
+				"isntal",
+				"Package Control: Install Package"
+			],
+			[
+				"open",
+				"PackageResourceViewer: Open Resource"
+			],
+			[
+				"color",
+				"UI: Select Color Scheme"
+			],
+			[
+				"sstyps",
+				"Set Syntax: Typst"
+			],
+			[
+				"prv",
+				"PackageResourceViewer: Open Resource"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"pac",
+				"Package Control: Discover Packages"
+			],
+			[
+				"lsit",
+				"Package Control: List Packages"
+			],
+			[
+				"colo",
+				"UI: Select Color Scheme"
+			],
+			[
+				"scheme",
+				"UI: Select Color Scheme"
+			],
+			[
+				"isnt",
+				"Package Control: Install Package"
+			],
+			[
+				"selecolo",
+				"UI: Select Color Scheme"
+			],
+			[
+				"sssh",
+				"Set Syntax: Bash"
+			],
+			[
+				"ss",
+				"Set Syntax: Nushell"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"sstoml",
+				"Set Syntax: TOML"
+			],
+			[
+				"ssnu",
+				"Set Syntax: Nushell"
+			],
+			[
+				"inp",
+				"Package Control: Install Package"
+			],
+			[
+				"them",
+				"UI: Select Theme"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/josephwilson/Documents/blender-geomviz"
+	],
+	"file_history":
+	[
+		"/Users/josephwilson/Documents/blender-geomviz/.gitignore",
+		"/Users/josephwilson/Documents/typst-fletcher/typst-fletcher.sublime-project",
+		"/Users/josephwilson/Documents/blender-geomviz/blender-geomviz.sublime-workspace",
+		"/Users/josephwilson/Documents/blender-geomviz/blender-geomviz.sublime-project",
+		"/Users/josephwilson/Documents/blender-geomviz/loader.py",
+		"/Users/josephwilson/Desktop/blender-interop/main.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/animation.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/client.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/server.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/scene.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/rigs.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/panels.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/properties.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/__init__.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/assets.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/loader.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/.pixi/envs/default/lib/python3.11/site-packages/bpy/4.1/scripts/addons/add_mesh_discombobulator/mesh_discombobulator.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/pixi.toml",
+		"/Users/josephwilson/Desktop/blender-interop/pixi.toml",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/.gitignore",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/loader.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/.pixi/envs/default/lib/python3.12/urllib/request.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/reloader.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/main.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/bga/main.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/xyz.py",
+		"/Users/josephwilson/Desktop/blender-plugin-playground/.,",
+		"/Users/josephwilson/Desktop/blender-interop/.gitattributes",
+		"/Users/josephwilson/Desktop/blender-interop/bga/__init__.py",
+		"/Users/josephwilson/Desktop/blender-interop/bga/operators.py",
+		"/Users/josephwilson/Desktop/blender-interop/bga/panels.py",
+		"/Users/josephwilson/Desktop/blender-interop/bga/server.py",
+		"/Users/josephwilson/Desktop/blender-interop/loader.py",
+		"/Users/josephwilson/Library/Application Support/Blender/4.1/scripts/addons/server.py",
+		"/Users/josephwilson/Desktop/blender-server/pixi.toml",
+		"/Users/josephwilson/Desktop/blender-server/ga-plotter.py",
+		"/Users/josephwilson/Desktop/blender-server/blender-server.py",
+		"/Users/josephwilson/Desktop/blender-server/client.py",
+		"/Users/josephwilson/Desktop/blender-server/server.py",
+		"/Users/josephwilson/Desktop/blender-server.py",
+		"/Users/josephwilson/Desktop/client.py",
+		"/Users/josephwilson/Desktop/server.py",
+		"/Users/josephwilson/Documents/typst-fletcher/.gitignore",
+		"/Users/josephwilson/Documents/typst-fletcher/typst.toml",
+		"/Users/josephwilson/Documents/typst-fletcher/pixi.toml",
+		"/Users/josephwilson/Documents/typst-fletcher/typos.toml",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/manual.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/utils.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/draw.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/scratch/all-tests.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/edge-poly/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/README.template.md",
+		"/Users/josephwilson/Documents/typst-fletcher/package-excludes",
+		"/Users/josephwilson/Documents/typst-fletcher/justfile",
+		"/Users/josephwilson/.config/starship.toml",
+		"/Users/josephwilson/Documents/typst-fletcher/src/edge.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/node.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/coords/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/diagram.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/coords.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/node-enclose/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/exports.typ",
+		"/Users/josephwilson/Library/Application Support/nushell/config.nu",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-QbXJEh.jjdescription",
+		"/Users/josephwilson/Desktop/code-from-stats",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/diagram-cetz-coords/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/README.md",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/node-extrude/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/edge-snap-to/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/ml-architecture.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/style.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/cetz-integration/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/diagram-implicit-coords/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/digraph.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/algebra-cube.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/commutative.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/io-flowchart.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/node-groups.typ",
+		"/Users/josephwilson/Desktop/jj-pdf-bug/.jj/repo/editor-M17gPi.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/readme-examples/ml-architecture-light.svg",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/edge-arguments/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/template.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/diagram-inline/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/marks.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/docs/gallery/block-diagram.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-SOuBeJ.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/example-gallery/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/build-readme.py",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-ocBXEx.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-WbYXom.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-dGUe8x.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-hzgf0F.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-qWMtMg.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/utils/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/src/cetz-rework.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/diagram-coords/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/edge-decorations/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/node-shapes/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/node-layer/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/diagram-math-mode/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-f0L2Mx.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-EosOiL.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-BBifdE.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-LoYXYO.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/temp/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-5POtaL.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-XXVt3e.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-6yoHCZ.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-8V2JUW.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-TaFyCS.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-yARXFe.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-FiLSQp.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-n37p86.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-rf7dtd.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/node-defocus/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-50XzHh.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/cetz-rework/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-Io9CVr.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-6thErb.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-CsRs7j.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/edge-bend/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-EyVqO2.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-CHFR6e.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/node-label-align/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-tIj4KP.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-JetN3n.jjdescription",
+		"/Users/josephwilson/Documents/typst-fletcher/tests/label-size/test.typ",
+		"/Users/josephwilson/Documents/typst-fletcher/.jj/repo/editor-zRyEiX.jjdescription"
+	],
+	"find":
+	{
+		"height": 29.0
+	},
+	"find_in_files":
+	{
+		"height": 116.0,
+		"where_history":
+		[
+			"",
+			"*.py",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"bga"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "pixi.toml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 322,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								33,
+								33
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/TOML/TOML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "loader.py",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 418,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								350,
+								350
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 43.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 132.0
+	},
+	"pinned_build_system": "",
+	"project": "blender-geomviz.sublime-project",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"pixi",
+				"pixi.toml"
+			],
+			[
+				"giti",
+				".gitignore"
+			],
+			[
+				"loa",
+				"loader.py"
+			],
+			[
+				"pro",
+				"bga/properties.py"
+			],
+			[
+				"ser",
+				"bga/server.py"
+			],
+			[
+				"init",
+				"bga/__init__.py"
+			],
+			[
+				"pane",
+				"bga/panels.py"
+			],
+			[
+				"typ",
+				"typst.toml"
+			],
+			[
+				"git",
+				".gitignore"
+			],
+			[
+				"pack",
+				"package-excludes"
+			],
+			[
+				"just",
+				"justfile"
+			],
+			[
+				"readme",
+				"README.template.md"
+			],
+			[
+				"ut",
+				"src/utils.typ"
+			],
+			[
+				"tpet",
+				"tests/edge-poly/test.typ"
+			],
+			[
+				"all",
+				"scratch/all-tests.typ"
+			],
+			[
+				"co",
+				"src/coords.typ"
+			],
+			[
+				"uti",
+				"src/utils.typ"
+			],
+			[
+				"node",
+				"src/node.typ"
+			],
+			[
+				"di",
+				"src/diagram.typ"
+			],
+			[
+				"testc",
+				"tests/coords/test.typ"
+			],
+			[
+				"coords",
+				"src/coords.typ"
+			],
+			[
+				"a",
+				"scratch/all-tests.typ"
+			],
+			[
+				"dia",
+				"src/diagram.typ"
+			],
+			[
+				"enclose",
+				"tests/node-enclose/test.typ"
+			],
+			[
+				"rea",
+				"README.md"
+			],
+			[
+				"cetz",
+				"tests/diagram-cetz-coords/test.typ"
+			],
+			[
+				"cez",
+				"tests/diagram-cetz-coords/test.typ"
+			],
+			[
+				"coord",
+				"src/coords.typ"
+			],
+			[
+				"cor",
+				"src/coords.typ"
+			],
+			[
+				"coor",
+				"src/coords.typ"
+			],
+			[
+				"tnencl",
+				"tests/node-enclose/test.typ"
+			],
+			[
+				"edge",
+				"src/edge.typ"
+			],
+			[
+				"tdcc",
+				"tests/diagram-cetz-coords/test.typ"
+			],
+			[
+				"tnenclo",
+				"tests/node-enclose/test.typ"
+			],
+			[
+				"nodeen",
+				"tests/node-enclose/test.typ"
+			],
+			[
+				"ty",
+				"typst.toml"
+			],
+			[
+				"testdiacet",
+				"tests/diagram-cetz-coords/test.typ"
+			],
+			[
+				"testdia",
+				"tests/diagram-implicit-coords/test.typ"
+			],
+			[
+				"src/ex",
+				"src/exports.typ"
+			],
+			[
+				"read",
+				"README.template.md"
+			],
+			[
+				"ed",
+				"src/edge.typ"
+			],
+			[
+				"manu",
+				"docs/manual.typ"
+			],
+			[
+				"mlar",
+				"docs/gallery/ml-architecture.typ"
+			],
+			[
+				"ml",
+				"docs/readme-examples/ml-architecture-light.svg"
+			],
+			[
+				"gall",
+				"docs/gallery/commutative.typ"
+			],
+			[
+				"tem",
+				"README.template.md"
+			],
+			[
+				"templ",
+				"tests/template.typ"
+			],
+			[
+				"c",
+				"src/coords.typ"
+			],
+			[
+				"tearg",
+				"tests/edge-arguments/test.typ"
+			],
+			[
+				"util",
+				"src/utils.typ"
+			],
+			[
+				"galleryblo",
+				"docs/gallery/block-diagram.typ"
+			],
+			[
+				"testdiim",
+				"tests/diagram-implicit-coords/test.typ"
+			],
+			[
+				"man",
+				"docs/manual.typ"
+			],
+			[
+				"tetedgear",
+				"tests/edge-arguments/test.typ"
+			],
+			[
+				"testexam",
+				"tests/example-gallery/test.typ"
+			],
+			[
+				"edgearg",
+				"tests/edge-arguments/test.typ"
+			],
+			[
+				"utils",
+				"src/utils.typ"
+			],
+			[
+				"uri",
+				"build-readme.py"
+			],
+			[
+				"retem",
+				"README.template.md"
+			],
+			[
+				"re",
+				"README.md"
+			],
+			[
+				"coo",
+				"src/coords.typ"
+			],
+			[
+				"readm",
+				"README.template.md"
+			],
+			[
+				"exampleg",
+				"tests/example-gallery/test.typ"
+			],
+			[
+				"diac",
+				"tests/diagram-cetz-coords/test.typ"
+			],
+			[
+				"mnau",
+				"docs/manual.typ"
+			],
+			[
+				"sty",
+				"docs/style.typ"
+			],
+			[
+				"style",
+				"docs/style.typ"
+			],
+			[
+				"cet",
+				"src/cetz-rework.typ"
+			],
+			[
+				"testcoor",
+				"tests/coords/test.typ"
+			],
+			[
+				"diacetz",
+				"tests/diagram-cetz-coords/test.typ"
+			],
+			[
+				"edgede",
+				"tests/edge-decorations/test.typ"
+			],
+			[
+				"tdiacoo",
+				"tests/diagram-coords/test.typ"
+			],
+			[
+				"testcoo",
+				"tests/coords/test.typ"
+			],
+			[
+				"testut",
+				"tests/utils/test.typ"
+			],
+			[
+				"testu",
+				"tests/utils/test.typ"
+			],
+			[
+				"crw",
+				"src/cetz-rework.typ"
+			],
+			[
+				"nodes",
+				"tests/node-shapes/test.typ"
+			],
+			[
+				"tnlaye",
+				"tests/node-layer/test.typ"
+			],
+			[
+				"tests/diama",
+				"tests/diagram-math-mode/test.typ"
+			],
+			[
+				"testcoordt",
+				"tests/coords/test.typ"
+			],
+			[
+				"nodenecl",
+				"tests/node-enclose/test.typ"
+			],
+			[
+				"draw",
+				"src/draw.typ"
+			],
+			[
+				"ttmpt",
+				"tests/temp/test.typ"
+			],
+			[
+				"exampl",
+				"tests/example-gallery/test.typ"
+			],
+			[
+				"testedgesna",
+				"tests/edge-snap-to/test.typ"
+			],
+			[
+				"manua",
+				"docs/manual.typ"
+			],
+			[
+				"coordtes",
+				"tests/coords/test.typ"
+			],
+			[
+				"diagra",
+				"src/diagram.typ"
+			],
+			[
+				"nod",
+				"src/node.typ"
+			],
+			[
+				"allt",
+				"scratch/all-tests.typ"
+			],
+			[
+				"testcoord",
+				"tests/coords/test.typ"
+			],
+			[
+				"testgrid",
+				"tests/diagram-implicit-coords/test.typ"
+			],
+			[
+				"tcrew",
+				"tests/cetz-rework/test.typ"
+			],
+			[
+				"tcrwt",
+				"tests/cetz-rework/test.typ"
+			],
+			[
+				"testuti",
+				"tests/utils/test.typ"
+			],
+			[
+				"tndefo",
+				"tests/node-defocus/test.typ"
+			],
+			[
+				"testedgebend",
+				"tests/edge-bend/test.typ"
+			],
+			[
+				"testedgesnttest",
+				"tests/edge-snap-to/test.typ"
+			],
+			[
+				"tebend",
+				"tests/edge-bend/test.typ"
+			],
+			[
+				"tnlay",
+				"tests/node-layer/test.typ"
+			],
+			[
+				"tnlt",
+				"tests/node-label-align/test.typ"
+			],
+			[
+				"tnet",
+				"tests/node-enclose/test.typ"
+			],
+			[
+				"testesttest",
+				"tests/edge-snap-to/test.typ"
+			],
+			[
+				"reda",
+				"README.md"
+			],
+			[
+				"tlsize",
+				"tests/label-size/test.typ"
+			],
+			[
+				"tlw",
+				"tests/label-wrapper/test.typ"
+			],
+			[
+				"labelsiz",
+				"tests/label-size/test.typ"
+			],
+			[
+				"dra",
+				"src/draw.typ"
+			],
+			[
+				"",
+				"src/edge.typ"
+			],
+			[
+				"teexample",
+				"tests/example-gallery/test.typ"
+			],
+			[
+				"node.t",
+				"src/node.typ"
+			],
+			[
+				"mana",
+				"docs/manual.typ"
+			],
+			[
+				"red",
+				"README.md"
+			],
+			[
+				"al",
+				"scratch/all-tests.typ"
+			],
+			[
+				"mmm",
+				"tests/mark-math-matching/test.typ"
+			],
+			[
+				"testdiaop",
+				"tests/diagram-options/test.typ"
+			],
+			[
+				"examplega",
+				"tests/example-gallery/test.typ"
+			],
+			[
+				"nodelay",
+				"tests/node-layer/test.typ"
+			],
+			[
+				"main",
+				"src/main.typ"
+			],
+			[
+				"telayer",
+				"tests/node-layer/test.typ"
+			],
+			[
+				"testlabel",
+				"tests/label-side-auto/test.typ"
+			],
+			[
+				"lay",
+				"src/layout.typ"
+			],
+			[
+				"tlang",
+				"tests/label-angle/test.typ"
+			],
+			[
+				"tns",
+				"tests/node-shapes/test.typ"
+			],
+			[
+				"sha",
+				"src/shapes.typ"
+			],
+			[
+				"makr",
+				"src/marks.typ"
+			],
+			[
+				"tlangle",
+				"tests/label-angle/test.typ"
+			],
+			[
+				"texampll",
+				"tests/example-gallery/test.typ"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/Documents/typst-fletcher/typst-fletcher.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 239.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
