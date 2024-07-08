@@ -1,5 +1,5 @@
 [project]
-name = "blender-plugin-playground"
+name = "blender-geomvis"
 authors = ["jollywatt <jo.alex.w@gmail.com>"]
 channels = ["conda-forge"]
 platforms = ["osx-arm64"]

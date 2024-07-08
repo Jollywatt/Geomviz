@@ -9,12 +9,12 @@ d = path.dirname(path.dirname(__file__))
 if d not in sys.path:
 	sys.path.append(d)
 
-import bga
-importlib.reload(bga.assets)
-importlib.reload(bga.rigs)
-importlib.reload(bga.panels)
-importlib.reload(bga.properties)
-importlib.reload(bga.server)
-importlib.reload(bga)
+import bgv
+importlib.reload(bgv.assets)
+importlib.reload(bgv.rigs)
+importlib.reload(bgv.panels)
+importlib.reload(bgv.properties)
+importlib.reload(bgv.server)
+importlib.reload(bgv)
 
-bga.register()
+bgv.register()
