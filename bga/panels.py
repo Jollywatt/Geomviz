@@ -34,31 +34,6 @@ class ScenePanel(bpy.types.Panel):
 		row.operator(rigs.Copy.bl_idname, text="Copy inventory item")
 
 
-class RigPanel(bpy.types.Panel):
-	bl_label = "Geometric algebra rig"
-	bl_idname = 'COLLECTION_PT_ga_rig'
-	bl_space_type = 'PROPERTIES'
-	bl_region_type = 'WINDOW'
-	bl_context = 'collection'
-
-	def draw(self, context):
-
-		layout = self.layout
-
-		if context.collection.ga_copied_from is not None:
-			row = layout.row()
-			row.label(text=f"Copied from collection {context.collection.ga_copied_from.name!r}.")
-
-		row = layout.row()
-		row.prop(context.collection, 'ga_rig_script')
-
-		row = layout.row()
-		row.prop(context.collection, 'ga_rig_script_input')
-
-		row = layout.row()
-		row.operator(rigs.Pose.bl_idname, text="Compile and run")
-
-
 class ServerPanel(bpy.types.Panel):
 	bl_label = "Geometric algebra server"
 	bl_idname = 'SCENE_PT_ga_server'
@@ -87,5 +62,32 @@ class ServerPanel(bpy.types.Panel):
 
 		row = layout.row()
 		with server.lock:
-			row.label(text=f"Current data: {server.data_server.data}")
+			print(f"Current data: {server.data_server.data!r}")
+			row.label(text=f"Current data: {server.data_server.data!r}")
+
+
+
+class RigPanel(bpy.types.Panel):
+	bl_label = "Geometric algebra rig"
+	bl_idname = 'COLLECTION_PT_ga_rig'
+	bl_space_type = 'PROPERTIES'
+	bl_region_type = 'WINDOW'
+	bl_context = 'collection'
+
+	def draw(self, context):
+
+		layout = self.layout
+
+		if context.collection.ga_copied_from is not None:
+			row = layout.row()
+			row.label(text=f"Copied from collection {context.collection.ga_copied_from.name!r}.")
+
+		row = layout.row()
+		row.prop(context.collection, 'ga_rig_script')
+
+		row = layout.row()
+		row.prop(context.collection, 'ga_rig_script_input')
+
+		row = layout.row()
+		row.operator(rigs.Pose.bl_idname, text="Compile and run")
 

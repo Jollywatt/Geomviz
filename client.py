@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("message")
-    parser.add_argument("--port", type=int)
+    parser.add_argument("--port", default=8888, type=int)
     args = parser.parse_args()
 
     send_data_to_server(args.message, port=args.port)

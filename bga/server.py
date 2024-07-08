@@ -2,16 +2,31 @@ import bpy
 import threading
 import socket
 
+from . import scene
+
 lock = threading.Lock()
 
+class InvalidDataException(Exception):
+	pass
+
+def validate_data(text):
+		try:
+			data = eval(text)
+		except Exception as e:
+			raise InvalidDataException(e)
+		else:
+			if type(data) is not dict:
+				raise InvalidDataException(f"Data is of unexpected type {type(data)}.")
+			return data
 
 class DataServer():
 	running = False
 	port = None
 	data = None
 	panel_area = None
+	scene = None
 
-	def start(self, operator, port=8888):
+	def start(self, port=8888):
 		self.port = port
 
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,7 +34,7 @@ class DataServer():
 		try:
 			sock.bind(('127.0.0.1', self.port))
 		except OSError as e:
-			operator.report({'ERROR'}, e)
+			print(f"Server error: {e}")
 			return
 
 		sock.listen()
@@ -36,26 +51,40 @@ class DataServer():
 			else:
 				self.handle_client(conn, addr)
 
+		sock.close()
 		print(f"No longer listening on port {self.port}.")
 
 	def stop(self):
 		self.running = False
 
+	def __del__(self):
+		self.stop()
+
 	def handle_client(self, conn, addr):
-		data = conn.recv(1024).decode('utf-8')
-		print(f"Received data {data} from {addr}.")
+		message = conn.recv(1024).decode('utf-8')
+		print(f"Received {message!r} from {addr}.")
 
-		with lock:
-			self.data = data
+		try:
+			data = validate_data(message)
+		except Exception as e:
+			conn.send(f"Your data sucks!\n{e}".encode())
+			conn.close()
+		else:
+			conn.send("Received.".encode())
+			conn.close()
+			with lock:
+				self.data = data
 
-		conn.send("Received.".encode())
-		conn.close()
-
-		self.trigger_update()
+		finally:
+			self.trigger_update()
+	
 
 	def trigger_update(self):
 		if type(self.panel_area) is bpy.types.Area:
 			self.panel_area.tag_redraw()
+
+		if self.data is not None:
+			scene.sync(self.scene, self.data)
 
 
 data_server = DataServer()
@@ -69,7 +98,8 @@ class StartServer(bpy.types.Operator):
 	def execute(self, context):
 
 		port = context.scene.ga_server_port
-		thread = threading.Thread(target=data_server.start, args=(self, port))
+		data_server.scene = context.scene
+		thread = threading.Thread(target=data_server.start, args=(port,))
 		thread.start()
 
 		return {'FINISHED'}

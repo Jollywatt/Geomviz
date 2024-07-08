@@ -9,6 +9,8 @@ blend = "/Applications/Blender.app/Contents/MacOS/Blender"
 
 [dependencies]
 python = ">=3.11,<3.12"
+bson = ">=0.5.9,<0.6"
+ipython = ">=8.26.0,<8.27"
 
 [pypi-dependencies]
 bpy = "*"
