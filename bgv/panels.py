@@ -11,8 +11,6 @@ class ScenePanel(bpy.types.Panel):
 	bl_region_type = 'WINDOW'
 	bl_context = 'scene'
 
-	hello = None
-
 	def draw(self, context):
 		layout = self.layout
 		layout.use_property_split = True

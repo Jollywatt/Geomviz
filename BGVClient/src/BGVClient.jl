@@ -7,9 +7,10 @@ using REPL: LineEdit
 
 const PORT = Ref(8888)
 
-function send_data_to_server(data, port=PORT.x)
+function send_data_to_server(data, port=PORT[])
 	sock = connect(ip"127.0.0.1", port)
 	binary = Pickle.stores(data)
+	@show port
 	write(sock, binary)
 end
 
@@ -49,9 +50,9 @@ function __init__()
 		initrepl(
 			replmode, 
 			prompt_text="BGVClient> ",
-			prompt_color=:cyan, 
+			prompt_color=:cyan,
 			valid_input_checker=valid_input_checker,
-			start_key=' ', 
+			start_key=' ',
 			mode_name="BGVClient",
 		)
 	end

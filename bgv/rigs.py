@@ -35,7 +35,7 @@ def replace_object_properties(data_block, mapping):
 	for attr in data_block.rna_type.properties.keys():
 		value = getattr(data_block, attr)
 		if type(value) == bpy.types.Object and value in mapping:
-			setattr(data_block, attr, mapping[value])
+			setattr(data_block, attr, mapping[value]) # has caused segfault
 
 
 def duplicate(original : bpy.types.Collection):
@@ -49,8 +49,8 @@ def duplicate(original : bpy.types.Collection):
 	new_objects = {obj:obj.copy() for obj in original.objects}
 
 	for obj, new_obj in new_objects.items():
-		new.objects.unlink(obj)
-		new.objects.link(new_obj)
+		new.objects.unlink(obj) # has caused segfault
+		new.objects.link(new_obj) # has caused segfault
 
 		new_obj.ga_copied_from = obj
 
