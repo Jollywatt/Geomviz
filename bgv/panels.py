@@ -43,10 +43,8 @@ class ServerPanel(bpy.types.Panel):
 		server.data_server.panel_area = context.area
 
 		row = layout.row()
-		if server.data_server.running:
-			row.label(text=f"Listening on port {server.data_server.port}", icon='RADIOBUT_ON')
-		else:
-			row.label(text="Idle", icon='RADIOBUT_OFF')
+		icon = 'RADIOBUT_ON' if server.data_server.running else 'RADIOBUT_OFF'
+		row.label(text=f"Status: {server.data_server.status}", icon=icon)
 
 		row = layout.row()
 		if server.data_server.running:

@@ -2,10 +2,13 @@ import bpy
 import threading
 import socket
 import pickle
+import queue
 
 from . import scene
 
 lock = threading.Lock()
+scene_queue = queue.Queue()
+
 
 class InvalidDataException(Exception):
 	pass
@@ -20,45 +23,53 @@ def validate_data(binary):
 			raise InvalidDataException(f"Data is of unexpected type {type(data)}.")
 		return data
 
+
 class DataServer():
 	running = False
 	port = None
 	data = None
 	panel_area = None
+	status = "Idle"
 	scene = None
 	sock = None
 
 	def start(self, port=8888):
 		self.port = port
 
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.settimeout(1)
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.settimeout(1)
 		try:
-			self.sock.bind(('127.0.0.1', self.port))
+			sock.bind(('127.0.0.1', self.port))
 		except OSError as e:
-			print(f"Server error: {e}")
+			self.set_status(f"Error: {e}")
 			return
 
 		try:
-			self.sock.listen()
+			sock.listen()
 			self.running = True
-			print(f"Listening on port {self.port}...")
+			self.set_status(f"Listening on port {self.port}...")
 
 			while self.running:
 				try:
-					conn, addr = self.sock.accept()
+					conn, addr = sock.accept()
 				except socket.timeout:
 					pass
 				except:
 					raise
 				else:
 					self.handle_client(conn)
+
 		finally:
-			self.sock.close()
-			print(f"No longer listening on port {self.port}.")
+			sock.close()
+			print(f"Closing socket on port {self.port}.")
 
 	def stop(self):
 		self.running = False
+		self.set_status("Idle")
+
+		if bpy.app.timers.is_registered(consume_queue):
+			bpy.app.timers.unregister(consume_queue)
+
 
 	def handle_client(self, conn):
 		binary = conn.recv(1 << 12)
@@ -66,23 +77,34 @@ class DataServer():
 		try:
 			data = validate_data(binary)
 			print(f"Received {data!r}.")
+			try:
+				scene_queue.put(data)
+			except Exception as e:
+				print("Couldn't put to queue")
+				print(e)
+
 		except Exception as e:
 			conn.send(f"Your data sucks!\n{e}".encode())
 			conn.close()
 		else:
 			conn.send("Received.".encode())
 			conn.close()
-			with lock:
-				self.data = data
-		finally:
-			self.trigger_update()
 
-	def trigger_update(self):
+	def set_status(self, status):
+		self.status = status
+		print(f"Status: {status}")
 		if type(self.panel_area) is bpy.types.Area:
 			self.panel_area.tag_redraw()
 
-		if self.data is not None:
-			scene.sync(self.scene, self.data)
+
+def consume_queue():
+	while not scene_queue.empty():
+		data = scene_queue.get()
+		print("Syncronising scene")
+		scene.sync(data_server.scene, data)
+		scene_queue.task_done()
+
+	return 1/60
 
 
 class StartServer(bpy.types.Operator):
@@ -104,6 +126,8 @@ class StartServer(bpy.types.Operator):
 		thread = threading.Thread(target=serve)
 		thread.start()
 
+		bpy.app.timers.register(consume_queue)
+
 		return {'FINISHED'}
 
 
@@ -113,7 +137,6 @@ class StopServer(bpy.types.Operator):
 	bl_label = "Stop external data server"
 
 	def execute(self, context):
-
 		data_server.stop()
 
 		return {'FINISHED'}
