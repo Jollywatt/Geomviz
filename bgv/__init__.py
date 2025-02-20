@@ -5,6 +5,7 @@ from . import properties
 from . import rigs
 from . import assets
 from . import scene
+from . import timer
 
 classes = [
 	server.StartServer,
@@ -15,6 +16,7 @@ classes = [
 	assets.LoadInventory,
 	rigs.Pose,
 	rigs.Copy,
+	timer.ModalTimerOperator,
 ]
 
 def register():
