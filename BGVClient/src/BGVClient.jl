@@ -10,7 +10,6 @@ const PORT = Ref(8888)
 function send_data_to_server(data, port=PORT[])
 	sock = connect(ip"127.0.0.1", port)
 	binary = Pickle.stores(data)
-	@show port
 	write(sock, binary)
 end
 

@@ -6,9 +6,6 @@ import queue
 
 from . import scene
 
-lock = threading.Lock()
-scene_queue = queue.Queue()
-
 
 class InvalidDataException(Exception):
 	pass
@@ -27,26 +24,22 @@ def validate_data(binary):
 class DataServer():
 	running = False
 	port = None
-	data = None
 	panel_area = None
 	status = "Idle"
-	scene = None
-	sock = None
 
 	def start(self, port=8888):
+		self.running = True
 		self.port = port
 
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.settimeout(1)
-		try:
-			sock.bind(('127.0.0.1', self.port))
-		except OSError as e:
-			self.set_status(f"Error: {e}")
-			return
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+			try:
+				sock.bind(('127.0.0.1', self.port))
+			except OSError as e:
+				self.set_status(f"Error: {e}")
+				return
 
-		try:
+			sock.settimeout(1)
 			sock.listen()
-			self.running = True
 			self.set_status(f"Listening on port {self.port}...")
 
 			while self.running:
@@ -59,36 +52,35 @@ class DataServer():
 				else:
 					self.handle_client(conn)
 
-		finally:
-			sock.close()
-			print(f"Closing socket on port {self.port}.")
+		print(f"Closing socket on port {self.port}.")
 
 	def stop(self):
+		if self.running:
+			self.set_status("Idle")
 		self.running = False
-		self.set_status("Idle")
-
-		if bpy.app.timers.is_registered(consume_queue):
-			bpy.app.timers.unregister(consume_queue)
-
 
 	def handle_client(self, conn):
-		binary = conn.recv(1 << 12)
+		binary = conn.recv(1 << 15)
 
 		try:
 			data = validate_data(binary)
 			print(f"Received {data!r}.")
-			try:
-				scene_queue.put(data)
-			except Exception as e:
-				print("Couldn't put to queue")
-				print(e)
 
 		except Exception as e:
 			conn.send(f"Your data sucks!\n{e}".encode())
 			conn.close()
+			print(e)
 		else:
 			conn.send("Received.".encode())
 			conn.close()
+
+			print("Trying")
+			try:
+				data_queue.put(data)
+				print("did put")
+			except Exception as e:
+				print("Couldn't put to queue")
+				print(e)
 
 	def set_status(self, status):
 		self.status = status
@@ -97,14 +89,7 @@ class DataServer():
 			self.panel_area.tag_redraw()
 
 
-def consume_queue():
-	while not scene_queue.empty():
-		data = scene_queue.get()
-		print("Syncronising scene")
-		scene.sync(data_server.scene, data)
-		scene_queue.task_done()
-
-	return 1/60
+data_queue = queue.Queue()
 
 
 class StartServer(bpy.types.Operator):
@@ -115,19 +100,23 @@ class StartServer(bpy.types.Operator):
 	def execute(self, context):
 
 		port = context.scene.ga_server_port
-		def serve():
-			try:
-				data_server.start(port)
-			finally:
-				print("THREAD ENDING: running finally block")
-				data_server.stop()
+		data_server.running = True
+		thread = threading.Thread(target=data_server.start, args=(port,))
 
-		data_server.scene = context.scene
-		thread = threading.Thread(target=serve)
+		def handle_queue():
+			while not data_queue.empty():
+				data = data_queue.get()
+				print("Syncronising scene")
+				scene.sync(context.scene, data)
+				data_queue.task_done()
+
+			if data_server.running:
+				return 1/60
+
+
+		bpy.app.timers.register(handle_queue)
+
 		thread.start()
-
-		bpy.app.timers.register(consume_queue)
-
 		return {'FINISHED'}
 
 
@@ -141,8 +130,8 @@ class StopServer(bpy.types.Operator):
 
 		return {'FINISHED'}
 
-# have one server in the global scope
 
+# have one server in the global scope
 try:
 	# if module already loaded, a server instance already exists.
 	# stop the old server if necessary

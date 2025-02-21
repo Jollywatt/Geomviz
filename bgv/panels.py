@@ -44,7 +44,7 @@ class ServerPanel(bpy.types.Panel):
 
 		row = layout.row()
 		icon = 'RADIOBUT_ON' if server.data_server.running else 'RADIOBUT_OFF'
-		row.label(text=f"Status: {server.data_server.status}", icon=icon)
+		row.label(text=f"{server.data_server.status}", icon=icon)
 
 		row = layout.row()
 		if server.data_server.running:
