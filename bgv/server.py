@@ -74,10 +74,8 @@ class DataServer():
 			conn.send("Received.".encode())
 			conn.close()
 
-			print("Trying")
 			try:
 				data_queue.put(data)
-				print("did put")
 			except Exception as e:
 				print("Couldn't put to queue")
 				print(e)
@@ -112,6 +110,8 @@ class StartServer(bpy.types.Operator):
 
 			if data_server.running:
 				return 1/60
+
+			print("CLOSING TIMER")
 
 
 		bpy.app.timers.register(handle_queue)

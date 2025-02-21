@@ -48,7 +48,7 @@ function __init__()
 	if isdefined(Base, :active_repl)
 		initrepl(
 			replmode, 
-			prompt_text="BGVClient> ",
+			prompt_text="blend> ",
 			prompt_color=:cyan,
 			valid_input_checker=valid_input_checker,
 			start_key=' ',
