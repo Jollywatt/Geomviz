@@ -5,6 +5,8 @@ using Pickle
 using ReplMaker
 using REPL: LineEdit
 
+export encode
+
 const PORT = Ref(8888)
 
 function send_data_to_server(data, port=PORT[])
@@ -34,6 +36,7 @@ function encode_and_send(obj)
 end
 
 function replmode(input::String)
+	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
 	encode_and_send(x)
 end
