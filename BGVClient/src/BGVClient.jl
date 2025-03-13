@@ -6,8 +6,12 @@ using ReplMaker
 using REPL: LineEdit
 
 using GeometricAlgebra
+using GeometricAlgebra: replace_signature
 
 export encode
+
+export PGA, Projective
+export CGA, up
 
 include("client.jl")
 include("algebras.jl")

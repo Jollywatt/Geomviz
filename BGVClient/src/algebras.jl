@@ -28,6 +28,8 @@ function GeometricAlgebra.get_basis_display_style(::Type{<:Projective{Sig,I}}) w
 	BasisDisplayStyle(n; indices)
 end
 
+const PGA{Sig} = Projective{Sig,0,true}
+
 
 struct CGA{n} end
 
@@ -38,3 +40,16 @@ function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
 	indices = [string.(1:n); "p"; "m"]
 	BasisDisplayStyle(n + 2; indices)
 end
+
+function cgabasis(::Type{CGA{n}}) where n
+	v..., vp, vm = basis(CGA{n})
+	v0, voo = 2\(vp + vm), vm - vp
+	(; v, v0, voo)
+end
+
+function up(x::Multivector{Sig,1}) where Sig
+	(; v, v0, voo) = cgabasis(CGA{Sig})
+	X = Multivector{CGA{Sig},1}(x.comps..., 0, 0)
+	v0 + X + 2\(x⊙x)*voo
+end
+up(comps...) = up(Multivector{length(comps),1}(comps...))

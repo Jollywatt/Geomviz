@@ -38,18 +38,18 @@ encode(a::Multivector{<:PointBasedEuclidean,1}) = Dict("Simple Point" => [projpo
 
 # bivector as line
 function encode(line::Multivector{<:PointBasedEuclidean,2})
-	e0 = originvector(signature(line))
-	point = (e0∧rdual(line))∨line
+	v0 = originvector(signature(line))
+	point = (v0∧rdual(line))∨line
 	direction = line⋅point
 	Dict("Infinite Line" => [(projpoint(point), projpoint(point + direction))])
 end
 
 # trivector as plane
 function encode(plane::Multivector{<:PointBasedEuclidean,3})
-	e0 = originvector(signature(plane))
+	v0 = originvector(signature(plane))
 	reciprocal_point = rdual(plane)::Grade{1}
-	origin = projpoint((e0∧reciprocal_point)∨plane)
-	normal = nonprojcomps((rdual(plane)∧e0)⨽e0)
+	origin = projpoint((v0∧reciprocal_point)∨plane)
+	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
 	Dict("Infinite Grid" => [(origin, origin + normal)])
 end
@@ -73,13 +73,13 @@ encode(a::Multivector) = encode(encodable(a))
 basecomps(a::Multivector{CGA{n},1}) where n = a.comps[1:n]
 
 function encode(X::Multivector{CGA{3},1})
-	e0, eoo = cgabasis(signature(X))
+	(; v0, voo) = cgabasis(signature(X))
 
-	norm = -(eoo⊙X)
+	norm = -(voo⊙X)
 	if abs(norm) < eps()
-		# has no e0 component; is a plane
+		# has no v0 component; is a plane
 		normal = basecomps(X)
-		ℓ = -2\(X⊙e0)
+		ℓ = -2\(X⊙v0)
 		origin = normal*ℓ
 		Dict("Infinite Grid" => [(origin, origin + normal)])
 
@@ -98,8 +98,8 @@ function encode(X::Multivector{CGA{3},1})
 end
 
 function normalize(X::Multivector{<:CGA,1})
-	e0, eoo = cgabasis(signature(X))
-	X/-(eoo⊙X)
+	v0, voo = cgabasis(signature(X))
+	X/-(voo⊙X)
 end
 
 
