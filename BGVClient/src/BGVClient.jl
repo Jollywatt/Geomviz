@@ -9,33 +9,11 @@ using GeometricAlgebra
 
 export encode
 
+include("client.jl")
+include("algebras.jl")
+include("encode.jl")
+
 const PORT = Ref(8888)
-
-function send_data_to_server(data, port=PORT[])
-	sock = connect(ip"127.0.0.1", port)
-	binary = Pickle.stores(data)
-	write(sock, binary)
-end
-
-
-function encode(::T) where T
-	method = :($(nameof(@__MODULE__)).encode(::$T))
-	@warn "Object not sent to BGV server: no method $method."
-end
-
-function encode(objs::Union{Tuple,AbstractVector})
-	isempty(objs) && return
-	data = encode.(objs)
-	mergewith(vcat, data...)
-end
-
-function encode_and_send(obj)
-	data = encode(obj)
-	if !isnothing(data)
-		send_data_to_server(data)
-	end
-	obj
-end
 
 function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
@@ -54,16 +32,12 @@ function __init__()
 		initrepl(
 			replmode, 
 			prompt_text="blend> ",
-			prompt_color=:cyan,
+			prompt_color=214,
 			valid_input_checker=valid_input_checker,
 			start_key=' ',
 			mode_name="BGVClient",
 		)
 	end
 end
-
-include("algebras.jl")
-include("encode.jl")
-
 
 end # module BGVClient
