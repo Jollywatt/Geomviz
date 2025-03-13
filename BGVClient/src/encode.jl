@@ -1,16 +1,4 @@
-module GeometricAlgebraExt
-
-using BGVClient, GeometricAlgebra
-
-import BGVClient: encode
-import BGVClient.Pickle: List
-
-using GeometricAlgebra: replace_signature
-using GeometricAlgebra.Algebras: Projective, CGA
-
-List(a::GeometricAlgebra.SingletonVector) = List(collect(a))
-
-const Grade{K} = Union{BasisBlade{Sig,K},Multivector{Sig,K}} where Sig
+Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 
 
 #= VGA =#
@@ -82,8 +70,6 @@ encode(a::Multivector) = encode(encodable(a))
 
 #= conformal =#
 
-using GeometricAlgebra.Algebras: up, dn, cgabasis
-
 basecomps(a::Multivector{CGA{n},1}) where n = a.comps[1:n]
 
 function encode(X::Multivector{CGA{3},1})
@@ -121,12 +107,3 @@ function encode(X::Multivector{CGA{3},4})
 	encode(hodgedual(X))
 end
 
-
-
-#= spherical =#
-
-
-
-
-
-end # module

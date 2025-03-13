@@ -5,6 +5,8 @@ using Pickle
 using ReplMaker
 using REPL: LineEdit
 
+using GeometricAlgebra
+
 export encode
 
 const PORT = Ref(8888)
@@ -59,6 +61,9 @@ function __init__()
 		)
 	end
 end
+
+include("algebras.jl")
+include("encode.jl")
 
 
 end # module BGVClient
