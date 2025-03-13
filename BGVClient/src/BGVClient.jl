@@ -14,8 +14,11 @@ export PGA, Projective
 export CGA, up
 
 include("client.jl")
-include("algebras.jl")
-include("encode.jl")
+include("vga.jl")
+include("pga.jl")
+include("cga.jl")
+
+Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 
 const PORT = Ref(8888)
 
