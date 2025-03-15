@@ -28,7 +28,7 @@ function GeometricAlgebra.get_basis_display_style(::Type{<:Projective{Sig,I}}) w
 	BasisDisplayStyle(n; indices)
 end
 
-const PGA{Sig} = Projective{Sig,0,true}
+const PGA{Sig} = Projective{Sig,1,true}
 
 
 

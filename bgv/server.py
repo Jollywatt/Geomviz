@@ -4,8 +4,8 @@ import socket
 import pickle
 import queue
 
+from . import rigs
 from . import scene
-
 
 class InvalidDataException(Exception):
 	pass
@@ -105,7 +105,14 @@ class StartServer(bpy.types.Operator):
 			while not data_queue.empty():
 				data = data_queue.get()
 				print("Syncronising scene")
-				scene.sync(context.scene, data)
+
+				try:
+					scene.sync(context, data)
+				except scene.UnknownRigError as e:
+					print(f"Unknown rig: {e.name!r}")
+				except rigs.PoseError as e:
+					print(f"Failed to pose {e.name!r}: key {e.key!r} not found")
+
 				data_queue.task_done()
 
 			if data_server.running:
@@ -115,8 +122,8 @@ class StartServer(bpy.types.Operator):
 
 
 		bpy.app.timers.register(handle_queue)
-
 		thread.start()
+
 		return {'FINISHED'}
 
 

@@ -19,9 +19,6 @@ class ScenePanel(bpy.types.Panel):
 		row.operator(assets.LoadInventory.bl_idname, text="Import default inventory")
 
 		row = layout.row()
-		row.prop(context.scene, 'ga_inventory_scene', text="Inventory")
-
-		row = layout.row()
 		row.prop(context.scene, 'ga_inventory_item', text="Item")
 
 		row = layout.row()

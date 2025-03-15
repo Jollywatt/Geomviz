@@ -1,76 +1,73 @@
 import bpy
 
-RIG_FUNCTIONS = {}
+class PoseError(Exception):
+	def __init__(self, name, key):
+		self.name = name
+		self.key = key
 
 def get_original(obj):
 	return obj if obj.ga_copied_from is None else obj.ga_copied_from
 
 
-def compile_rig(collection : bpy.types.Collection, recompile=True):
-	name = collection.name
-	if not recompile and name in RIG_FUNCTIONS:
-		return
 
-	RIG_FUNCTIONS[name] = {}
-
-	code = collection.ga_rig_script.as_string()
-	print(f"COMPILING FOR {name}")
-	exec(code, RIG_FUNCTIONS[name])
+def get_empty_mesh():
+	name = "Empty mesh"
+	if name not in bpy.data.meshes:
+		bpy.data.meshes.new(name)
+	return bpy.data.meshes[name]
 
 
-def pose(rig : bpy.types.Collection, arg):
-	if rig.name not in RIG_FUNCTIONS:
-		original = rig.ga_copied_from
-		compile_rig(original, recompile=False)
-		RIG_FUNCTIONS[rig.name] = RIG_FUNCTIONS[original.name]
+def new(nodes: bpy.types.NodeTree):
 
-	pose_fn = RIG_FUNCTIONS[rig.name]['pose']
+	obj = bpy.data.objects.new(nodes.name, get_empty_mesh())
+	obj.ga_type = nodes
+	mod = obj.modifiers.new(nodes.name, "NODES")
+	mod.node_group = nodes
 
-	objects_by_name = {get_original(obj).name:obj for obj in rig.objects}
-
-	pose_fn(arg, objects_by_name)
+	return obj
 
 
-def replace_object_properties(data_block, mapping):
-	for attr in data_block.rna_type.properties.keys():
-		value = getattr(data_block, attr)
-		if type(value) == bpy.types.Object and value in mapping:
-			setattr(data_block, attr, mapping[value]) # has caused segfault
+
+def pose(rig: bpy.types.Object, arg):
+	print(arg)
+
+	inputs = rig.ga_type.interface.items_tree
+	mod = rig.modifiers[rig.ga_type.name]
+
+	for key, val in arg.items():
+
+		try:
+			inp = inputs[key]
+		except KeyError:
+			raise PoseError(rig.ga_type.name, key)
+
+		mod[inp.identifier] = val
+		print(f"set {key} to {val}")
+
+	rig.data.update()
 
 
-def duplicate(original : bpy.types.Collection):
 
-	new = original.copy() # want to preserve properties
-	new.ga_copied_from = original
 
-	compile_rig(original, recompile=False)
-	RIG_FUNCTIONS[new.name] = RIG_FUNCTIONS[original.name]
 
-	new_objects = {obj:obj.copy() for obj in original.objects}
 
-	for obj, new_obj in new_objects.items():
-		new.objects.unlink(obj) # has caused segfault
-		new.objects.link(new_obj) # has caused segfault
 
-		new_obj.ga_copied_from = obj
+# def replace_object_properties(data_block, mapping):
+# 	for attr in data_block.rna_type.properties.keys():
+# 		value = getattr(data_block, attr)
+# 		if type(value) == bpy.types.Object and value in mapping:
+# 			setattr(data_block, attr, mapping[value]) # has caused segfault
 
-		# update object pointers in modifiers and constraints
-		for modifier in new_obj.modifiers:
-			replace_object_properties(modifier, new_objects)
-		for constraint in new_obj.constraints:
-			replace_object_properties(constraint, new_objects)
 
-	return new
 
 
 class Copy(bpy.types.Operator):
-	bl_label = "Copy rig"
+	bl_label = "Insert rig into GA scene"
 	bl_idname = "ga.copy_rig"
 
 	def execute(self, context):
-		original = context.scene.ga_inventory_item
-		new = duplicate(original)
-		context.scene.ga_collection.children.link(new)
+		rig = new(context.scene.ga_inventory_item)
+		context.scene.ga_collection.objects.link(rig)
 
 		return {'FINISHED'}
 

@@ -1,4 +1,10 @@
+import bpy
+
 from . import rigs
+
+class UnknownRigError(Exception):
+	def __init__(self, name):
+		self.name = name
 
 def deselect_all(collection):
 	for obj in collection.objects:
@@ -19,10 +25,10 @@ def random_data(size=3):
 	}
 
 
-def sync(scene, data):
+def sync(context, data):
 
-	for i, rig in enumerate(scene.ga_collection.children):
-		name = rig.ga_copied_from.name
+	for i, rig in enumerate(context.scene.ga_collection.objects):
+		name = rig.ga_type.name
 
 		if name in data and len(data[name]) > 0:
 			# reuse existing rig
@@ -31,17 +37,20 @@ def sync(scene, data):
 			print(f"use: {rig.name}")
 		else:
 			# delete unused rig
-			scene.ga_collection.children.unlink(rig)
+			context.scene.ga_collection.objects.unlink(rig)
 			print(f"del: {rig.name}")
 
 	# add new rigs
 	for name, args in data.items():
-		for arg in args:
-			original = scene.ga_inventory_scene.collection.children[name]
+		try:
+			nodes = bpy.data.node_groups[name]
+		except KeyError as e:
+			raise UnknownRigError(name)
 
-			rig = rigs.duplicate(original)
+		for arg in args:
+			rig = rigs.new(nodes)
 			rigs.pose(rig, arg)
 
-			scene.ga_collection.children.link(rig)
-			deselect_all(rig)
+			context.scene.ga_collection.objects.link(rig)
+			# deselect_all(rig)
 			print(f"add: {rig.name}")
