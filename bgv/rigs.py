@@ -36,13 +36,16 @@ def pose(rig: bpy.types.Object, arg):
 
 	for key, val in arg.items():
 
-		try:
-			inp = inputs[key]
-		except KeyError:
-			raise PoseError(rig.ga_type.name, key)
+		if key == "Location":
+			rig.location = val
+		else:
+			try:
+				inp = inputs[key]
+			except KeyError:
+				raise PoseError(rig.ga_type.name, key)
 
-		mod[inp.identifier] = val
-		print(f"set {key} to {val}")
+			mod[inp.identifier] = val
+			print(f"set {key} to {val}")
 
 	rig.data.update()
 

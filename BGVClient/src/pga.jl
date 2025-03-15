@@ -52,14 +52,20 @@ projpoint(a::Grade{1}) = nonprojcomps(a)/projcomp(a)
 
 
 # vector as point
-encode(a::Multivector{<:PointBasedEuclidean,1}) = Dict("Simple Point" => [projpoint(a)])
+encode(a::Multivector{<:PointBasedEuclidean,1}) = Dict("Point" => [(; Location=projpoint(a))])
 
 # bivector as line
 function encode(line::Multivector{<:PointBasedEuclidean,2})
 	v0 = originvector(signature(line))
 	point = (v0∧rdual(line))∨line
-	direction = line⋅point
-	Dict("Infinite Line" => [(projpoint(point), projpoint(point + direction))])
+	direction = nonprojcomps(point⋅line)
+
+	norm = sqrt(sum(abs2, direction))
+	Dict("Line" => [Dict(
+		"Location"=>projpoint(point),
+		"Direction"=>direction,
+		# "Arrow separation"=>norm
+	)])
 end
 
 # trivector as plane
@@ -69,7 +75,10 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 	origin = projpoint((v0∧reciprocal_point)∨plane)
 	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
-	Dict("Infinite Grid" => [(origin, origin + normal)])
+	Dict("Grid Plane" => [Dict(
+		"Location"=>origin,
+		"Normal"=>normal,
+	)])
 end
 
 # plane-based subspaces
