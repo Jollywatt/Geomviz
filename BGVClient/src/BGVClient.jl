@@ -10,8 +10,10 @@ using GeometricAlgebra: replace_signature
 
 export encode
 
+export PORT
 export PGA, Projective
-export CGA, up
+export CGA, cgabasis, up, dn
+export normalize
 
 include("client.jl")
 include("vga.jl")

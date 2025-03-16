@@ -1,4 +1,3 @@
-
 struct CGA{n} end
 
 GeometricAlgebra.dimension(P::Type{CGA{n}}) where n = n + 2
@@ -9,54 +8,112 @@ function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
 	BasisDisplayStyle(n + 2; indices)
 end
 
-function cgabasis(::Type{CGA{n}}) where n
-	v..., vp, vm = basis(CGA{n})
+Base.@assume_effects :foldable function cgabasis(::Type{CGA{n}}) where n
+	v..., vp, vm = basis(CGA{n})::Vector{BasisBlade{CGA{n},1,Int}}
 	v0, voo = 2\(vp + vm), vm - vp
 	(; v, v0, voo)
 end
+cgabasis(a::Multivector) = cgabasis(signature(a))
+cgavoo(::Type{CGA{n}}) where n = cgabasis(CGA{n}).voo
+cgav0(::Type{CGA{n}}) where n = cgabasis(CGA{n}).v0
+
+
+embed(x::Multivector{Sig,1}) where Sig = Multivector{CGA{Sig},1}([x.comps; 0; 0])
 
 function up(x::Multivector{Sig,1}) where Sig
-	(; v, v0, voo) = cgabasis(CGA{Sig})
-	X = Multivector{CGA{Sig},1}(x.comps..., 0, 0)
-	v0 + X + 2\(x⊙x)*voo
+	(; v0, voo) = cgabasis(CGA{Sig})
+	v0 + embed(x) + 2\(x⊙x)*voo
 end
 up(x::BasisBlade) = up(Multivector(x))
+up(comps::AbstractVector) = up(Multivector{length(comps),1}(comps))
 up(comps...) = up(Multivector{length(comps),1}(comps...))
 
+function normalize(X::Multivector{<:CGA,1})
+	(; v0, voo) = cgabasis(X)
+	X/-(voo⊙X)
+end
 
 
 basecomps(a::Multivector{CGA{n},1}) where n = a.comps[1:n]
+dn(x::Multivector{CGA{n},1}) where n = basecomps(normalize(x))
+
+
 
 function encode(X::Multivector{CGA{3},1})
-	(; v0, voo) = cgabasis(signature(X))
+	(; v0, voo) = cgabasis(X)
 
 	norm = -(voo⊙X)
 	if abs(norm) < eps()
 		# has no v0 component; is a plane
+		# X = n⃗ + d*voo
 		normal = basecomps(X)
-		ℓ = -2\(X⊙v0)
-		origin = normal*ℓ
-		Dict("Infinite Grid" => [(origin, origin + normal)])
+		δ = -(v0⊙X)
+		origin = δ*normal/sum(abs2, normal)
+		Dict("Checker Plane" => [Dict("Location"=>origin, "Normal"=>normal)])
 
 	else
 		X /= norm
 		x = basecomps(X)
 		ρ² = X⊙X
 		if abs(ρ²) < 1e-3
-			Dict("Simple Point" => [x])
+			Dict("Point" => [Dict("Location"=>x)])
 		else
-			r = sign(ρ²)sqrt(abs(ρ²))
-			Dict("Simple Sphere" => [(x, r)])
+			Dict("Sphere" => [Dict(
+				"Location" => x,
+				"Radius" => sqrt(abs(ρ²)),
+				"Imaginary" => ρ² < 0,
+			)])
 		end
 	end
 
 end
 
-function normalize(X::Multivector{<:CGA,1})
-	v0, voo = cgabasis(signature(X))
-	X/-(voo⊙X)
+function circleparts(X::Multivector{CGA{3},3})
+	(; v0, voo) = cgabasis(X)
+	carrier::Grade{4} = X∧voo
+	container::Grade{4} = X∧hodgedual(carrier)
+	dualsphere::Grade{1} = normalize(hodgedual(container))
+	x = basecomps(dualsphere)
+	ρ² = dualsphere⊙dualsphere
+	normal = basecomps(hodgedual(carrier))
+
+	(
+		location=x,
+		radius=sqrt(abs(ρ²)),
+		normal=normal,
+	)
 end
 
+function lineparts(X::Multivector{CGA{3},3})
+	(; v0, voo) = cgabasis(X)
+	circle = v0∧hodgedual(X)
+	(; location, normal) = circleparts(circle)
+	(moment=location, direction=normal)
+
+end
+
+function encode(X::Multivector{CGA{3},3})
+	(; v0, voo) = cgabasis(X)
+
+	n = X∧voo
+	if abs(n⊙n) < 1e-3
+		parts = lineparts(X)
+		Dict("Spear Line"=>[Dict(
+			"Location"=>parts.moment,
+			"Direction"=>parts.direction,
+			"Use separation"=>false,
+			"Arrow count"=>0,
+		)])
+	else
+		parts = circleparts(X)
+		Dict("Spear Circle"=>[Dict(
+			"Location"=>parts.location,
+			"Radius"=>parts.radius,
+			"Normal"=>parts.normal,
+			"Arrow count"=>0,
+		)])
+	end
+end
 
 function encode(X::Multivector{CGA{3},4})
 	encode(hodgedual(X))

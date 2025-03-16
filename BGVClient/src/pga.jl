@@ -75,7 +75,7 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 	origin = projpoint((v0∧reciprocal_point)∨plane)
 	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
-	Dict("Grid Plane" => [Dict(
+	Dict("Checker Plane" => [Dict(
 		"Location"=>origin,
 		"Normal"=>normal,
 	)])
@@ -87,6 +87,8 @@ function encodable(a::Multivector{Projective{Sig,I,PlaneBased}}) where {Sig,I,Pl
 	euclideansig = Projective{dimension(Sig),I,false}
 	replace_signature(pointbased, Val(euclideansig))
 end
+
+
 
 encodable(a::Grade{0}) = scalar(a)
 
