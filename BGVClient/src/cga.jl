@@ -68,6 +68,17 @@ function encode(X::Multivector{CGA{3},1})
 
 end
 
+function encode(pointpair::Multivector{CGA{3},2})
+	circle = hodgedual(pointpair)
+	parts = circleparts(circle)
+	Dict("Point Pair"=>[Dict(
+		"Location"=>parts.location,
+		"Radius"=>parts.radius,
+		"Direction"=>parts.normal,
+	)])
+
+end
+
 function circleparts(X::Multivector{CGA{3},3})
 	(; v0, voo) = cgabasis(X)
 	carrier::Grade{4} = X∧voo
