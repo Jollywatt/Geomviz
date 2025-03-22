@@ -5,10 +5,6 @@ class PoseError(Exception):
 		self.name = name
 		self.key = key
 
-def get_original(obj):
-	return obj if obj.ga_copied_from is None else obj.ga_copied_from
-
-
 
 def get_empty_mesh():
 	name = "Empty mesh"
