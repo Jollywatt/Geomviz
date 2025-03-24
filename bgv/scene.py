@@ -16,18 +16,29 @@ def sync(context, data):
 
 	# for i, rig in enumerate(context.scene.ga_collection.objects):
 	for i, rig in enumerate(bpy.data.objects):
-		name = rig.ga_type.name
+		ga_type = rig.ga_type
+		if not isinstance(ga_type, bpy.types.NodeTree):
+			continue
+		name = ga_type.name
+		print(f"considering {rig}, a {name}")
 
 		if name in data and len(data[name]) > 0:
 			# reuse existing rig
 			arg = data[name].pop(0)
 			rigs.pose(rig, arg)
-			context.scene.ga_collection.objects.link(rig)
-			print(f"use: {rig.name}")
+
+			try:
+				context.scene.ga_collection.objects.link(rig)
+				print(f"use: {rig.name}")
+			except RuntimeError:
+				pass
 		else:
 			# delete unused rig
-			context.scene.ga_collection.objects.unlink(rig)
-			print(f"del: {rig.name}")
+			try:
+				context.scene.ga_collection.objects.unlink(rig)
+				print(f"del: {rig.name}")
+			except RuntimeError:
+				pass
 
 	# add new rigs
 	for name, args in data.items():
@@ -42,4 +53,4 @@ def sync(context, data):
 
 			context.scene.ga_collection.objects.link(rig)
 			# deselect_all(rig)
-			print(f"add: {rig.name}")
+			print(f"new: {rig.name}")
