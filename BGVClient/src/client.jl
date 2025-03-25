@@ -18,8 +18,9 @@ encode(a::BasisBlade) = encode(Multivector(a))
 
 encode_scene(obj) = encode_scene([obj])
 function encode_scene(objs::Union{Tuple,AbstractVector})
-	objs = [encode(obj) for obj in objs if !isnothing(obj)]
-	(scene=objs,)
+	wrap(a) = a isa AbstractVector ? a : [a]
+	objs = [wrap(encode(obj)) for obj in objs if !isnothing(obj)]
+	(scene=collect(Iterators.flatten(objs)),)
 end
 
 function encode_and_send(obj)

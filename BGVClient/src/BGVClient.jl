@@ -14,11 +14,13 @@ export PORT
 export PGA, Projective
 export CGA, cgabasis, up, dn
 export normalize
+export Spherical, up1d, dn1d
 
 include("client.jl")
 include("vga.jl")
 include("pga.jl")
 include("cga.jl")
+include("1d-up.jl")
 
 Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 function Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple)
