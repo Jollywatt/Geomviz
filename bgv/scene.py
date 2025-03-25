@@ -12,45 +12,41 @@ def empty(scene):
 		scene.ga_collection.children.unlink(child)
 
 
+def object_names_by_rig_type(objects):
+	d = {}
+	for obj in objects:
+		if isinstance(obj.ga_type, bpy.types.NodeTree):
+			name = obj.ga_type.name
+			if name not in d:
+				d[name] = []
+			d[name].append(obj.name)
+	return d
+
 def sync(context, data):
+	d = object_names_by_rig_type(bpy.data.objects)
 
-	# for i, rig in enumerate(context.scene.ga_collection.objects):
-	for i, rig in enumerate(bpy.data.objects):
-		ga_type = rig.ga_type
-		if not isinstance(ga_type, bpy.types.NodeTree):
-			continue
-		name = ga_type.name
-		print(f"considering {rig}, a {name}")
+	# clear scene
+	for obj in context.scene.ga_collection.objects:
+		context.scene.ga_collection.objects.unlink(obj)
 
-		if name in data and len(data[name]) > 0:
-			# reuse existing rig
-			arg = data[name].pop(0)
-			rigs.pose(rig, arg)
+	for rig_data in data['scene']:
+		rig_name = rig_data['Rig']
+		if rig_name in d and len(d[rig_name]) > 0:
+			# use existing rig object
+			obj_name = d[rig_name].pop(0)
+			obj = bpy.data.objects[obj_name]
+			rigs.pose(obj, rig_data)
+			context.scene.ga_collection.objects.link(obj)
+			print(f"use: {obj_name}")
 
-			try:
-				context.scene.ga_collection.objects.link(rig)
-				print(f"use: {rig.name}")
-			except RuntimeError:
-				pass
 		else:
-			# delete unused rig
+			# create new rig object
 			try:
-				context.scene.ga_collection.objects.unlink(rig)
-				print(f"del: {rig.name}")
-			except RuntimeError:
-				pass
+				nodes = bpy.data.node_groups[rig_name]
+			except KeyError as e:
+				raise UnknownRigError(rig_name)
 
-	# add new rigs
-	for name, args in data.items():
-		try:
-			nodes = bpy.data.node_groups[name]
-		except KeyError as e:
-			raise UnknownRigError(name)
-
-		for arg in args:
-			rig = rigs.new(nodes)
-			rigs.pose(rig, arg)
-
-			context.scene.ga_collection.objects.link(rig)
-			# deselect_all(rig)
-			print(f"new: {rig.name}")
+			obj = rigs.new(nodes)
+			rigs.pose(obj, rig_data)
+			context.scene.ga_collection.objects.link(obj)
+			print(f"new: {rig_name}")

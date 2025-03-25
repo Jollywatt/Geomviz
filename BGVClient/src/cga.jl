@@ -49,20 +49,22 @@ function encode(X::Multivector{CGA{3},1})
 		normal = basecomps(X)
 		δ = -(v0⊙X)
 		origin = δ*normal/sum(abs2, normal)
-		Dict("Checker Plane" => [Dict("Location"=>origin, "Normal"=>normal)])
+		Dict("Rig"=>"Checker Plane", "Location"=>origin, "Normal"=>normal)
 
 	else
 		X /= norm
 		x = basecomps(X)
 		ρ² = X⊙X
 		if abs(ρ²) < 1e-3
-			Dict("Point" => [Dict("Location"=>x)])
+			Dict("Rig"=>"Point", "Location"=>x)
 		else
-			Dict("Sphere" => [Dict(
+			Dict(
+				"Rig"=>"Sphere",
 				"Location" => x,
 				"Radius" => sqrt(abs(ρ²)),
 				"Imaginary" => ρ² < 0,
-			)])
+				"Color"=>(rand(), rand(), rand(), 1),
+			)
 		end
 	end
 
@@ -71,11 +73,12 @@ end
 function encode(pointpair::Multivector{CGA{3},2})
 	circle = hodgedual(pointpair)
 	parts = circleparts(circle)
-	Dict("Point Pair"=>[Dict(
+	Dict(
+		"Rig"=>"Point Pair",
 		"Location"=>parts.location,
 		"Radius"=>parts.radius,
 		"Direction"=>parts.normal,
-	)])
+	)
 
 end
 
@@ -109,20 +112,22 @@ function encode(X::Multivector{CGA{3},3})
 	n = X∧voo
 	if abs(n⊙n) < 1e-3
 		parts = lineparts(X)
-		Dict("Spear Line"=>[Dict(
+		Dict(
+			"Rig"=>"Spear Line",
 			"Location"=>parts.moment,
 			"Direction"=>parts.direction,
 			"Use separation"=>false,
 			"Arrow count"=>0,
-		)])
+		)
 	else
 		parts = circleparts(X)
-		Dict("Spear Circle"=>[Dict(
+		Dict(
+			"Rig"=>"Spear Circle",
 			"Location"=>parts.location,
 			"Radius"=>parts.radius,
 			"Normal"=>parts.normal,
 			"Arrow count"=>0,
-		)])
+		)
 	end
 end
 

@@ -65,7 +65,6 @@ class DataServer():
 		try:
 			data = validate_data(binary)
 			print(f"Received {data!r}.")
-
 		except Exception as e:
 			conn.send(f"Your data sucks!\n{e}".encode())
 			conn.close()
@@ -73,12 +72,7 @@ class DataServer():
 		else:
 			conn.send("Received.".encode())
 			conn.close()
-
-			try:
-				data_queue.put(data)
-			except Exception as e:
-				print("Couldn't put to queue")
-				print(e)
+			data_queue.put(data)
 
 	def set_status(self, status):
 		self.status = status

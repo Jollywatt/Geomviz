@@ -4,23 +4,26 @@ function send_data_to_server(data, port=PORT[])
 	write(sock, binary)
 end
 
-
 function encode(::T) where T
 	method = :($(nameof(@__MODULE__)).encode(::$T))
-	@warn "Object not sent to BGV server: no method $method."
+	@warn "Object not sent to Blender: no method $method."
 end
 
 function encode(objs::Union{Tuple,AbstractVector})
 	isempty(objs) && return
-	data = encode.(objs)
-	mergewith(vcat, data...)
+	data = encode.(Iterators.flatten(objs))
+end
+
+encode(a::BasisBlade) = encode(Multivector(a))
+
+encode_scene(obj) = encode_scene([obj])
+function encode_scene(objs::Union{Tuple,AbstractVector})
+	(scene=encode.(collect(objs)),)
 end
 
 function encode_and_send(obj)
-	data = encode(obj)
-	if !isnothing(data)
-		send_data_to_server(data)
-	end
+	data = encode_scene(obj)
+	!isnothing(data) && send_data_to_server(data)
 	obj
 end
 

@@ -25,15 +25,17 @@ def new(nodes: bpy.types.NodeTree):
 
 
 def pose(rig: bpy.types.Object, arg):
-	print(arg)
-
 	inputs = rig.ga_type.interface.items_tree
 	mod = rig.modifiers[rig.ga_type.name]
 
 	for key, val in arg.items():
 
-		if key == "Location":
+		if key == "Rig":
+			pass
+		elif key == "Location":
 			rig.location = val
+		elif key == "Color":
+			rig.color = val
 		else:
 			try:
 				inp = inputs[key]
@@ -41,21 +43,9 @@ def pose(rig: bpy.types.Object, arg):
 				raise PoseError(rig.ga_type.name, key)
 
 			mod[inp.identifier] = val
-			print(f"set {key} to {val}")
+			# print(f"set {key} to {val}")
 
 	rig.data.update()
-
-
-
-
-
-
-
-# def replace_object_properties(data_block, mapping):
-# 	for attr in data_block.rna_type.properties.keys():
-# 		value = getattr(data_block, attr)
-# 		if type(value) == bpy.types.Object and value in mapping:
-# 			setattr(data_block, attr, mapping[value]) # has caused segfault
 
 
 

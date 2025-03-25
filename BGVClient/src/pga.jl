@@ -61,11 +61,12 @@ function encode(line::Multivector{<:PointBasedEuclidean,2})
 	direction = nonprojcomps(point⋅line)
 
 	norm = sqrt(sum(abs2, direction))
-	Dict("Line" => [Dict(
+	Dict(
+		"Rig"=>"Line",
 		"Location"=>projpoint(point),
 		"Direction"=>direction,
 		# "Arrow separation"=>norm
-	)])
+	)
 end
 
 # trivector as plane
@@ -75,10 +76,11 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 	origin = projpoint((v0∧reciprocal_point)∨plane)
 	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
-	Dict("Checker Plane" => [Dict(
+	Dict(
+		"Rig"=>"Checker Plane",
 		"Location"=>origin,
 		"Normal"=>normal,
-	)])
+	)
 end
 
 # plane-based subspaces
@@ -90,8 +92,8 @@ end
 
 
 
-encodable(a::Grade{0}) = scalar(a)
+# encodable(a::Grade{0}) = scalar(a)
 
 
-encode(a::BasisBlade) = encode(Multivector(a))
-encode(a::Multivector) = encode(encodable(a))
+# encode(a::BasisBlade) = encode(Multivector(a))
+# encode(a::Multivector) = encode(encodable(a))
