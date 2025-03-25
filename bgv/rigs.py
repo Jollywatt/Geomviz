@@ -35,6 +35,8 @@ def pose(rig: bpy.types.Object, arg):
 			rig.location = val
 		elif key == "Color":
 			rig.color = val
+		elif key == "Show wire":
+			rig.show_wire = val
 		else:
 			try:
 				inp = inputs[key]

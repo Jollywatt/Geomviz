@@ -49,7 +49,13 @@ function encode(X::Multivector{CGA{3},1})
 		normal = basecomps(X)
 		δ = -(v0⊙X)
 		origin = δ*normal/sum(abs2, normal)
-		Dict("Rig"=>"Checker Plane", "Location"=>origin, "Normal"=>normal)
+		Dict(
+			"Rig"=>"Checker Plane",
+			"Location"=>origin,
+			"Normal"=>normal,
+			"Show wire"=>true,
+			"Holes"=>false,
+		)
 
 	else
 		X /= norm
