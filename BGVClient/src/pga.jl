@@ -20,7 +20,6 @@ basesig(::Type{<:Projective{Sig}}) where Sig = Sig
 GeometricAlgebra.dimension(P::Type{<:Projective}) = dimension(basesig(P))
 GeometricAlgebra.basis_vector_square(P::Type{<:Projective}, i::Integer) = GeometricAlgebra.basis_vector_square(basesig(P), i)
 
-
 function GeometricAlgebra.get_basis_display_style(::Type{<:Projective{Sig,I}}) where {Sig,I}
 	n = dimension(Sig)
 	indices = string.(1:(n - 1))
@@ -50,9 +49,11 @@ end
 projpoint(a::Grade{1}) = nonprojcomps(a)/projcomp(a)
 
 
-
 # vector as point
-encode(a::Multivector{<:PointBasedEuclidean,1}) = Dict("Point" => [(; Location=projpoint(a))])
+encode(a::Multivector{<:PointBasedEuclidean,1}) = Dict(
+	"Rig"=>"Point",
+	"Location"=>projpoint(a),
+)
 
 # bivector as line
 function encode(line::Multivector{<:PointBasedEuclidean,2})
@@ -90,10 +91,8 @@ function encodable(a::Multivector{Projective{Sig,I,PlaneBased}}) where {Sig,I,Pl
 	replace_signature(pointbased, Val(euclideansig))
 end
 
-
-
-# encodable(a::Grade{0}) = scalar(a)
-
-
-# encode(a::BasisBlade) = encode(Multivector(a))
-# encode(a::Multivector) = encode(encodable(a))
+function encode(a::Multivector{Projective{Sig,I,true}}) where {Sig,I}
+	pointbased = rdual(a)
+	euclideansig = Projective{Sig,I,false}
+	encode(replace_signature(pointbased, Val(euclideansig)))
+end

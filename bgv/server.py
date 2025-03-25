@@ -26,6 +26,7 @@ class DataServer():
 	port = None
 	panel_area = None
 	status = "Idle"
+	data_queue = queue.Queue()
 
 	def set_status(self, status):
 		self.status = status
@@ -37,16 +38,18 @@ class DataServer():
 		self.port = port
 
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 			try:
 				sock.bind(('127.0.0.1', self.port))
 			except OSError as e:
 				self.set_status(f"Error: {e}")
 				return
 
-			self.running = True
-
 			sock.settimeout(1)
 			sock.listen()
+
+			self.running = True
 			self.set_status(f"Listening on port {self.port}...")
 
 			while self.running:
@@ -57,23 +60,26 @@ class DataServer():
 				except:
 					raise
 				else:
-					self.handle_client(conn)
+					self.put_to_queue(conn)
 
 		print(f"Closing socket on port {self.port}.")
 
 	def start_async(self, port):
+		self.running = True
+		bpy.app.timers.register(self.read_from_queue)
 		thread = threading.Thread(target=data_server.start, args=(port,))
-		bpy.app.timers.register(self.handle_queue)
 		thread.start()
 
 	def stop(self):
 		if self.running:
 			self.set_status("Idle")
+			print("Stopped existing running server")
 		self.running = False
 
-	def handle_client(self, conn):
+	def put_to_queue(self, conn):
+		# this runs in the server's thread
+		# leaving data in the queue to be read by the main thred
 		binary = conn.recv(1 << 15)
-
 		try:
 			data = validate_data(binary)
 			print(f"Received {data!r}.")
@@ -84,23 +90,25 @@ class DataServer():
 		else:
 			conn.send("Received.".encode())
 			conn.close()
-			data_queue.put(data)
+			self.data_queue.put(data)
+			print(f"Queueued {data}")
 
-	def handle_queue(self):
-		while not data_queue.empty():
-			data = data_queue.get()
+	def read_from_queue(self):
+		# this runs as a registered bpy.app timer
+		# reading data left by the server's thread in the shared queue
+		while not self.data_queue.empty():
+			data = self.data_queue.get()
 			status = scene.handle_scene_data(data)
 			self.set_status("Idle" if status is None else status)
-			data_queue.task_done()
+			self.data_queue.task_done()
 
 		if data_server.running:
-			return 1/60
+			return 1/30
 
 		print("CLOSING TIMER")
 
 
 
-data_queue = queue.Queue()
 
 
 class StartServer(bpy.types.Operator):
@@ -131,7 +139,6 @@ try:
 	# if module already loaded, a server instance already exists.
 	# stop the old server if necessary
 	data_server.stop()
-	print("Stopped existing server")
 except NameError:
 	pass
 

@@ -30,7 +30,7 @@ def sync(collection, data):
 	for rig_data in data['scene']:
 		try:
 			rig_name = rig_data['Rig']
-		except KeyError:
+		except:
 			raise RigDataError(f"Rig data missing key 'Rig': {rig_data!r}")
 
 		if rig_name in d and len(d[rig_name]) > 0:

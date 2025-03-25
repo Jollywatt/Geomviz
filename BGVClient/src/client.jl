@@ -18,7 +18,8 @@ encode(a::BasisBlade) = encode(Multivector(a))
 
 encode_scene(obj) = encode_scene([obj])
 function encode_scene(objs::Union{Tuple,AbstractVector})
-	(scene=encode.(collect(objs)),)
+	objs = [encode(obj) for obj in objs if !isnothing(obj)]
+	(scene=objs,)
 end
 
 function encode_and_send(obj)
