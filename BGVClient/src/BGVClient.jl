@@ -22,6 +22,8 @@ include("pga.jl")
 include("cga.jl")
 include("1d-up.jl")
 
+normalize(a::BasisBlade) = normalize(Multivector(a))
+
 Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 function Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple)
 	Pickle.save(p, io, Dict(string(k) => v for (k, v) in pairs(nt)))

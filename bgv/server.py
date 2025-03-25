@@ -79,7 +79,7 @@ class DataServer():
 	def put_to_queue(self, conn):
 		# this runs in the server's thread
 		# leaving data in the queue to be read by the main thred
-		binary = conn.recv(1 << 15)
+		binary = conn.recv(1 << 16)
 		try:
 			data = validate_data(binary)
 			print(f"Received {data!r}.")

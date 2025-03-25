@@ -6,21 +6,24 @@ end
 
 function encode(::T) where T
 	method = :($(nameof(@__MODULE__)).encode(::$T))
-	@warn "Object not sent to Blender: no method $method."
+	@warn "Object not sent to Blender." signature(T) grade(T)
 end
 
 function encode(objs::Union{Tuple,AbstractVector})
 	isempty(objs) && return
-	data = encode.(Iterators.flatten(objs))
+	data = encode.(objs)
 end
 
 encode(a::BasisBlade) = encode(Multivector(a))
 
-encode_scene(obj) = encode_scene([obj])
-function encode_scene(objs::Union{Tuple,AbstractVector})
-	wrap(a) = a isa AbstractVector ? a : [a]
-	objs = [wrap(encode(obj)) for obj in objs if !isnothing(obj)]
-	(scene=collect(Iterators.flatten(objs)),)
+flatmap(f, a::Union{Tuple,AbstractVector}) = Iterators.flatten(flatmap(f, i) for i in a)
+function flatmap(f, a)
+	b = f(a)
+	b isa Union{Tuple,AbstractVector} ? b : [b]
+end
+
+function encode_scene(objs)
+	(scene=collect(flatmap(encode, objs)),)
 end
 
 function encode_and_send(obj)
@@ -29,3 +32,18 @@ function encode_and_send(obj)
 	obj
 end
 
+struct Styled{T}
+	obj::T
+	attributes::Dict{String,Any}
+	Styled(obj::T, attrs::Dict) where T = new{T}(obj, Dict(string(k) => v for (k, v) in attrs))
+end
+Styled(obj; kwargs...) = Styled(obj, Dict(kwargs))
+
+function encode(s::Styled)
+	data = encode(s.obj)
+	if data isa Union{Tuple,AbstractVector}
+		merge!.(data, Ref(s.attributes))
+	else
+		merge!(data, s.attributes)
+	end
+end
