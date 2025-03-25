@@ -12,7 +12,6 @@ classes = [
 	server.StopServer,
 	panels.ScenePanel,
 	panels.ServerPanel,
-	panels.RigPanel,
 	assets.LoadInventory,
 	rigs.Pose,
 	rigs.Copy,

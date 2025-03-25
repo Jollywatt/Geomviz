@@ -6,11 +6,9 @@ class UnknownRigError(Exception):
 	def __init__(self, name):
 		self.name = name
 
-
-def empty(scene):
-	for child in scene.ga_collection.children:
-		scene.ga_collection.children.unlink(child)
-
+class RigDataError(Exception):
+	def __init__(self, message):
+		self.message = message
 
 def object_names_by_rig_type(objects):
 	d = {}
@@ -22,21 +20,25 @@ def object_names_by_rig_type(objects):
 			d[name].append(obj.name)
 	return d
 
-def sync(context, data):
+def sync(collection, data):
 	d = object_names_by_rig_type(bpy.data.objects)
 
 	# clear scene
-	for obj in context.scene.ga_collection.objects:
-		context.scene.ga_collection.objects.unlink(obj)
+	for obj in collection.objects:
+		collection.objects.unlink(obj)
 
 	for rig_data in data['scene']:
-		rig_name = rig_data['Rig']
+		try:
+			rig_name = rig_data['Rig']
+		except KeyError:
+			raise RigDataError(f"Rig data missing key 'Rig': {rig_data!r}")
+
 		if rig_name in d and len(d[rig_name]) > 0:
 			# use existing rig object
 			obj_name = d[rig_name].pop(0)
 			obj = bpy.data.objects[obj_name]
 			rigs.pose(obj, rig_data)
-			context.scene.ga_collection.objects.link(obj)
+			collection.objects.link(obj)
 			print(f"use: {obj_name}")
 
 		else:
@@ -48,5 +50,16 @@ def sync(context, data):
 
 			obj = rigs.new(nodes)
 			rigs.pose(obj, rig_data)
-			context.scene.ga_collection.objects.link(obj)
+			collection.objects.link(obj)
 			print(f"new: {rig_name}")
+
+def handle_scene_data(context, data):
+	try:
+		print("Syncronising scene...")
+		sync(context.scene.ga_collection, data)
+	except UnknownRigError as e:
+		print(f"Unknown rig: {e.name!r}")
+	except RigDataError as e:
+		print(e)
+	except rigs.PoseError as e:
+		print(f"Failed to pose {e.name!r}: key {e.key!r} not found")

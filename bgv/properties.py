@@ -26,7 +26,7 @@ def register():
 
 	bpy.types.Object.ga_type = props.PointerProperty(
 		type=bpy.types.NodeTree,
-		name="GA object geometry nodes",
-		description="Geometry nodes defining this GA object.",
+		name="Geometry node of GA object",
+		description="Geometry node tree defining this GA object.",
 		poll=lambda self, n: n.name in [n.name for n in bpy.data.node_groups],
 	)

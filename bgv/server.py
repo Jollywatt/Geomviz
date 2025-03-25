@@ -98,15 +98,7 @@ class StartServer(bpy.types.Operator):
 		def handle_queue():
 			while not data_queue.empty():
 				data = data_queue.get()
-				print("Syncronising scene")
-
-				try:
-					scene.sync(context, data)
-				except scene.UnknownRigError as e:
-					print(f"Unknown rig: {e.name!r}")
-				except rigs.PoseError as e:
-					print(f"Failed to pose {e.name!r}: key {e.key!r} not found")
-
+				scene.handle_scene_data(context, data)
 				data_queue.task_done()
 
 			if data_server.running:

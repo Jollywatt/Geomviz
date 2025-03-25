@@ -6,7 +6,7 @@ class PoseError(Exception):
 		self.key = key
 
 
-def get_empty_mesh():
+def empty_mesh():
 	name = "Empty mesh"
 	if name not in bpy.data.meshes:
 		bpy.data.meshes.new(name)
@@ -15,13 +15,12 @@ def get_empty_mesh():
 
 def new(nodes: bpy.types.NodeTree):
 
-	obj = bpy.data.objects.new(nodes.name, get_empty_mesh())
+	obj = bpy.data.objects.new(nodes.name, empty_mesh())
 	obj.ga_type = nodes
 	mod = obj.modifiers.new(nodes.name, "NODES")
 	mod.node_group = nodes
 
 	return obj
-
 
 
 def pose(rig: bpy.types.Object, arg):
@@ -43,11 +42,8 @@ def pose(rig: bpy.types.Object, arg):
 				raise PoseError(rig.ga_type.name, key)
 
 			mod[inp.identifier] = val
-			# print(f"set {key} to {val}")
 
 	rig.data.update()
-
-
 
 
 class Copy(bpy.types.Operator):

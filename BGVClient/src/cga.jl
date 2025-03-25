@@ -63,7 +63,6 @@ function encode(X::Multivector{CGA{3},1})
 				"Location" => x,
 				"Radius" => sqrt(abs(ρ²)),
 				"Imaginary" => ρ² < 0,
-				"Color"=>(rand(), rand(), rand(), 1),
 			)
 		end
 	end
@@ -90,7 +89,6 @@ function circleparts(X::Multivector{CGA{3},3})
 	x = basecomps(dualsphere)
 	ρ² = dualsphere⊙dualsphere
 	normal = basecomps(hodgedual(carrier))
-
 	(
 		location=x,
 		radius=sqrt(abs(ρ²)),

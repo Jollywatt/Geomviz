@@ -51,29 +51,3 @@ class ServerPanel(bpy.types.Panel):
 
 		row = layout.row()
 		row.prop(context.scene, 'ga_server_port')
-
-
-class RigPanel(bpy.types.Panel):
-	bl_label = "Geometric algebra rig"
-	bl_idname = 'COLLECTION_PT_ga_rig'
-	bl_space_type = 'PROPERTIES'
-	bl_region_type = 'WINDOW'
-	bl_context = 'collection'
-
-	def draw(self, context):
-
-		layout = self.layout
-
-		if context.collection.ga_copied_from is not None:
-			row = layout.row()
-			row.label(text=f"Copied from collection {context.collection.ga_copied_from.name!r}.")
-
-		row = layout.row()
-		row.prop(context.collection, 'ga_rig_script')
-
-		row = layout.row()
-		row.prop(context.collection, 'ga_rig_script_input')
-
-		row = layout.row()
-		row.operator(rigs.Pose.bl_idname, text="Compile and run")
-
