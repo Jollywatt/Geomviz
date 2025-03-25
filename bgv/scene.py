@@ -53,13 +53,16 @@ def sync(collection, data):
 			collection.objects.link(obj)
 			print(f"new: {rig_name}")
 
-def handle_scene_data(context, data):
+	count = len(data['scene'])
+	return f"Synced {count} {'object' if count == 1 else 'objects'}"
+
+def handle_scene_data(data):
 	try:
 		print("Syncronising scene...")
-		sync(context.scene.ga_collection, data)
+		return sync(bpy.context.scene.ga_collection, data)
 	except UnknownRigError as e:
-		print(f"Unknown rig: {e.name!r}")
+		return f"Unknown rig: {e.name!r}"
 	except RigDataError as e:
-		print(e)
+		return repr(e)
 	except rigs.PoseError as e:
-		print(f"Failed to pose {e.name!r}: key {e.key!r} not found")
+		return f"Failed to pose {e.name!r}: key {e.key!r} not found"

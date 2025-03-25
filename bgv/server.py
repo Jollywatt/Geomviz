@@ -27,8 +27,13 @@ class DataServer():
 	panel_area = None
 	status = "Idle"
 
-	def start(self, port=8888):
-		self.running = True
+	def set_status(self, status):
+		self.status = status
+		print(f"DataServer status: {status}")
+		if isinstance(self.panel_area, bpy.types.Area):
+			self.panel_area.tag_redraw()
+
+	def start(self, port):
 		self.port = port
 
 		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -37,6 +42,8 @@ class DataServer():
 			except OSError as e:
 				self.set_status(f"Error: {e}")
 				return
+
+			self.running = True
 
 			sock.settimeout(1)
 			sock.listen()
@@ -53,6 +60,11 @@ class DataServer():
 					self.handle_client(conn)
 
 		print(f"Closing socket on port {self.port}.")
+
+	def start_async(self, port):
+		thread = threading.Thread(target=data_server.start, args=(port,))
+		bpy.app.timers.register(self.handle_queue)
+		thread.start()
 
 	def stop(self):
 		if self.running:
@@ -74,11 +86,18 @@ class DataServer():
 			conn.close()
 			data_queue.put(data)
 
-	def set_status(self, status):
-		self.status = status
-		print(f"Status: {status}")
-		if type(self.panel_area) is bpy.types.Area:
-			self.panel_area.tag_redraw()
+	def handle_queue(self):
+		while not data_queue.empty():
+			data = data_queue.get()
+			status = scene.handle_scene_data(data)
+			self.set_status("Idle" if status is None else status)
+			data_queue.task_done()
+
+		if data_server.running:
+			return 1/60
+
+		print("CLOSING TIMER")
+
 
 
 data_queue = queue.Queue()
@@ -90,25 +109,8 @@ class StartServer(bpy.types.Operator):
 	bl_label = "Start external data server"
 
 	def execute(self, context):
-
 		port = context.scene.ga_server_port
-		data_server.running = True
-		thread = threading.Thread(target=data_server.start, args=(port,))
-
-		def handle_queue():
-			while not data_queue.empty():
-				data = data_queue.get()
-				scene.handle_scene_data(context, data)
-				data_queue.task_done()
-
-			if data_server.running:
-				return 1/60
-
-			print("CLOSING TIMER")
-
-
-		bpy.app.timers.register(handle_queue)
-		thread.start()
+		data_server.start_async(port)
 
 		return {'FINISHED'}
 
