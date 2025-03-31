@@ -18,7 +18,7 @@ def register():
 
 	bpy.types.Scene.geomviz_inventory_item = bpy.props.PointerProperty(
 		type=bpy.types.NodeTree,
-		name="Geomviz inventory item",
+		name="Geomviz rig",
 		description="Geometry nodes tree defining a geomviz object.",
 		poll=lambda self, n: n.name in [n.name for n in bpy.data.node_groups],
 	)

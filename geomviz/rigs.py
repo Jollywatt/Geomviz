@@ -44,25 +44,19 @@ def pose(rig: bpy.types.Object, arg):
 	rig.data.update()
 
 
-class Copy(bpy.types.Operator):
-	bl_label = "Insert rig into GA scene"
+
+class InstantiateRig(bpy.types.Operator):
+	"""Create an object with the selected geomviz rig"""
+	bl_label = "Insert rig"
 	bl_idname = "geomviz.copy_rig"
 
 	def execute(self, context):
-		rig = new(context.scene.geomviz_inventory_item)
+		item = context.scene.geomviz_inventory_item
+		if item is None:
+			utils.error_popup(context, "No item selected")
+			return {'CANCELLED'}
+
+		rig = new(item)
 		context.scene.geomviz_collection.objects.link(rig)
-
-		return {'FINISHED'}
-
-
-class Pose(bpy.types.Operator):
-	bl_label = "Pose rig"
-	bl_idname = "geomviz.pose_rig"
-
-	def execute(self, context):
-		compile_rig(context.collection)
-
-		arg = eval(context.collection.geomviz_rig_script_input)
-		pose(context.collection, arg)
 
 		return {'FINISHED'}

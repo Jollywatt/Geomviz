@@ -1,7 +1,7 @@
 
-def error_popup(context, title, message):
+def error_popup(context, title, message=None):
 	draw_menu = lambda self, context: self.layout.label(text=message)
-	context.window_manager.popup_menu(draw_menu, title="No geomviz collection", icon="ERROR")
+	context.window_manager.popup_menu(draw_menu, title=title, icon="ERROR")
 
 class InvalidDataException(Exception):
 	"""

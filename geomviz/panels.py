@@ -6,7 +6,7 @@ from . import rigs
 
 
 class ScenePanel(bpy.types.Panel):
-	bl_label = "Geomviz scene"
+	bl_label = "Geomviz inventory"
 	bl_idname = 'SCENE_PT_geomviz_scene'
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
@@ -20,13 +20,10 @@ class ScenePanel(bpy.types.Panel):
 		row.operator(assets.LoadInventory.bl_idname, text="Import default inventory")
 
 		row = layout.row()
-		row.prop(context.scene, 'geomviz_inventory_item', text="Item")
+		row.prop(context.scene, 'geomviz_inventory_item')
 
 		row = layout.row()
-		row.prop(context.scene, 'geomviz_collection', text="Copy to")
-
-		row = layout.row()
-		row.operator(rigs.Copy.bl_idname, text="Copy inventory item")
+		row.operator(rigs.Copy.bl_idname)
 
 
 class ServerPanel(bpy.types.Panel):
@@ -38,6 +35,7 @@ class ServerPanel(bpy.types.Panel):
 
 	def draw(self, context):
 		layout = self.layout
+		layout.use_property_split = True
 		server.data_server.panel_area = context.area
 
 		row = layout.row()
@@ -51,4 +49,9 @@ class ServerPanel(bpy.types.Panel):
 			row.operator(server.StartServer.bl_idname, icon="PLAY")
 
 		row = layout.row()
-		row.prop(context.scene, 'geomviz_server_port')
+		row.prop(context.scene, 'geomviz_server_port', text="Server port")
+
+		row = layout.row()
+		row.prop(context.scene, 'geomviz_collection', text="Destination")
+
+
