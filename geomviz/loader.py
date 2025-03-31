@@ -9,12 +9,14 @@ d = path.dirname(path.dirname(__file__))
 if d not in sys.path:
 	sys.path.append(d)
 
-import bgv
-importlib.reload(bgv.assets)
-importlib.reload(bgv.rigs)
-importlib.reload(bgv.panels)
-importlib.reload(bgv.properties)
-importlib.reload(bgv.server)
-importlib.reload(bgv)
+import geomviz
 
-bgv.register()
+
+try:
+	geomviz.unregister()
+except e:
+	print("Could not unregister classes:", e)
+
+importlib.reload(geomviz)
+
+geomviz.register()

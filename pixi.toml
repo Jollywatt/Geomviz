@@ -1,5 +1,5 @@
 [project]
-name = "blender-geomvis"
+name = "Geomviz"
 authors = ["jollywatt <jo.alex.w@gmail.com>"]
 channels = ["conda-forge"]
 platforms = ["osx-arm64"]
@@ -11,6 +11,7 @@ blend = "/Applications/Blender.app/Contents/MacOS/Blender"
 python = ">=3.11,<3.12"
 bson = ">=0.5.9,<0.6"
 ipython = ">=8.26.0,<8.27"
+typos = ">=1.31.0,<2"
 
 [pypi-dependencies]
 bpy = "*"

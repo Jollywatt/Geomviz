@@ -1,7 +1,12 @@
-"""
-	Projective{Sig,Index,PlaneBased}
+module Projective
 
-Metric signature for a projective algebra.
+using GeometricAlgebra
+import ..Geomviz: encode
+
+"""
+	ProjectiveSignature{Sig,Index,PlaneBased}
+
+Metric signature for a projective geometric algebra.
 
 The projective algebra has metric signature `Sig`
 (and is identical to `Sig` in terms of the algebra it represents)
@@ -12,37 +17,36 @@ If `PlaneBased = true`, then ``(n - 1)``-vectors are interpreted as points
 (as in plane-based projective geometric algebra), and if `PlaneBased = false`
 then ``1``-vectors are interpreted as projective points (as in point-based PGA).
 """
-struct Projective{Sig,Index,Repr} end
+struct ProjectiveSignature{Sig,Index,Repr} end
 
 
-basesig(::Type{<:Projective{Sig}}) where Sig = Sig
+basesig(::Type{<:ProjectiveSignature{Sig}}) where Sig = Sig
 
-GeometricAlgebra.dimension(P::Type{<:Projective}) = dimension(basesig(P))
-GeometricAlgebra.basis_vector_square(P::Type{<:Projective}, i::Integer) = GeometricAlgebra.basis_vector_square(basesig(P), i)
+GeometricAlgebra.dimension(P::Type{<:ProjectiveSignature}) = dimension(basesig(P))
+GeometricAlgebra.basis_vector_square(P::Type{<:ProjectiveSignature}, i::Integer) = GeometricAlgebra.basis_vector_square(basesig(P), i)
 
-function GeometricAlgebra.get_basis_display_style(::Type{<:Projective{Sig,I}}) where {Sig,I}
+function GeometricAlgebra.get_basis_display_style(::Type{<:ProjectiveSignature{Sig,I}}) where {Sig,I}
 	n = dimension(Sig)
 	indices = string.(1:(n - 1))
 	insert!(indices, I, "0")
 	BasisDisplayStyle(n; indices)
 end
 
-const PGA{Sig} = Projective{Sig,1,true}
+const PGA{Sig} = ProjectiveSignature{Sig,1,true}
 
 
+const PointBasedEuclidean = ProjectiveSignature{4,I,false} where I
 
-const PointBasedEuclidean = Projective{4,I,false} where I
+originvector(sig::Type{<:ProjectiveSignature{Sig,I}}) where {Sig,I} = basis(sig, 1, I)
 
-originvector(sig::Type{<:Projective{Sig,I}}) where {Sig,I} = basis(sig, 1, I)
-
-projcomp(a::Multivector{<:Projective{Sig,I},1}) where {Sig,I} = a.comps[I]
-function nonprojcomps(a::Multivector{<:Projective{Sig,I},1}) where {Sig,I}
+projcomp(a::Multivector{<:ProjectiveSignature{Sig,I},1}) where {Sig,I} = a.comps[I]
+function nonprojcomps(a::Multivector{<:ProjectiveSignature{Sig,I},1}) where {Sig,I}
 	if I == 1
 		a.comps[2:end]
 	elseif I == dimension(Sig)
 		a.comps[1:end - 1]
 	else
-		error("$Projective only supports the first or last dimension as the projective dimension.")
+		error("$ProjectiveSignature only supports the first or last dimension as the projective dimension.")
 	end
 end
 
@@ -85,14 +89,16 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 end
 
 # plane-based subspaces
-function encodable(a::Multivector{Projective{Sig,I,PlaneBased}}) where {Sig,I,PlaneBased}
+function encodable(a::Multivector{ProjectiveSignature{Sig,I,PlaneBased}}) where {Sig,I,PlaneBased}
 	pointbased = PlaneBased ? rdual(a) : a
-	euclideansig = Projective{dimension(Sig),I,false}
+	euclideansig = ProjectiveSignature{dimension(Sig),I,false}
 	replace_signature(pointbased, Val(euclideansig))
 end
 
-function encode(a::Multivector{Projective{Sig,I,true}}) where {Sig,I}
+function encode(a::Multivector{ProjectiveSignature{Sig,I,true}}) where {Sig,I}
 	pointbased = rdual(a)
-	euclideansig = Projective{Sig,I,false}
+	euclideansig = ProjectiveSignature{Sig,I,false}
 	encode(replace_signature(pointbased, Val(euclideansig)))
+end
+
 end

@@ -1,8 +1,15 @@
-struct CGA{n} end
+module Conformal
+
+using GeometricAlgebra
+import ..Geomviz: encode, dn
+
+"""
+Metric signature for the conformal geometric algebra over ``n``-dimensional Euclidean space.
+"""
+abstract type CGA{n} end
 
 GeometricAlgebra.dimension(P::Type{CGA{n}}) where n = n + 2
 GeometricAlgebra.basis_vector_square(P::Type{CGA{n}}, i::Integer) where n = i == n + 2 ? -1 : 1
-
 function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
 	indices = [string.(1:n); "p"; "m"]
 	BasisDisplayStyle(n + 2; indices)
@@ -139,3 +146,4 @@ function encode(X::Multivector{CGA{3},4})
 	encode(hodgedual(X))
 end
 
+end

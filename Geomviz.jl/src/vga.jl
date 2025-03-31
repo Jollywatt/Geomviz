@@ -1,4 +1,3 @@
-
 encode(a::Multivector{3,1}) = Dict(
 	"Rig"=>"Arrow Vector",
 	"Vector"=>Vector(a.comps),

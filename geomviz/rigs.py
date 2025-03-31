@@ -10,12 +10,10 @@ def empty_mesh():
 
 
 def new(nodes: bpy.types.NodeTree):
-
 	obj = bpy.data.objects.new(nodes.name, empty_mesh())
 	obj.geomviz_nodes = nodes
 	mod = obj.modifiers.new(nodes.name, "NODES")
 	mod.node_group = nodes
-
 	return obj
 
 

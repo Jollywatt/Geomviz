@@ -1,37 +1,48 @@
-abstract type Spherical{Sig} end
+module SphericalOneUp
+
+using GeometricAlgebra
+import ..Geomviz: encode, dn
+
+"""
+Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensional Euclidean space.
+"""
+abstract type SGA{Sig} end
+
+const CURVATURE = Ref(1)
 
 
-basesig(::Type{<:Spherical{Sig}}) where Sig = Sig
+basesig(::Type{<:SGA{Sig}}) where Sig = Sig
 
-GeometricAlgebra.dimension(sig::Type{<:Spherical}) = dimension(basesig(sig)) + 1
-GeometricAlgebra.basis_vector_square(sig::Type{<:Spherical}, i::Integer) = i <= dimension(sig) ? GeometricAlgebra.basis_vector_square(basesig(sig), i) : 1
+GeometricAlgebra.dimension(sig::Type{<:SGA}) = dimension(basesig(sig)) + 1
+GeometricAlgebra.basis_vector_square(sig::Type{<:SGA}, i::Integer) = i <= dimension(sig) ? GeometricAlgebra.basis_vector_square(basesig(sig), i) : 1
 
-function GeometricAlgebra.get_basis_display_style(sig::Type{<:Spherical})
+function GeometricAlgebra.get_basis_display_style(sig::Type{<:SGA})
 	n = dimension(sig)
 	indices = string.(1:(n - 1))
 	push!(indices, "0")
 	BasisDisplayStyle(n; indices)
 end
 
-embed(::Type{Spherical{Sig}}, a::Multivector{Sig,1}) where Sig = Multivector{Spherical{Sig},1}([a.comps; 0])
-embed(::Type{Spherical{Sig}}, a::BasisBlade) where Sig = embed(Spherical{Sig}, Multivector(a))
+embed(::Type{SGA{Sig}}, a::Multivector{Sig,1}) where Sig = Multivector{SGA{Sig},1}([a.comps; 0])
+embed(::Type{SGA{Sig}}, a::BasisBlade) where Sig = embed(SGA{Sig}, Multivector(a))
 
-function up1d(p::Grade{1,Sig}; λ=1) where Sig
+function up(p::Grade{1,Sig}; λ=CURVATURE[]) where Sig
 	p² = p⊙p
-	e0 = basis(Spherical{Sig}, 1, dimension(Sig) + 1)
-	(2λ*embed(Spherical{Sig}, p) + (λ^2 - p²)e0)/(λ^2 + p²)
+	e0 = basis(SGA{Sig}, 1, dimension(Sig) + 1)
+	(2λ*embed(SGA{Sig}, p) + (λ^2 - p²)e0)/(λ^2 + p²)
 end
+up(comps...; kw...) = up(Multivector{length(comps),1}(comps); kw...)
 
-function dn1d(P::Multivector{Spherical{Sig},1}; λ=1) where Sig
+function dn(P::Multivector{SGA{Sig},1}; λ=CURVATURE[]) where Sig
 	p = Multivector{Sig,1}(P.comps[1:end-1])
 	λ*p/(1 + P.comps[end])
 end
-dn1d(a::BasisBlade; k...) = dn1d(Multivector(a); k...)
+dn(a::BasisBlade; k...) = dn(Multivector(a); k...)
 
-normalize(P::Multivector{<:Spherical,1}) = P/sqrt(P⊙P)
+normalize(P::Multivector{<:SGA,1}) = P/sqrt(P⊙P)
 
-function encode(P::Multivector{Spherical{Sig},1}) where Sig
-	p = dn1d((P))
+function encode(P::Multivector{SGA{Sig},1}) where Sig
+	p = dn((P))
 	Dict(
 		"Rig"=>"Point",
 		"Location"=>Vector(p.comps),
@@ -42,7 +53,7 @@ end
 
 smallpoints(Ps; color) = map(Ps) do P
 
-	p = dn1d(normalize(P))
+	p = dn(normalize(P))
 	Dict(
 		"Rig"=>"Point",
 		"Location"=>Vector(p.comps),
@@ -54,7 +65,7 @@ end
 Base.abs2(a::Multivector) = scalar_prod(a, a)
 
 
-function encode(C::Multivector{Spherical{Sig},2}) where Sig
+function encode(C::Multivector{SGA{Sig},2}) where Sig
 	o = basis(signature(C), 1, dimension(C))
 
 	plane = wedge(C, o)
@@ -101,7 +112,7 @@ function encode(C::Multivector{Spherical{Sig},2}) where Sig
 
 	if true
 		# randomly sample points on line/circle
-		Ps = randn(Multivector{Spherical{Sig},1}, 500)
+		Ps = randn(Multivector{SGA{Sig},1}, 500)
 		Qs = inner.(Ps, C) # points lying on circle/line
 		[
 			smallpoints(Qs; color=(1,0,1,1));
@@ -114,8 +125,10 @@ function encode(C::Multivector{Spherical{Sig},2}) where Sig
 
 end
 
-function encode(S::Multivector{Spherical{Sig},3}) where Sig
-	Ls = randn(Multivector{Spherical{Sig},2}, 300)
+function encode(S::Multivector{SGA{Sig},3}) where Sig
+	Ls = randn(Multivector{SGA{Sig},2}, 300)
 	Qs = inner.(Ls, S) # points lying on sphere/plane
 	smallpoints(Qs; color=(0,1,1,1))
+end
+
 end

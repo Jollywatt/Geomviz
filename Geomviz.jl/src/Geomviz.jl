@@ -1,4 +1,4 @@
-module BGVClient
+module Geomviz
 
 using Sockets
 using Pickle
@@ -9,18 +9,31 @@ using GeometricAlgebra
 using GeometricAlgebra: replace_signature
 
 export encode
-
 export PORT
-export PGA, Projective
-export CGA, cgabasis, up, dn
-export normalize
-export Spherical, up1d, dn1d
+
+export up, dn
+export PGA, CGA, SGA
+
+# export CGA, cgabasis, up, dn
+# export normalize
+# export Spherical, up1d, dn1d
+
+function dn end
 
 include("client.jl")
 include("vga.jl")
 include("pga.jl")
 include("cga.jl")
-include("1d-up.jl")
+include("spherical-1up.jl")
+
+import .Projective: PGA
+import .Conformal: CGA
+import .SphericalOneUp: SGA
+
+up(::Type{Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
+up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
+up(T::Type, comps...) = up(T, Multivector{length(comps),1}(comps))
+
 
 normalize(a::BasisBlade) = normalize(Multivector(a))
 
