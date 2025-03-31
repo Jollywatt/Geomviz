@@ -6,6 +6,7 @@ bl_info = {
 if "bpy" in locals():
 	# Runs if add-ons are being reloaded with Refresh
 	import importlib
+	importlib.reload(utils)
 	importlib.reload(server)
 	importlib.reload(panels)
 	importlib.reload(properties)
@@ -15,6 +16,7 @@ if "bpy" in locals():
 	print('Reloaded')
 else:
 	# Runs first time add-on is loaded
+	from . import utils
 	from . import server
 	from . import panels
 	from . import properties

@@ -7,21 +7,22 @@ from time import time
 
 from . import rigs
 from . import scene
-
-class InvalidDataException(Exception):
-	"""
-	Exception raised when the a `DataServer` receives data which cannot be decoded or is an invalid format.
-	"""
-	pass
+from . import utils
 
 def validate_data(binary):
 	try:
 		data = pickle.loads(binary)
 	except Exception as e:
-		raise InvalidDataException(e)
+		raise utils.InvalidDataException(e)
 	else:
 		if type(data) is not dict:
-			raise InvalidDataException(f"Data is of unexpected type {type(data)}.")
+			raise utils.InvalidDataException(f"Data is of unexpected type {type(data)}.")
+		if 'scene' not in data:
+			raise utils.InvalidDataException(f"Data is missing 'scene' key: {data!r}.")
+		for rig in data['scene']:
+			if 'Rig' not in rig:
+				raise utils.InvalidDataException(f"Rig data is missing 'Rig' key: {data!r}.")
+
 		return data
 
 class DataServer():
@@ -106,7 +107,7 @@ class DataServer():
 		except Exception as e:
 			conn.send(f"Your data sucks!\n{e}".encode())
 			conn.close()
-			print(e)
+			self.set_status(f"Error: {e}")
 		else:
 			conn.send("Received.".encode())
 			conn.close()
@@ -141,11 +142,10 @@ class StartServer(bpy.types.Operator):
 		port = context.scene.geomviz_server_port
 
 		if context.scene.geomviz_collection is None:
-			def draw_menu(self, context):
-				self.layout.label(text="Select a destination collection for geomviz objects to be added to.")
-			context.window_manager.popup_menu(draw_menu, title="No geomviz collection", icon="ERROR")
+			utils.error_popup(context, "No geomviz collection", """
+				Select a destination collection for geomviz objects to be added to.""")
 			return {'CANCELLED'}
-			
+
 		data_server.start_async(port)
 
 		return {'FINISHED'}

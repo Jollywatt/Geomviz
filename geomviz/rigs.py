@@ -1,10 +1,6 @@
 import bpy
 
-class PoseError(Exception):
-	def __init__(self, name, key):
-		self.name = name
-		self.key = key
-
+from . import utils
 
 def empty_mesh():
 	name = "Empty mesh"
@@ -41,7 +37,7 @@ def pose(rig: bpy.types.Object, arg):
 			try:
 				inp = inputs[key]
 			except KeyError:
-				raise PoseError(rig.geomviz_nodes.name, key)
+				raise utils.PoseError(rig.geomviz_nodes.name, key)
 
 			mod[inp.identifier] = val
 

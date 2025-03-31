@@ -1,14 +1,7 @@
 import bpy
 
 from . import rigs
-
-class UnknownRigError(Exception):
-	def __init__(self, name):
-		self.name = name
-
-class RigDataError(Exception):
-	def __init__(self, message):
-		self.message = message
+from . import utils
 
 def object_names_by_rig_type(objects):
 	d = {}
@@ -28,30 +21,26 @@ def sync(collection, data):
 		collection.objects.unlink(obj)
 
 	for rig_data in data['scene']:
-		try:
-			rig_name = rig_data['Rig']
-		except:
-			raise RigDataError(f"Rig data missing key 'Rig': {rig_data!r}")
-
+		rig_name = rig_data['Rig']
 		if rig_name in d and len(d[rig_name]) > 0:
 			# use existing rig object
 			obj_name = d[rig_name].pop(0)
 			obj = bpy.data.objects[obj_name]
 			rigs.pose(obj, rig_data)
 			collection.objects.link(obj)
-			print(f"use: {obj_name}")
+			# print(f"use: {obj_name}")
 
 		else:
 			# create new rig object
 			try:
 				nodes = bpy.data.node_groups[rig_name]
 			except KeyError as e:
-				raise UnknownRigError(rig_name)
+				raise utils.UnknownRigError(rig_name)
 
 			obj = rigs.new(nodes)
 			rigs.pose(obj, rig_data)
 			collection.objects.link(obj)
-			print(f"new: {rig_name}")
+			# print(f"new: {rig_name}")
 
 	count = len(data['scene'])
 	return f"Synced {count} {'object' if count == 1 else 'objects'}"
@@ -60,9 +49,9 @@ def handle_scene_data(data):
 	try:
 		print("Syncronising scene...")
 		return sync(bpy.context.scene.geomviz_collection, data)
-	except UnknownRigError as e:
+	except utils.UnknownRigError as e:
 		return f"Unknown rig: {e.name!r}"
-	except RigDataError as e:
+	except utils.RigDataError as e:
 		return repr(e)
-	except rigs.PoseError as e:
+	except utils.PoseError as e:
 		return f"Failed to pose {e.name!r}: key {e.key!r} not found"
