@@ -12,7 +12,6 @@ if "bpy" in locals():
 	importlib.reload(rigs)
 	importlib.reload(assets)
 	importlib.reload(scene)
-	importlib.reload(timer)
 	print('Reloaded')
 else:
 	# Runs first time add-on is loaded
@@ -22,11 +21,9 @@ else:
 	from . import rigs
 	from . import assets
 	from . import scene
-	from . import timer
 	print('Imported')
 
 import bpy
-
 
 classes = [
 	server.StartServer,
@@ -36,7 +33,6 @@ classes = [
 	assets.LoadInventory,
 	rigs.Pose,
 	rigs.Copy,
-	timer.ModalTimerOperator,
 ]
 
 def register():
