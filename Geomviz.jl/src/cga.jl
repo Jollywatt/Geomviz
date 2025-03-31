@@ -1,7 +1,7 @@
 module Conformal
 
 using GeometricAlgebra
-import ..Geomviz: encode, dn
+import ..Geomviz: encode, dn, normalize
 
 """
 Metric signature for the conformal geometric algebra over ``n``-dimensional Euclidean space.

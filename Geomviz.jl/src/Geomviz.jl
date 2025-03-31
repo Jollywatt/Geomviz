@@ -11,14 +11,13 @@ using GeometricAlgebra: replace_signature
 export encode
 export PORT
 
-export up, dn
+export up, dn, normalize
 export PGA, CGA, SGA
 
-# export CGA, cgabasis, up, dn
-# export normalize
-# export Spherical, up1d, dn1d
-
 function dn end
+function normalize end
+
+normalize(a::BasisBlade) = normalize(Multivector(a))
 
 include("client.jl")
 include("vga.jl")
@@ -35,7 +34,6 @@ up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
 up(T::Type, comps...) = up(T, Multivector{length(comps),1}(comps))
 
 
-normalize(a::BasisBlade) = normalize(Multivector(a))
 
 Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 function Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple)

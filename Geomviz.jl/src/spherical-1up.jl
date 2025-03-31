@@ -1,7 +1,7 @@
 module SphericalOneUp
 
 using GeometricAlgebra
-import ..Geomviz: encode, dn
+import ..Geomviz: encode, dn, normalize
 
 """
 Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensional Euclidean space.
@@ -39,7 +39,7 @@ function dn(P::Multivector{SGA{Sig},1}; λ=CURVATURE[]) where Sig
 end
 dn(a::BasisBlade; k...) = dn(Multivector(a); k...)
 
-normalize(P::Multivector{<:SGA,1}) = P/sqrt(P⊙P)
+normalize(P::Multivector{<:SGA}) = P/sqrt(abs(P⊙P))
 
 function encode(P::Multivector{SGA{Sig},1}) where Sig
 	p = dn((P))
@@ -73,9 +73,9 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 
 
 	planesize = abs(abs2(plane))
-	obj = if planesize < eps()
-		# line
-		Dict(
+	if planesize < eps()
+		# line through origin
+		obj = Dict(
 			"Rig"=>"Spear Line",
 			"Direction"=>point.comps[1:end-1],
 			"Use separation"=>false,
@@ -84,35 +84,23 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 
 	else
 		# circle
-		dist = sqrt(abs2(point)/planesize)
-		r = sqrt(1 + dist^2)
+		normal = dn(rdual(plane))
+		centerpoint = dn(normalize(sandwich_prod(C, o)))
+		r = sqrt(abs2(centerpoint) + 1)
 
-		normal = rdual(plane)
-
-		if abs(abs2(point)) < eps()
-			Dict(
-				"Rig"=>"Spear Circle",
-				"Location"=>(0,0,0),
-				"Normal"=>normal.comps[1:end-1],
-				"Radius"=>r,
-				"Arrow count"=>0,
-			)
-		else
-			perp = normalize(inner(inner(plane, o), point))
-			Dict(
-				"Rig"=>"Spear Circle",
-				"Location"=> perp.comps[1:end-1]*dist,
-				"Normal"=>normal.comps[1:end-1],
-				"Radius"=>r,
-				"Arrow count"=>0,
-			)
-		end
+		obj = Dict(
+			"Rig"=>"Spear Circle",
+			"Location"=>centerpoint.comps,
+			"Normal"=>normal.comps,
+			"Radius"=>r,
+			"Arrow count"=>0,
+		)
 
 	end
 
-	if true
+	if false
 		# randomly sample points on line/circle
-		Ps = randn(Multivector{SGA{Sig},1}, 500)
+		Ps = randn(Multivector{SGA{Sig},1}, 200)
 		Qs = inner.(Ps, C) # points lying on circle/line
 		[
 			smallpoints(Qs; color=(1,0,1,1));
@@ -126,9 +114,38 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 end
 
 function encode(S::Multivector{SGA{Sig},3}) where Sig
-	Ls = randn(Multivector{SGA{Sig},2}, 300)
-	Qs = inner.(Ls, S) # points lying on sphere/plane
-	smallpoints(Qs; color=(0,1,1,1))
+	o = basis(signature(S), 1, dimension(S))
+
+	if iszero(S∧o)
+		# plane through origin
+		normal = dn(rdual(S))
+		obj = Dict(
+			"Rig"=>"Checker Plane",
+			"Location"=>(0,0,0),
+			"Normal"=>normal.comps
+		)
+	else
+		# sphere
+		center = dn(normalize(-sandwich_prod(S, o)))
+		ρ = sqrt(abs2(center) + 1)
+
+		obj = Dict(
+			"Rig"=>"Sphere",
+			"Location"=>center.comps,
+			"Radius"=>ρ,
+			"Color"=>(1,1,1,0.7),
+		)
+	end
+
+	if false
+		Ls = randn(Multivector{SGA{Sig},2}, 200)
+		Qs = inner.(Ls, S) # points lying on sphere/plane
+		[smallpoints(Qs; color=(0,1,1,1)); obj]
+	else
+		obj
+	end
+
 end
+
 
 end
