@@ -47,7 +47,7 @@ def sync(collection, data):
 
 def handle_scene_data(data):
 	try:
-		print("Syncronising scene...")
+		print("Synchronising scene...")
 		return sync(bpy.context.scene.geomviz_collection, data)
 	except utils.UnknownRigError as e:
 		return f"Unknown rig: {e.name!r}"
