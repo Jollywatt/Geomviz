@@ -9,6 +9,9 @@ from . import rigs
 from . import scene
 
 class InvalidDataException(Exception):
+	"""
+	Exception raised when the a `DataServer` receives data which cannot be decoded or is an invalid format.
+	"""
 	pass
 
 def validate_data(binary):
@@ -21,14 +24,13 @@ def validate_data(binary):
 			raise InvalidDataException(f"Data is of unexpected type {type(data)}.")
 		return data
 
-
 class DataServer():
 	running = False
 	port = None
 	panel_area = None
 	status = "Idle"
 	data_queue = queue.Queue()
-	ping = 0.
+	heartbeat = 0.
 
 	def set_status(self, status):
 		self.status = status
@@ -64,24 +66,26 @@ class DataServer():
 				else:
 					self.put_to_queue(conn)
 
-				t = time()
-				if t - self.ping > 1:
+				# check that the main thread is still alive
+				if time() - self.heartbeat > 1:
+					# end server thread to avoid hanging blender on exit
 					break
 
 		print(f"Closing socket on port {self.port}.")
 
 	def start_async(self, port):
 		self.running = True
+
 		global geomviz_timer_pointer
 		geomviz_timer_pointer = lambda: self.read_from_queue()
 		bpy.app.timers.register(geomviz_timer_pointer)
+
 		thread = threading.Thread(target=data_server.start, args=(port,))
 		thread.start()
 
 	def stop(self):
-		self.running = False
 		if self.running:
-			self.set_status("Idle")
+			self.set_status("Stopped")
 			print("Stopped existing running server")
 
 		global geomviz_timer_pointer
@@ -90,9 +94,11 @@ class DataServer():
 		except ValueError:
 			pass
 
+		self.running = False
+
 	def put_to_queue(self, conn):
 		# this runs in the server's thread
-		# leaving data in the queue to be read by the main thred
+		# leaving data in the queue to be read by the main thread
 		binary = conn.recv(1 << 16)
 		try:
 			data = validate_data(binary)
@@ -105,7 +111,7 @@ class DataServer():
 			conn.send("Received.".encode())
 			conn.close()
 			self.data_queue.put(data)
-			print(f"Queueued {data}")
+			print(f"Queued {data}")
 
 	def read_from_queue(self):
 		# this runs as a registered bpy.app timer
@@ -116,7 +122,8 @@ class DataServer():
 			self.set_status("Idle" if status is None else status)
 			self.data_queue.task_done()
 
-		self.ping = time()
+		# send a heartbeat which keeps the server thread alive
+		self.heartbeat = time()
 
 		if data_server.running:
 			return 1/30
@@ -125,15 +132,20 @@ class DataServer():
 
 
 
-
-
 class StartServer(bpy.types.Operator):
 	"""Start the external data server"""
-	bl_idname = "ga.start_server"
+	bl_idname = "geomviz.start_server"
 	bl_label = "Start external data server"
 
 	def execute(self, context):
-		port = context.scene.ga_server_port
+		port = context.scene.geomviz_server_port
+
+		if context.scene.geomviz_collection is None:
+			def draw_menu(self, context):
+				self.layout.label(text="Select a destination collection for geomviz objects to be added to.")
+			context.window_manager.popup_menu(draw_menu, title="No geomviz collection", icon="ERROR")
+			return {'CANCELLED'}
+			
 		data_server.start_async(port)
 
 		return {'FINISHED'}
@@ -141,7 +153,7 @@ class StartServer(bpy.types.Operator):
 
 class StopServer(bpy.types.Operator):
 	"""Stop the external data server"""
-	bl_idname = "ga.stop_server"
+	bl_idname = "geomviz.stop_server"
 	bl_label = "Stop external data server"
 
 	def execute(self, context):

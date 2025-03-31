@@ -13,8 +13,8 @@ class RigDataError(Exception):
 def object_names_by_rig_type(objects):
 	d = {}
 	for obj in objects:
-		if isinstance(obj.ga_type, bpy.types.NodeTree):
-			name = obj.ga_type.name
+		if isinstance(obj.geomviz_nodes, bpy.types.NodeTree):
+			name = obj.geomviz_nodes.name
 			if name not in d:
 				d[name] = []
 			d[name].append(obj.name)
@@ -59,7 +59,7 @@ def sync(collection, data):
 def handle_scene_data(data):
 	try:
 		print("Syncronising scene...")
-		return sync(bpy.context.scene.ga_collection, data)
+		return sync(bpy.context.scene.geomviz_collection, data)
 	except UnknownRigError as e:
 		return f"Unknown rig: {e.name!r}"
 	except RigDataError as e:

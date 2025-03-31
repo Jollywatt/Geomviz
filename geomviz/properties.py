@@ -1,8 +1,7 @@
 import bpy
-from bpy import props
 
 def register():
-	bpy.types.Scene.ga_server_port = props.IntProperty(
+	bpy.types.Scene.geomviz_server_port = bpy.props.IntProperty(
 		name="Server Port",
 		description="Port for the external data server.",
 		default=8888,
@@ -10,23 +9,23 @@ def register():
 		max=65535
 	)
 
-	bpy.types.Scene.ga_collection = props.PointerProperty(
+	bpy.types.Scene.geomviz_collection = bpy.props.PointerProperty(
 		type=bpy.types.Collection,
-		name="Destination for GA objects",
+		name="Collection for geomviz objects",
 		description="Collection insert GA objects into.",
 		poll=lambda self, collection: collection.name in self.collection.children,
 	)
 
-	bpy.types.Scene.ga_inventory_item = props.PointerProperty(
+	bpy.types.Scene.geomviz_inventory_item = bpy.props.PointerProperty(
 		type=bpy.types.NodeTree,
-		name="Inventory item",
-		description="Geometry nodes defining a GA inventory item.",
+		name="Geomviz inventory item",
+		description="Geometry nodes tree defining a geomviz object.",
 		poll=lambda self, n: n.name in [n.name for n in bpy.data.node_groups],
 	)
 
-	bpy.types.Object.ga_type = props.PointerProperty(
+	bpy.types.Object.geomviz_nodes = bpy.props.PointerProperty(
 		type=bpy.types.NodeTree,
-		name="Geometry node of GA object",
-		description="Geometry node tree defining this GA object.",
+		name="Geomviz object geometry nodes",
+		description="Geometry node tree defining a geomviz object.",
 		poll=lambda self, n: n.name in [n.name for n in bpy.data.node_groups],
 	)

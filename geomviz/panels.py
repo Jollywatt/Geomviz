@@ -6,8 +6,8 @@ from . import rigs
 
 
 class ScenePanel(bpy.types.Panel):
-	bl_label = "Geometric algebra scene"
-	bl_idname = 'SCENE_PT_ga_scene'
+	bl_label = "Geomviz scene"
+	bl_idname = 'SCENE_PT_geomviz_scene'
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
 	bl_context = 'scene'
@@ -20,18 +20,18 @@ class ScenePanel(bpy.types.Panel):
 		row.operator(assets.LoadInventory.bl_idname, text="Import default inventory")
 
 		row = layout.row()
-		row.prop(context.scene, 'ga_inventory_item', text="Item")
+		row.prop(context.scene, 'geomviz_inventory_item', text="Item")
 
 		row = layout.row()
-		row.prop(context.scene, 'ga_collection', text="Copy to")
+		row.prop(context.scene, 'geomviz_collection', text="Copy to")
 
 		row = layout.row()
 		row.operator(rigs.Copy.bl_idname, text="Copy inventory item")
 
 
 class ServerPanel(bpy.types.Panel):
-	bl_label = "Geometric algebra server"
-	bl_idname = 'SCENE_PT_ga_server'
+	bl_label = "Geomviz server"
+	bl_idname = 'SCENE_PT_geomviz_server'
 	bl_space_type = 'PROPERTIES'
 	bl_region_type = 'WINDOW'
 	bl_context = 'scene'
@@ -51,4 +51,4 @@ class ServerPanel(bpy.types.Panel):
 			row.operator(server.StartServer.bl_idname, icon="PLAY")
 
 		row = layout.row()
-		row.prop(context.scene, 'ga_server_port')
+		row.prop(context.scene, 'geomviz_server_port')

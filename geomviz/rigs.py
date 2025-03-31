@@ -16,7 +16,7 @@ def empty_mesh():
 def new(nodes: bpy.types.NodeTree):
 
 	obj = bpy.data.objects.new(nodes.name, empty_mesh())
-	obj.ga_type = nodes
+	obj.geomviz_nodes = nodes
 	mod = obj.modifiers.new(nodes.name, "NODES")
 	mod.node_group = nodes
 
@@ -24,8 +24,8 @@ def new(nodes: bpy.types.NodeTree):
 
 
 def pose(rig: bpy.types.Object, arg):
-	inputs = rig.ga_type.interface.items_tree
-	mod = rig.modifiers[rig.ga_type.name]
+	inputs = rig.geomviz_nodes.interface.items_tree
+	mod = rig.modifiers[rig.geomviz_nodes.name]
 
 	for key, val in arg.items():
 
@@ -41,7 +41,7 @@ def pose(rig: bpy.types.Object, arg):
 			try:
 				inp = inputs[key]
 			except KeyError:
-				raise PoseError(rig.ga_type.name, key)
+				raise PoseError(rig.geomviz_nodes.name, key)
 
 			mod[inp.identifier] = val
 
@@ -50,23 +50,23 @@ def pose(rig: bpy.types.Object, arg):
 
 class Copy(bpy.types.Operator):
 	bl_label = "Insert rig into GA scene"
-	bl_idname = "ga.copy_rig"
+	bl_idname = "geomviz.copy_rig"
 
 	def execute(self, context):
-		rig = new(context.scene.ga_inventory_item)
-		context.scene.ga_collection.objects.link(rig)
+		rig = new(context.scene.geomviz_inventory_item)
+		context.scene.geomviz_collection.objects.link(rig)
 
 		return {'FINISHED'}
 
 
 class Pose(bpy.types.Operator):
 	bl_label = "Pose rig"
-	bl_idname = "ga.pose_rig"
+	bl_idname = "geomviz.pose_rig"
 
 	def execute(self, context):
 		compile_rig(context.collection)
 
-		arg = eval(context.collection.ga_rig_script_input)
+		arg = eval(context.collection.geomviz_rig_script_input)
 		pose(context.collection, arg)
 
 		return {'FINISHED'}

@@ -26,7 +26,7 @@ def load_inventory_from_file(assets_file):
 
 class LoadInventory(bpy.types.Operator):
 	bl_label = "Load GA assets"
-	bl_idname = "ga.load_inventory"
+	bl_idname = "geomviz.load_inventory"
 
 	def execute(self, context):
 
