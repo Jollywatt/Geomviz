@@ -6,7 +6,7 @@ end
 
 function encode(::T) where T
 	method = :($(nameof(@__MODULE__)).encode(::$T))
-	@warn "Object not sent to Blender." signature(T) grade(T)
+	@warn "Object not sent to Blender." T
 end
 
 function encode(objs::Union{Tuple,AbstractVector})

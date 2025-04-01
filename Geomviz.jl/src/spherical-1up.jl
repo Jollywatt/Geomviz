@@ -8,7 +8,7 @@ Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensiona
 """
 abstract type SGA{Sig} end
 
-const CURVATURE = Ref(1)
+const CURVATURE = Ref{Float64}(1)
 
 
 basesig(::Type{<:SGA{Sig}}) where Sig = Sig
@@ -86,7 +86,7 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 		# circle
 		normal = dn(rdual(plane))
 		centerpoint = dn(normalize(sandwich_prod(C, o)))
-		r = sqrt(abs2(centerpoint) + 1)
+		r = sqrt(abs2(centerpoint) + CURVATURE[]^2)
 
 		obj = Dict(
 			"Rig"=>"Spear Circle",
@@ -127,7 +127,7 @@ function encode(S::Multivector{SGA{Sig},3}) where Sig
 	else
 		# sphere
 		center = dn(normalize(-sandwich_prod(S, o)))
-		ρ = sqrt(abs2(center) + 1)
+		ρ = sqrt(abs2(center) + CURVATURE[]^2)
 
 		obj = Dict(
 			"Rig"=>"Sphere",
