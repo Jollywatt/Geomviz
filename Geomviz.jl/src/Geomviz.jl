@@ -12,6 +12,7 @@ export encode
 export PORT
 
 export up, dn, normalize
+export Projective, Conformal, SphericalOneUp
 export PGA, CGA, SGA
 
 function dn end

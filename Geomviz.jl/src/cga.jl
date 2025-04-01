@@ -3,6 +3,8 @@ module Conformal
 using GeometricAlgebra
 import ..Geomviz: encode, dn, normalize
 
+export origin, infinity
+
 """
 Metric signature for the conformal geometric algebra over ``n``-dimensional Euclidean space.
 """
@@ -15,29 +17,36 @@ function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
 	BasisDisplayStyle(n + 2; indices)
 end
 
-Base.@assume_effects :foldable function cgabasis(::Type{CGA{n}}) where n
-	v..., vp, vm = basis(CGA{n})::Vector{BasisBlade{CGA{n},1,Int}}
-	v0, voo = 2\(vp + vm), vm - vp
-	(; v, v0, voo)
-end
-cgabasis(a::Multivector) = cgabasis(signature(a))
-cgavoo(::Type{CGA{n}}) where n = cgabasis(CGA{n}).voo
-cgav0(::Type{CGA{n}}) where n = cgabasis(CGA{n}).v0
 
+"""
+	origin(CGA{n})
+	infinity(CGA{n})
+
+The point at the origin `e₀` and the point at infinity `e∞` in the `n`-dimensional
+conformal geometric algebra model, using the convention
+``e₀ = (e₊ + e₋)/2`` and ``e∞ = e₋ - e₊``.
+"""
+origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); 0.5; 0.5])
+
+@doc (@doc origin)
+infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -1; +1])
+
+origin(a::Multivector) = origin(signature(a))
+infinity(a::Multivector) = infinity(signature(a))
 
 embed(x::Multivector{Sig,1}) where Sig = Multivector{CGA{Sig},1}([x.comps; 0; 0])
 
 function up(x::Multivector{Sig,1}) where Sig
-	(; v0, voo) = cgabasis(CGA{Sig})
-	v0 + embed(x) + 2\(x⊙x)*voo
+	o, oo = origin(CGA{Sig}), infinity(CGA{Sig})
+	o + embed(x) + 2\(x⊙x)*oo
 end
 up(x::BasisBlade) = up(Multivector(x))
 up(comps::AbstractVector) = up(Multivector{length(comps),1}(comps))
 up(comps...) = up(Multivector{length(comps),1}(comps...))
 
 function normalize(X::Multivector{<:CGA,1})
-	(; v0, voo) = cgabasis(X)
-	X/-(voo⊙X)
+	o, oo = origin(X), infinity(X)
+	X/-(oo⊙X)
 end
 
 
@@ -47,18 +56,18 @@ dn(x::Multivector{CGA{n},1}) where n = basecomps(normalize(x))
 
 
 function encode(X::Multivector{CGA{3},1})
-	(; v0, voo) = cgabasis(X)
+	o, oo = origin(X), infinity(X)
 
-	norm = -(voo⊙X)
+	norm = -(oo⊙X)
 	if abs(norm) < eps()
-		# has no v0 component; is a plane
-		# X = n⃗ + d*voo
+		# has no o component; is a plane
+		# X = n⃗ + d e∞
 		normal = basecomps(X)
-		δ = -(v0⊙X)
-		origin = δ*normal/sum(abs2, normal)
+		δ = -(o⊙X)
+		moment = δ*normal/sum(abs2, normal)
 		Dict(
 			"Rig"=>"Checker Plane",
-			"Location"=>origin,
+			"Location"=>moment,
 			"Normal"=>normal,
 			"Show wire"=>true,
 			"Holes"=>false,
@@ -95,8 +104,8 @@ function encode(pointpair::Multivector{CGA{3},2})
 end
 
 function circleparts(X::Multivector{CGA{3},3})
-	(; v0, voo) = cgabasis(X)
-	carrier::Grade{4} = X∧voo
+	o, oo = origin(X), infinity(X)
+	carrier::Grade{4} = X∧oo
 	container::Grade{4} = X∧hodgedual(carrier)
 	dualsphere::Grade{1} = normalize(hodgedual(container))
 	x = basecomps(dualsphere)
@@ -110,17 +119,17 @@ function circleparts(X::Multivector{CGA{3},3})
 end
 
 function lineparts(X::Multivector{CGA{3},3})
-	(; v0, voo) = cgabasis(X)
-	circle = v0∧hodgedual(X)
+	o, oo = origin(X), infinity(X)
+	circle = o∧hodgedual(X)
 	(; location, normal) = circleparts(circle)
 	(moment=location, direction=normal)
 
 end
 
 function encode(X::Multivector{CGA{3},3})
-	(; v0, voo) = cgabasis(X)
+	o, oo = origin(X), infinity(X)
 
-	n = X∧voo
+	n = X∧oo
 	if abs(n⊙n) < 1e-3
 		parts = lineparts(X)
 		Dict(
