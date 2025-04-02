@@ -2,6 +2,8 @@ function send_data_to_server(data, port=PORT[])
 	sock = connect(ip"127.0.0.1", port)
 	binary = Pickle.stores(data)
 	write(sock, binary)
+	printstyled("blend: ", color=214)
+	println(String(read(sock)))
 end
 
 function encode(::T) where T
@@ -23,7 +25,9 @@ function flatmap(f, a)
 end
 
 function encode_scene(objs)
-	(scene=collect(flatmap(encode, objs)),)
+	(
+		objects=collect(flatmap(encode, objs)),
+	)
 end
 
 function encode_and_send(obj)
@@ -46,4 +50,27 @@ function encode(s::Styled)
 	else
 		merge!(data, s.attributes)
 	end
+end
+
+function anim()
+	Dict(
+		"animation"=>true,
+		"frame_range"=>(0,100),
+		"objects"=>[
+			Dict(
+				"rig_name"=>"Point",
+				"location"=>Dict(
+					"keyframes"=>[
+						(i, (cos(2pi*t),sin(2pi*t),t))
+						for (i, t) in enumerate(range(0, 1, length=100))
+					]
+				),
+				"rig_parameters"=>Dict(
+					"Radius"=>Dict(
+						"keyframes"=>[(0,0), (100,1)]
+					)
+				),
+			),
+		],
+	) |> send_data_to_server
 end

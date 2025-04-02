@@ -14,3 +14,21 @@ blend> a, b, a∧b # press space to enter REPL mode
 ```
 
 ![Blender screenshot](docs/blender-screenshot.png)
+
+
+## Serialisation format
+
+```
+{
+	"rig": "Point",
+	"animation": true,
+	""
+	"parameters": {
+		"location": {
+			"keyframes": [
+				(frame, value),
+			],
+		},
+	},
+}
+```

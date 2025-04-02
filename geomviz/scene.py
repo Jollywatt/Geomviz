@@ -20,8 +20,11 @@ def sync(collection, data):
 	for obj in collection.objects:
 		collection.objects.unlink(obj)
 
-	for rig_data in data['scene']:
-		rig_name = rig_data['Rig']
+	for rig_data in data['objects']:
+		try:
+			rig_name = rig_data['rig_name']
+		except KeyError:
+			raise utils.RigDataError("Missing key `rig_name`")
 		if rig_name in d and len(d[rig_name]) > 0:
 			# use existing rig object
 			obj_name = d[rig_name].pop(0)
@@ -42,7 +45,17 @@ def sync(collection, data):
 			collection.objects.link(obj)
 			# print(f"new: {rig_name}")
 
-	count = len(data['scene'])
+	if data.get("animation", False):
+		if "frame_range" in data:
+			(s, e) = data["frame_range"]
+			bpy.context.scene.frame_start = s
+			bpy.context.scene.frame_end = e
+			# bpy.context.scene.frame_current = s
+			bpy.ops.screen.animation_cancel()
+			bpy.ops.screen.animation_play()
+
+
+	count = len(data['objects'])
 	return f"Synced {count} {'object' if count == 1 else 'objects'}"
 
 def handle_scene_data(data):

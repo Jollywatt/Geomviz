@@ -17,11 +17,11 @@ def validate_data(binary):
 	else:
 		if type(data) is not dict:
 			raise utils.InvalidDataException(f"Data is of unexpected type {type(data)}.")
-		if 'scene' not in data:
-			raise utils.InvalidDataException(f"Data is missing 'scene' key: {data!r}.")
-		for rig in data['scene']:
-			if 'Rig' not in rig:
-				raise utils.InvalidDataException(f"Rig data is missing 'Rig' key: {data!r}.")
+		# if 'scene' not in data:
+		# 	raise utils.InvalidDataException(f"Data is missing 'scene' key: {data!r}.")
+		# for rig in data['scene']:
+		# 	if 'Rig' not in rig:
+		# 		raise utils.InvalidDataException(f"Rig data is missing 'Rig' key: {data!r}.")
 
 		return data
 

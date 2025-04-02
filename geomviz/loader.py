@@ -11,7 +11,6 @@ if d not in sys.path:
 
 import geomviz
 
-
 try:
 	geomviz.unregister()
 except e:
