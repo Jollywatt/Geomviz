@@ -23,18 +23,28 @@ def isanimation(obj):
 def get_action(obj):
 	obj.animation_data_create()
 	if obj.animation_data.action is None:
-		action = bpy.data.actions.new(f"{rig.name} action")
+		action = bpy.data.actions.new(f"{obj.name} action")
 		obj.animation_data.action = action
 	return obj.animation_data.action
 
-def get_fcurve(obj, data_path, index):
+
+def get_fcurve(obj, data_path, index=0):
 	action = get_action(obj)
 	fcurve = action.fcurves.find(data_path, index=index)
 	if fcurve is None:
 		fcurve = action.fcurves.new(data_path, index=index)
 	return fcurve
 
+def clear_fcurve(obj, data_path, index=0):
+	action = obj.animation_data.action
+	if action is not None:
+		fcurve = action.fcurves.find(data_path, index=index)
+		if fcurve is not None:
+			action.fcurves.remove(fcurve)
+
 def pose(rig: bpy.types.Object, data):
+
+	rig.animation_data_clear()
 
 	if "location" in data:
 		if isanimation(data["location"]):
@@ -53,8 +63,9 @@ def pose(rig: bpy.types.Object, data):
 			except KeyError:
 				raise utils.PoseError(rig.geomviz_nodes.name, key)
 
+			data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
 			if isanimation(val):
-				fcurve = get_fcurve(rig, data_path=f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]', index=0)
+				fcurve = get_fcurve(rig, data_path)
 				for frame, v in val["keyframes"]:
 					fcurve.keyframe_points.insert(frame, v)
 			else:
@@ -74,6 +85,7 @@ def pose(rig: bpy.types.Object, data):
 		rig.name = data["name"]
 		rig.show_name = True
 	else:
+		rig.name = data["rig_name"]
 		rig.show_name = False
 
 

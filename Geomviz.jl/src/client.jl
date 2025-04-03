@@ -1,9 +1,11 @@
-function send_data_to_server(data, port=PORT[])
+function send_to_server(data, port=PORT[], showresponse=false)
 	sock = connect(ip"127.0.0.1", port)
 	binary = Pickle.stores(data)
 	write(sock, binary)
-	printstyled("blend: ", color=214)
-	println(String(read(sock)))
+	if showresponse
+		printstyled("blend: ", color=214)
+		println(String(read(sock)))
+	end
 end
 
 function encode(::T) where T
@@ -30,12 +32,6 @@ function encode_scene(objs)
 	)
 end
 
-function encode_and_send(obj)
-	data = encode_scene(obj)
-	!isnothing(data) && send_data_to_server(data)
-	obj
-end
-
 struct Styled{T}
 	obj::T
 	attributes::Dict{String,Any}
@@ -52,7 +48,17 @@ function encode(s::Styled)
 	end
 end
 
+function rig(rig_name, rig_parameters::Pair{String}...; object_parameters...)
+	object_parameters = [string(k) => v for (k, v) in pairs(object_parameters)]
+	Dict(
+		"rig_name"=>rig_name,
+		object_parameters...,
+		"rig_parameters"=>Dict(rig_parameters),
+	)
+end
+
 function anim()
+	K = enumerate(range(0, 1, length=100))
 	Dict(
 		"animation"=>true,
 		"frame_range"=>(0,100),
@@ -62,15 +68,15 @@ function anim()
 				"location"=>Dict(
 					"keyframes"=>[
 						(i, (cos(2pi*t),sin(2pi*t),t))
-						for (i, t) in enumerate(range(0, 1, length=100))
+						for (i, t) in K
 					]
 				),
 				"rig_parameters"=>Dict(
 					"Radius"=>Dict(
-						"keyframes"=>[(0,0), (100,1)]
+						"keyframes"=>[(i, sin(pi*t)) for (i, t) in K]
 					)
 				),
 			),
 		],
-	) |> send_data_to_server
+	) |> send_to_server
 end

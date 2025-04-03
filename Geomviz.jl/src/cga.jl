@@ -1,7 +1,7 @@
 module Conformal
 
 using GeometricAlgebra
-import ..Geomviz: encode, dn, normalize
+import ..Geomviz: rig, encode, dn, normalize
 
 export origin, infinity
 
@@ -65,11 +65,10 @@ function encode(X::Multivector{CGA{3},1})
 		normal = basecomps(X)
 		δ = -(o⊙X)
 		moment = δ*normal/sum(abs2, normal)
-		Dict(
-			"Rig"=>"Checker Plane",
-			"Location"=>moment,
+		rig("Checker Plane",
+			location=moment,
+			show_wire=true,
 			"Normal"=>normal,
-			"Show wire"=>true,
 			"Holes"=>false,
 		)
 
@@ -78,13 +77,14 @@ function encode(X::Multivector{CGA{3},1})
 		x = basecomps(X)
 		ρ² = X⊙X
 		if abs(ρ²) < 1e-3
-			Dict("Rig"=>"Point", "Location"=>x)
+			rig("Point",
+				location=x,
+			)
 		else
-			Dict(
-				"Rig"=>"Sphere",
-				"Location" => x,
-				"Radius" => sqrt(abs(ρ²)),
-				"Imaginary" => ρ² < 0,
+			rig("Sphere",
+				location=x,
+				"Radius"=>sqrt(abs(ρ²)),
+				"Imaginary"=>ρ² < 0,
 			)
 		end
 	end
@@ -94,9 +94,8 @@ end
 function encode(pointpair::Multivector{CGA{3},2})
 	circle = hodgedual(pointpair)
 	parts = circleparts(circle)
-	Dict(
-		"Rig"=>"Point Pair",
-		"Location"=>parts.location,
+	rig("Point Pair",
+		location=parts.location,
 		"Radius"=>parts.radius,
 		"Direction"=>parts.normal,
 	)
@@ -132,18 +131,17 @@ function encode(X::Multivector{CGA{3},3})
 	n = X∧oo
 	if abs(n⊙n) < 1e-3
 		parts = lineparts(X)
-		Dict(
-			"Rig"=>"Spear Line",
-			"Location"=>parts.moment,
+		rig("Spear Line",
+			location=parts.moment,
 			"Direction"=>parts.direction,
 			"Use separation"=>false,
-			"Arrow count"=>0,
+			"Arrow count"=>0
 		)
 	else
 		parts = circleparts(X)
-		Dict(
-			"Rig"=>"Spear Circle",
-			"Location"=>parts.location,
+		rig(
+			"Spear Circle",
+			location=parts.location,
 			"Radius"=>parts.radius,
 			"Normal"=>parts.normal,
 			"Arrow count"=>0,

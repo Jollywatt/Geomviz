@@ -1,7 +1,7 @@
 module SphericalOneUp
 
 using GeometricAlgebra
-import ..Geomviz: encode, dn, normalize
+import ..Geomviz: rig, encode, dn, normalize
 
 """
 Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensional Euclidean space.
@@ -43,22 +43,20 @@ normalize(P::Multivector{<:SGA}) = P/sqrt(abs(P⊙P))
 
 function encode(P::Multivector{SGA{Sig},1}) where Sig
 	p = dn((P))
-	Dict(
-		"Rig"=>"Point",
-		"Location"=>Vector(p.comps),
+	rig("Point",
+		location=Vector(p.comps),
 		"Radius"=>0.05,
-		"Color"=>(1,1,1,1),
+		color=(1,1,1,1),
 	)
 end
 
 smallpoints(Ps; color) = map(Ps) do P
 
 	p = dn(normalize(P))
-	Dict(
-		"Rig"=>"Point",
-		"Location"=>Vector(p.comps),
+	rig("Point",
+		location=Vector(p.comps),
 		"Radius"=>0.025,
-		"Color"=>color
+		color=color
 	)
 end
 
@@ -75,9 +73,8 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 	planesize = abs(abs2(plane))
 	if planesize < eps()
 		# line through origin
-		obj = Dict(
-			"Rig"=>"Spear Line",
-			"Direction"=>point.comps[1:end-1],
+		obj = rig("Spear Line",
+			lirection=point.comps[1:end-1],
 			"Use separation"=>false,
 			"Arrow count"=>0,
 		)
@@ -88,9 +85,8 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 		centerpoint = dn(normalize(sandwich_prod(C, o)))
 		r = sqrt(abs2(centerpoint) + CURVATURE[]^2)
 
-		obj = Dict(
-			"Rig"=>"Spear Circle",
-			"Location"=>centerpoint.comps,
+		obj = rig("Spear Circle",
+			location=centerpoint.comps,
 			"Normal"=>normal.comps,
 			"Radius"=>r,
 			"Arrow count"=>0,
@@ -119,9 +115,8 @@ function encode(S::Multivector{SGA{Sig},3}) where Sig
 	if iszero(S∧o)
 		# plane through origin
 		normal = dn(rdual(S))
-		obj = Dict(
-			"Rig"=>"Checker Plane",
-			"Location"=>(0,0,0),
+		obj = rig("Checker Plane",
+			location=(0,0,0),
 			"Normal"=>normal.comps
 		)
 	else
@@ -129,11 +124,10 @@ function encode(S::Multivector{SGA{Sig},3}) where Sig
 		center = dn(normalize(-sandwich_prod(S, o)))
 		ρ = sqrt(abs2(center) + CURVATURE[]^2)
 
-		obj = Dict(
-			"Rig"=>"Sphere",
-			"Location"=>center.comps,
+		obj = rig("Sphere",
+			location=center.comps,
 			"Radius"=>ρ,
-			"Color"=>(1,1,1,0.7),
+			color=(1,1,1,0.7),
 		)
 	end
 

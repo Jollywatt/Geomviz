@@ -1,7 +1,8 @@
 module Projective
 
 using GeometricAlgebra
-import ..Geomviz: encode
+using GeometricAlgebra: replace_signature
+import ..Geomviz: rig, encode
 
 """
 	ProjectiveSignature{Sig,Index,PlaneBased}
@@ -53,10 +54,19 @@ end
 projpoint(a::Grade{1}) = nonprojcomps(a)/projcomp(a)
 
 
+function up(sig::Type{ProjectiveSignature{UpSig,I,false}}, a::Multivector{Sig,1}) where {UpSig,Sig,I}
+	@assert dimension(UpSig) == dimension(Sig) + 1
+	comps = insert!(Vector(a.comps), I, 1)
+	Multivector{sig,1}(comps)
+end
+function up(sig::Type{ProjectiveSignature{UpSig,I,true}}, a::Multivector) where {UpSig,I}
+	dual = rdual(up(ProjectiveSignature{UpSig,I,false}, a))
+	Multivector{sig,dimension(sig) - 1}(dual.comps)
+end
+
 # vector as point
-encode(a::Multivector{<:PointBasedEuclidean,1}) = Dict(
-	"Rig"=>"Point",
-	"Location"=>projpoint(a),
+encode(a::Multivector{<:PointBasedEuclidean,1}) = rig("Point",
+	location=projpoint(a),
 )
 
 # bivector as line
@@ -66,9 +76,8 @@ function encode(line::Multivector{<:PointBasedEuclidean,2})
 	direction = nonprojcomps(point⋅line)
 
 	norm = sqrt(sum(abs2, direction))
-	Dict(
-		"Rig"=>"Line",
-		"Location"=>projpoint(point),
+	rig("Line",
+		location=projpoint(point),
 		"Direction"=>direction,
 		# "Arrow separation"=>norm
 	)
@@ -81,10 +90,11 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 	origin = projpoint((v0∧reciprocal_point)∨plane)
 	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
-	Dict(
-		"Rig"=>"Checker Plane",
-		"Location"=>origin,
+	rig("Checker Plane",
+		location=origin,
+		show_wire=true,
 		"Normal"=>normal,
+		"Holes"=>false,
 	)
 end
 

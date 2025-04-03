@@ -53,7 +53,9 @@ def sync(collection, data):
 			# bpy.context.scene.frame_current = s
 			bpy.ops.screen.animation_cancel()
 			bpy.ops.screen.animation_play()
-
+	else:
+		bpy.ops.screen.animation_cancel()
+		
 
 	count = len(data['objects'])
 	return f"Synced {count} {'object' if count == 1 else 'objects'}"

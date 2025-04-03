@@ -15,13 +15,17 @@ def validate_data(binary):
 	except Exception as e:
 		raise utils.InvalidDataException(e)
 	else:
-		if type(data) is not dict:
+		if isinstance(data, dict):
+			if 'objects' in data:
+				for rig in data['objects']:
+					if isinstance(rig, dict):
+						pass
+					else:
+						raise utils.InvalidDataException(f"Rig data is not a dictionary: {rig!r}.")
+			else:
+				raise utils.InvalidDataException(f"Data is missing 'objects' key: {data!r}.")
+		else:
 			raise utils.InvalidDataException(f"Data is of unexpected type {type(data)}.")
-		# if 'scene' not in data:
-		# 	raise utils.InvalidDataException(f"Data is missing 'scene' key: {data!r}.")
-		# for rig in data['scene']:
-		# 	if 'Rig' not in rig:
-		# 		raise utils.InvalidDataException(f"Rig data is missing 'Rig' key: {data!r}.")
 
 		return data
 
@@ -105,11 +109,11 @@ class DataServer():
 			data = validate_data(binary)
 			print(f"Received {data!r}.")
 		except Exception as e:
-			conn.send(f"Your data sucks!\n{e}".encode())
+			conn.send(f"Error: {e}".encode())
 			conn.close()
 			self.set_status(f"Error: {e}")
 		else:
-			conn.send("Received.".encode())
+			conn.send(f"Received {len(binary)} bytes.".encode())
 			conn.close()
 			self.data_queue.put(data)
 			print(f"Queued {data}")

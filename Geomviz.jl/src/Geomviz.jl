@@ -14,6 +14,7 @@ export PORT
 export up, dn, normalize
 export Projective, Conformal, SphericalOneUp
 export PGA, CGA, SGA
+export Styled
 
 function dn end
 function normalize end
@@ -30,9 +31,10 @@ import .Projective: PGA
 import .Conformal: CGA
 import .SphericalOneUp: SGA
 
-up(::Type{Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
+up(T::Type{<:Projective.ProjectiveSignature}, a::AbstractMultivector) = Projective.up(T, a)
+up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
 up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
-up(T::Type, comps...) = up(T, Multivector{length(comps),1}(comps))
+up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
 
 
@@ -46,7 +48,9 @@ const PORT = Ref(8888)
 function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
-	encode_and_send(x)
+	data = encode_scene(x)
+	!isnothing(data) && send_to_server(data)
+	data
 end
 
 function valid_input_checker(prompt_state)
