@@ -26,6 +26,7 @@ include("vga.jl")
 include("pga.jl")
 include("cga.jl")
 include("spherical-1up.jl")
+include("animation.jl")
 
 import .Projective: PGA
 import .Conformal: CGA

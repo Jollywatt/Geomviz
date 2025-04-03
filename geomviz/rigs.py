@@ -55,11 +55,17 @@ def pose(rig: bpy.types.Object, data):
 		else:
 			rig.location = data["location"]
 
+	sockets = rig.geomviz_nodes.interface.items_tree
+	for socket in sockets:
+		try:
+			rig.modifiers[rig.geomviz_nodes.name][socket.identifier] = socket.default_value
+		except AttributeError:
+			pass
+
 	if "rig_parameters" in data:
-		inputs = rig.geomviz_nodes.interface.items_tree
 		for key, val in data["rig_parameters"].items():
 			try:
-				inp = inputs[key]
+				inp = sockets[key]
 			except KeyError:
 				raise utils.PoseError(rig.geomviz_nodes.name, key)
 
