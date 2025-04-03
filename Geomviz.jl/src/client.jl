@@ -1,4 +1,4 @@
-function send_to_server(data, port=PORT[], showresponse=false)
+function send_to_server(data, port=PORT[], showresponse=true)
 	sock = connect(ip"127.0.0.1", port)
 	binary = Pickle.stores(data)
 	write(sock, binary)

@@ -71,11 +71,21 @@ def pose(rig: bpy.types.Object, data):
 
 			data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
 			if isanimation(val):
-				fcurve = get_fcurve(rig, data_path)
-				for frame, v in val["keyframes"]:
-					fcurve.keyframe_points.insert(frame, v)
+				count = len(inp.default_value)
+				for i in range(count):
+					fcurve = get_fcurve(rig, data_path, index=i)
+					for frame, v in val["keyframes"]:
+						try:
+							fcurve.keyframe_points.insert(frame, v[i])
+						except TypeError as e:
+							print(e)
+							raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+
 			else:
-				rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
+				try:
+					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
+				except TypeError:
+					raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r} to {val!r}")
 
 
 	if "color" in data:

@@ -14,7 +14,7 @@ export PORT
 export up, dn, normalize
 export Projective, Conformal, SphericalOneUp
 export PGA, CGA, SGA
-export Styled
+export Styled, animate
 
 function dn end
 function normalize end

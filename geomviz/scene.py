@@ -47,7 +47,7 @@ def sync(collection, data):
 
 	if data.get("animation", False):
 		if "frame_range" in data:
-			(s, e) = data["frame_range"]
+			(s, e) = map(int, data["frame_range"])
 			bpy.context.scene.frame_start = s
 			bpy.context.scene.frame_end = e
 			# bpy.context.scene.frame_current = s

@@ -1,22 +1,28 @@
-class(a::Dict) = a[:kind]
-
+class(a::Dict) = a["rig_name"]
 
 function animate(fn, ts)
-	frames = map(fn, ts)
+	frames = map(ts) do t
+		flatmap(encode, fn(t))
+	end
+	(
+		animation=true,
+		frame_range=(firstindex(ts), lastindex(ts)),
+		objects=detect_keyframes(eachindex(ts), frames),
+	)#|>send_to_server
+end
 
+function detect_keyframes(ts, frames)
 	zipped = []
-	for frame in frames
-		# objs = flatmap(encode, frame)
-		objs = frame
+	tprev = 0
+	for (t, objs) in zip(ts, frames)
+
 		used = zeros(Bool, length(zipped)) # which persistent objects are used this frame
 		for obj in objs
 			found = false
 			for i in eachindex(zipped)
 				used[i] && continue
 				if class(zipped[i]) == class(obj)
-					zipped[i] = mergewith(zipped[i], obj) do l, r
-						[l; r]
-					end
+					zipped[i] = merge_keyframes(zipped[i], obj, tprev, t)
 					used[i] = true
 					found = true
 				end
@@ -24,14 +30,28 @@ function animate(fn, ts)
 
 			if !found
 				push!(zipped, obj)
+				push!(used, true)
+
 			end
 
 
 		end
+		tprev = t
 	end
 	zipped
 end
 
+struct Keyframes{T} <: AbstractVector{Pair{Int,T}}
+	points::Vector{Pair{Int,T}}
+end
+Base.size(k::Keyframes) = size(k.points)
+Base.getindex(k::Keyframes, i) = getindex(k.points, i)
+
+merge_keyframes(l, r, t1, t2) = l == r ? l : Keyframes([t1 => l, t2 => r])
+merge_keyframes(l::Keyframes, r, t1, t2) = Keyframes([l.points; t2 => r])
+merge_keyframes(l::Dict, r::Dict, t1, t2) = Dict(k => merge_keyframes(l[k], r[k], t1, t2) for k in keys(l))
+
+Pickle.save(p::Pickle.AbstractPickle, io::IO, k::Keyframes) = Pickle.save(p, io, Dict("keyframes" => Tuple.(k.points)))
 
 
 # [

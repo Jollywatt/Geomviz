@@ -42,7 +42,7 @@ dn(a::BasisBlade; k...) = dn(Multivector(a); k...)
 normalize(P::Multivector{<:SGA}) = P/sqrt(abs(P⊙P))
 
 function encode(P::Multivector{SGA{Sig},1}) where Sig
-	p = dn((P))
+	p = dn(P)
 	rig("Point",
 		location=Vector(p.comps),
 		"Radius"=>0.05,
@@ -100,7 +100,7 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 		Qs = inner.(Ps, C) # points lying on circle/line
 		[
 			smallpoints(Qs; color=(1,0,1,1));
-			obj
+			# obj
 		]
 	else
 		obj
@@ -134,7 +134,7 @@ function encode(S::Multivector{SGA{Sig},3}) where Sig
 	if false
 		Ls = randn(Multivector{SGA{Sig},2}, 200)
 		Qs = inner.(Ls, S) # points lying on sphere/plane
-		[smallpoints(Qs; color=(0,1,1,1)); obj]
+		[smallpoints(Qs; color=(0,1,1,1))]
 	else
 		obj
 	end
