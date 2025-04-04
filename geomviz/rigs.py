@@ -55,6 +55,7 @@ def pose(rig: bpy.types.Object, data):
 		else:
 			rig.location = data["location"]
 
+	# reset modifier parameters to default
 	sockets = rig.geomviz_nodes.interface.items_tree
 	for socket in sockets:
 		try:
@@ -62,6 +63,7 @@ def pose(rig: bpy.types.Object, data):
 		except AttributeError:
 			pass
 
+	# set modifier parameters
 	if "rig_parameters" in data:
 		for key, val in data["rig_parameters"].items():
 			try:
@@ -69,17 +71,27 @@ def pose(rig: bpy.types.Object, data):
 			except KeyError:
 				raise utils.PoseError(rig.geomviz_nodes.name, key)
 
-			data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
 			if isanimation(val):
-				count = len(inp.default_value)
-				for i in range(count):
-					fcurve = get_fcurve(rig, data_path, index=i)
+				data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
+				is_vector_like = inp.socket_type in ('NodeSocketVector',)
+				if is_vector_like:
+					for i in range(len(inp.default_value)):
+						fcurve = get_fcurve(rig, data_path, index=i)
+						for frame, v in val["keyframes"]:
+							try:
+								fcurve.keyframe_points.insert(frame, v[i])
+							except TypeError as e:
+								print(e)
+								raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+				else:
+					fcurve = get_fcurve(rig, data_path, index=0)
 					for frame, v in val["keyframes"]:
 						try:
-							fcurve.keyframe_points.insert(frame, v[i])
+							fcurve.keyframe_points.insert(frame, v)
 						except TypeError as e:
 							print(e)
 							raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+
 
 			else:
 				try:
@@ -93,6 +105,8 @@ def pose(rig: bpy.types.Object, data):
 			raise utils.RigDataError("can't animate color yet")
 		else:
 			rig.color = data["color"]
+	else:
+		rig.color = (1,1,1,1)
 
 	if "show_wire" in data:
 		rig.show_wire = data["show_wire"]

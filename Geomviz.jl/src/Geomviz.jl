@@ -51,7 +51,7 @@ function replmode(input::String)
 	x = Main.eval(Meta.parse(input))
 	data = encode_scene(x)
 	!isnothing(data) && send_to_server(data)
-	data
+	x
 end
 
 function valid_input_checker(prompt_state)

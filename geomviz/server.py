@@ -104,19 +104,28 @@ class DataServer():
 	def put_to_queue(self, conn):
 		# this runs in the server's thread
 		# leaving data in the queue to be read by the main thread
-		binary = conn.recv(1 << 16)
+
+		conn.settimeout(1)
+		binary = b""
+		while True:
+			try:
+				packet = conn.recv(1 << 12)
+				if not packet: break
+				binary += packet
+			except socket.timeout:
+				print("Connection timed out.")
+				break
+
 		try:
 			data = validate_data(binary)
-			print(f"Received {data!r}.")
 		except Exception as e:
 			conn.send(f"Error: {e}".encode())
-			conn.close()
 			self.set_status(f"Error: {e}")
 		else:
 			conn.send(f"Received {len(binary)} bytes.".encode())
-			conn.close()
 			self.data_queue.put(data)
-			print(f"Queued {data}")
+		finally:
+			conn.close()
 
 	def read_from_queue(self):
 		# this runs as a registered bpy.app timer
