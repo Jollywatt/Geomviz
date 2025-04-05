@@ -1,4 +1,4 @@
-module Conformal
+ module Conformal
 
 using GeometricAlgebra
 import ..Geomviz: rig, encode, dn, normalize
@@ -49,8 +49,33 @@ function normalize(X::Multivector{<:CGA,1})
 	X/-(oo⊙X)
 end
 
+function embed(x::Multivector{Sig,K}) where {Sig,K}
+	X = zero(Multivector{CGA{Sig},K})
+	for ak in eachgrade(x)
+		T = Multivector{CGA{Sig},grade(ak)}
+		n = ncomponents(T)
+		X += T([ak.comps; zeros(n - ncomponents(ak))])
+	end
+	X
+end
+
+function unembed(X::Multivector{CGA{Sig},K}) where {Sig,K}
+	x = zero(Multivector{Sig,K})
+	for ak in eachgrade(X)
+		T = Multivector{Sig,grade(ak)}
+		n = ncomponents(T)
+		x += T(ak.comps[1:n])
+	end
+	x
+end
 
 basecomps(a::Multivector{CGA{n},1}) where n = a.comps[1:n]
+function basecomps(a::Multivector{CGA{n},K}) where {n,K}
+	eachgrade(a) do ak
+		ak.comps
+	end
+end
+
 dn(x::Multivector{CGA{n},1}) where n = basecomps(normalize(x))
 
 
@@ -91,7 +116,7 @@ function encode(X::Multivector{CGA{3},1})
 
 end
 
-function encode(pointpair::Multivector{CGA{3},2})
+function pointpair_from_bivector(pointpair::Multivector{CGA{3},2})
 	circle = hodgedual(pointpair)
 	parts = circleparts(circle)
 	rig("Point Pair",
@@ -99,6 +124,26 @@ function encode(pointpair::Multivector{CGA{3},2})
 		"Radius"=>parts.radius,
 		"Direction"=>parts.normal,
 	)
+end
+
+function encode(X::Multivector{CGA{3},2})
+	o, oo = origin(X), infinity(X)
+
+	square = X⊙X
+
+	if abs(square) < eps()
+		# tangent
+		A = X⋅oo
+		direction = unembed(A).comps
+		location = unembed(X⨽inv(A)).comps
+		rig("Arrow Vector",
+			location=location,
+			"Vector"=>direction,
+		)
+
+	else
+		pointpair_from_bivector(X)
+	end
 
 end
 
@@ -112,7 +157,7 @@ function circleparts(X::Multivector{CGA{3},3})
 	normal = basecomps(hodgedual(carrier))
 	(
 		location=x,
-		radius=sqrt(abs(ρ²)),
+		radius=sign(ρ²)sqrt(abs(ρ²)),
 		normal=normal,
 	)
 end
@@ -128,6 +173,17 @@ end
 function encode(X::Multivector{CGA{3},3})
 	o, oo = origin(X), infinity(X)
 
+	if abs(X⊙X) < eps()
+		A = X⋅-oo
+		normal = rdual(unembed(A))
+		location = unembed(X⨽inv(A)).comps
+		return rig("Circle 2-blade",
+			location=location,
+			"Normal"=>normal.comps,
+			"Radius"=>sqrt(abs2(normal)),
+		)
+	end
+
 	n = X∧oo
 	if abs(n⊙n) < 1e-3
 		parts = lineparts(X)
@@ -139,12 +195,14 @@ function encode(X::Multivector{CGA{3},3})
 		)
 	else
 		parts = circleparts(X)
+		@show parts.radius
 		rig(
 			"Spear Circle",
 			location=parts.location,
 			"Radius"=>parts.radius,
 			"Normal"=>parts.normal,
 			"Arrow count"=>0,
+			color=parts.radius > 0 ? (1,1,1,1) : (0,0,1,0.5)
 		)
 	end
 end
