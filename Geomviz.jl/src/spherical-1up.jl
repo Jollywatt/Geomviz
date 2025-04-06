@@ -23,13 +23,13 @@ function GeometricAlgebra.get_basis_display_style(sig::Type{<:SGA})
 	BasisDisplayStyle(n; indices)
 end
 
-embed(::Type{SGA{Sig}}, a::Multivector{Sig,1}) where Sig = Multivector{SGA{Sig},1}([a.comps; 0])
-embed(::Type{SGA{Sig}}, a::BasisBlade) where Sig = embed(SGA{Sig}, Multivector(a))
+embed(a::Multivector{Sig,1}) where Sig = Multivector{SGA{Sig},1}([a.comps; 0])
+embed(a::BasisBlade{Sig}) where Sig = embed(SGA{Sig}, Multivector(a))
 
 function up(p::Grade{1,Sig}; λ=CURVATURE[]) where Sig
 	p² = p⊙p
 	e0 = basis(SGA{Sig}, 1, dimension(Sig) + 1)
-	(2λ*embed(SGA{Sig}, p) + (λ^2 - p²)e0)/(λ^2 + p²)
+	(2λ*embed(p) + (λ^2 - p²)e0)/(λ^2 + p²)
 end
 up(comps...; kw...) = up(Multivector{length(comps),1}(comps); kw...)
 
@@ -89,7 +89,7 @@ function encode(C::Multivector{SGA{Sig},2}) where Sig
 			location=centerpoint.comps,
 			"Normal"=>normal.comps,
 			"Radius"=>r,
-			"Arrow count"=>0,
+			"Arrow count"=>4,
 		)
 
 	end

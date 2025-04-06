@@ -131,7 +131,7 @@ function encode(X::Multivector{CGA{3},2})
 
 	square = X⊙X
 
-	if abs(square) < eps()
+	if abs(square) < sqrt(eps())
 		# tangent
 		A = X⋅oo
 		direction = unembed(A).comps

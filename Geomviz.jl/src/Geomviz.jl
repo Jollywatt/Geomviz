@@ -39,6 +39,7 @@ up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
 up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
 embed(::Type{CGA}, a::AbstractMultivector) = Conformal.embed(a)
+embed(::Type{SGA}, a::AbstractMultivector) = SphericalOneUp.embed(a)
 
 Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 Pickle.List(a::GeometricAlgebra.StaticVector) = Pickle.List(collect(a))
