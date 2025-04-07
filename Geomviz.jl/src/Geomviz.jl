@@ -4,20 +4,15 @@ using Sockets
 using Pickle
 using ReplMaker
 using REPL: LineEdit
-
 using GeometricAlgebra
-using GeometricAlgebra: replace_signature
 
-export encode
-export PORT
-
-export embed, up, dn, normalize
-export Projective, Conformal, SphericalOneUp
-export PGA, CGA, SGA
-export Styled, animate
+export encode, PORT, Styled, animate
+export up, dn, unembed
+export Projective, PGA
+export Conformal, CGA
+export SphericalOneUp, SGA
 
 function dn end
-function embed end
 function normalize end
 
 normalize(a::BasisBlade) = normalize(Multivector(a))
@@ -38,16 +33,18 @@ up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
 up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
 up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
-embed(::Type{CGA}, a::AbstractMultivector) = Conformal.embed(a)
-embed(::Type{SGA}, a::AbstractMultivector) = SphericalOneUp.embed(a)
+GeometricAlgebra.embed(::Type{CGA}, a::Multivector) = Conformal.embed(a)
+GeometricAlgebra.embed(::Type{SGA}, a::Multivector) = SphericalOneUp.embed(a)
 
-Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
-Pickle.List(a::GeometricAlgebra.StaticVector) = Pickle.List(collect(a))
-function Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple)
-	Pickle.save(p, io, Dict(string(k) => v for (k, v) in pairs(nt)))
-end
+"""
+	unembed(a::Multivector)
 
-const PORT = Ref(8888)
+The part of a multivector lying in the base space `Sig` if the multivector is
+embedded in higher space such as `CGA{Sig}` or `SGA{Sig}`.
+"""
+unembed(a::Multivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = GeometricAlgebra.embed(Sig, a)
+
+#= blend repl mode =#
 
 function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))

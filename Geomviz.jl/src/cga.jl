@@ -26,15 +26,30 @@ The point at the origin `e₀` and the point at infinity `e∞` in the `n`-dimen
 conformal geometric algebra model, using the convention
 ``e₀ = (e₊ + e₋)/2`` and ``e∞ = e₋ - e₊``.
 """
-origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); 0.5; 0.5])
+origin, infinity
 
-@doc (@doc origin)
+origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); 0.5; 0.5])
 infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -1; +1])
 
 origin(a::Multivector) = origin(signature(a))
 infinity(a::Multivector) = infinity(signature(a))
 
-embed(x::Multivector{Sig,1}) where Sig = Multivector{CGA{Sig},1}([x.comps; 0; 0])
+
+embed(x::Multivector{Sig}) where {Sig} = GeometricAlgebra.embed(CGA{Sig}, x)
+unembed(x::Multivector{CGA{Sig}}) where {Sig} = GeometricAlgebra.embed(Sig, x)
+
+
+"""
+	embed(::Multivector{Sig,K})::Multivector{CGA{Sig},K}
+	unembed(::Multivector{CGA{Sig},K})::Multivector{Sig,K}
+
+Embed a multivector in the algebra `Sig` into the 2d-up conformal algebra `CGA{Sig}`
+by setting new components to zero, or "unembed" a 2d-up multivector by discarding extra components.
+
+For any multivector `A` we have `unembed(embed(A)) == A` and `embed∘unembed` is idempotent.
+"""
+embed, unembed
+
 
 function up(x::Multivector{Sig,1}) where Sig
 	o, oo = origin(CGA{Sig}), infinity(CGA{Sig})
@@ -42,6 +57,12 @@ function up(x::Multivector{Sig,1}) where Sig
 end
 up(x::BasisBlade) = up(Multivector(x))
 up(comps::AbstractVector) = up(Multivector{length(comps),1}(comps))
+
+"""
+	up(comps...)
+
+Shorthand for `up(Multivector{n,1}(comps))` where `n = length(comps)`.
+"""
 up(comps...) = up(Multivector{length(comps),1}(comps...))
 
 function normalize(X::Multivector{<:CGA,1})
@@ -49,35 +70,27 @@ function normalize(X::Multivector{<:CGA,1})
 	X/-(oo⊙X)
 end
 
-function embed(x::Multivector{Sig,K}) where {Sig,K}
-	X = zero(Multivector{CGA{Sig},K})
-	for ak in eachgrade(x)
-		T = Multivector{CGA{Sig},grade(ak)}
-		n = ncomponents(T)
-		X += T([ak.comps; zeros(n - ncomponents(ak))])
-	end
-	X
-end
-
-function unembed(X::Multivector{CGA{Sig},K}) where {Sig,K}
-	x = zero(Multivector{Sig,K})
-	for ak in eachgrade(X)
-		T = Multivector{Sig,grade(ak)}
-		n = ncomponents(T)
-		x += T(ak.comps[1:n])
-	end
-	x
-end
-
 basecomps(a::Multivector{CGA{n},1}) where n = a.comps[1:n]
-function basecomps(a::Multivector{CGA{n},K}) where {n,K}
-	eachgrade(a) do ak
-		ak.comps
-	end
-end
 
 dn(x::Multivector{CGA{n},1}) where n = basecomps(normalize(x))
 
+
+"""
+	up(::Multivector{Sig,1})::Multivector{CGA{Sig},1}
+	dn(::Multivector{CGA{Sig},1})::Multivector{Sig,1}
+
+"Lift up" a 1-vector in a base space `Sig` to a null vector in the 2d-up conformal algebra `CGA{Sig}`,
+or "project down" a conformal 1-vector back into the base space.
+
+The `up` map is given by
+```math
+up(x) = o + embed(x) + 1/2 x^2 oo
+```
+where `o = origin(CGA{Sig})` and `oo = infinity(CGA{Sig})` are the points representing the origin and infinity.
+
+For any vector `u` we have `dn(up(u)) == n` and `up∘dn` is idempotent.
+"""
+up, dn
 
 
 function encode(X::Multivector{CGA{3},1})

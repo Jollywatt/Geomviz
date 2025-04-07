@@ -23,8 +23,8 @@ function GeometricAlgebra.get_basis_display_style(sig::Type{<:SGA})
 	BasisDisplayStyle(n; indices)
 end
 
-embed(a::Multivector{Sig,1}) where Sig = Multivector{SGA{Sig},1}([a.comps; 0])
-embed(a::BasisBlade{Sig}) where Sig = embed(SGA{Sig}, Multivector(a))
+embed(a::AbstractMultivector{Sig}) where Sig = GeometricAlgebra.embed(SGA{Sig}, a)
+unembed(a::AbstractMultivector{SGA{Sig}}) where Sig = GeometricAlgebra.embed(Sig, a)
 
 function up(p::Grade{1,Sig}; λ=CURVATURE[]) where Sig
 	p² = p⊙p

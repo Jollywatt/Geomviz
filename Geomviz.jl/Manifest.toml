@@ -68,7 +68,7 @@ version = "1.11.0"
 deps = ["Combinatorics", "OrderedCollections", "PrettyTables", "Random", "SparseArrays", "StaticArrays"]
 path = "/Users/josephwilson/Documents/GeometricAlgebra.jl/"
 uuid = "11bbe1ca-eae6-48c2-942c-9f17e43de0f0"
-version = "0.2.3"
+version = "0.2.4"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
