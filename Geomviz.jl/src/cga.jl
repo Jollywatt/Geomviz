@@ -1,4 +1,4 @@
- module Conformal
+module Conformal
 
 using GeometricAlgebra
 import ..Geomviz: rig, encode, dn, normalize
@@ -202,7 +202,7 @@ function encode(X::Multivector{CGA{3},3})
 			"Radius"=>parts.radius,
 			"Normal"=>parts.normal,
 			"Arrow count"=>0,
-			color=parts.radius > 0 ? (1,1,1,1) : (0,0,1,0.5)
+			"Imaginary"=>parts.radius < 0,
 		)
 	end
 end

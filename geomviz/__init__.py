@@ -30,7 +30,7 @@ import bpy
 classes = [
 	server.StartServer,
 	server.StopServer,
-	# panels.ScenePanel,
+	panels.ScenePanel,
 	panels.ServerPanel,
 	rigs.InstantiateRig,
 	assets.LoadInventory,
