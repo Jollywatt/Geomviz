@@ -6,7 +6,6 @@ function Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple)
 	Pickle.save(p, io, Dict(string(k) => v for (k, v) in pairs(nt)))
 end
 
-
 function send_to_server(data, port=PORT[], showresponse=true)
     sock = connect(ip"127.0.0.1", port)
 	binary = Pickle.stores(data)
@@ -61,28 +60,4 @@ function rig(rig_name, rig_parameters::Pair{String}...; object_parameters...)
 		object_parameters...,
 		"rig_parameters"=>Dict(rig_parameters),
 	)
-end
-
-function anim()
-	K = enumerate(range(0, 1, length=100))
-	Dict(
-		"animation"=>true,
-		"frame_range"=>(0,100),
-		"objects"=>[
-			Dict(
-				"rig_name"=>"Point",
-				"location"=>Dict(
-					"keyframes"=>[
-						(i, (cos(2pi*t),sin(2pi*t),t))
-						for (i, t) in K
-					]
-				),
-				"rig_parameters"=>Dict(
-					"Radius"=>Dict(
-						"keyframes"=>[(i, sin(pi*t)) for (i, t) in K]
-					)
-				),
-			),
-		],
-	) |> send_to_server
 end

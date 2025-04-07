@@ -1,3 +1,19 @@
+"""
+# Conformal geometric algebra
+
+Module containing recipes for 2d-up conformal geometric algebra.
+
+The algebra `CGA{Sig}` is an extension of the base space `Sig` with two additional dimensions,
+`vp^2 = +1` and `vm^2 = -1`. Points in the base space `p::Multivector{Sig,a}` are associated to
+null vectors in the higher space by
+```julia
+up(x) = o + x + x^2/2*oo
+```
+where `o = origin(CGA{Sig})` is the null vector representing the origin and `oo = origin(CGA{Sig})`
+represents the point at infinity.
+
+Conformal geometric algebra has covariant representations of points, point-pairs, lines, circles, spheres, and other geometric primitives.
+"""
 module Conformal
 
 using GeometricAlgebra

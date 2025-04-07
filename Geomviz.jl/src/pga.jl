@@ -1,3 +1,13 @@
+"""
+# Projective geometric algebra
+
+Module containing recipes for point- or plane-based projective geometric algebras.
+
+To any algebra with metric signature `Sig` we can associate a projectivies algebra
+`ProjectiveSignature{Sig}` with an additional dimension.
+This extra dimension (displayed as `v0`) acts as a _homogeneous coordinate_ to allow
+the representation of linear subspaces not containing the origin.
+"""
 module Projective
 
 using GeometricAlgebra
@@ -18,7 +28,7 @@ If `PlaneBased = true`, then ``(n - 1)``-vectors are interpreted as points
 (as in plane-based projective geometric algebra), and if `PlaneBased = false`
 then ``1``-vectors are interpreted as projective points (as in point-based PGA).
 """
-struct ProjectiveSignature{Sig,Index,Repr} end
+abstract type ProjectiveSignature{Sig,Index,Repr} end
 
 
 basesig(::Type{<:ProjectiveSignature{Sig}}) where Sig = Sig
@@ -33,6 +43,11 @@ function GeometricAlgebra.get_basis_display_style(::Type{<:ProjectiveSignature{S
 	BasisDisplayStyle(n; indices)
 end
 
+"""
+	PGA{Sig} = ProjectiveSignature{Sig,1,true}
+
+Metric signature for _plane-based_ projective geometric algebra.
+"""
 const PGA{Sig} = ProjectiveSignature{Sig,1,true}
 
 
@@ -53,6 +68,9 @@ end
 
 projpoint(a::Grade{1}) = nonprojcomps(a)/projcomp(a)
 
+function up(::Type{<:ProjectiveSignature{Sig,I,Repr} where Sig}, a::Grade{1}) where {I,Repr}
+	up(ProjectiveSignature{signature})
+end
 
 function up(sig::Type{ProjectiveSignature{UpSig,I,false}}, a::Multivector{Sig,1}) where {UpSig,Sig,I}
 	@assert dimension(UpSig) == dimension(Sig) + 1

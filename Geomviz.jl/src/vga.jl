@@ -1,3 +1,5 @@
+#= Vector/Vanilla Geometric Algebra =#
+
 encode(a::Multivector{3,1}) = rig(
 	"Arrow Vector",
 	location=(0,0,0),

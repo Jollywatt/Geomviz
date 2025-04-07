@@ -63,39 +63,3 @@ end
 
 Pickle.save(p::Pickle.AbstractPickle, io::IO, k::Keyframes) = Pickle.save(p, io, Dict("keyframes" => Tuple.(k.points)))
 
-
-# [
-# 	{a: 1, b: (1, 0), c: false},
-# 	{a: 1, b: (1.2, 0), c: false},
-# 	{a: 1, b: (1.55, 0), c: false},
-# 	{a: 1, b: (1.5, 0), c: true},
-# 	{a: 1, b: (1.3, 0), c: true},
-# ]
-
-# {
-# 	a: 1,
-# 	b: {
-# 		keyframes: [
-# 			(1, (1, 0))
-# 			(2, (1.2, 0))
-# 			(3, (1.55, 0))
-# 			(4, (1.5, 0))
-# 			(5, (1.3, 0))
-# 		]
-# 	},
-# 	c: {
-# 		(1, false),
-# 		(4, true)
-# 	}
-# }
-
-
-# [
-# 	[{type: 1, data: 'A1'}, {type: 2, data: 'B1'}, {type: 1, data: 'C1'}],
-# 	[{type: 1, data: 'A2'}, {type: 2, data: 'B2'}, {type: 1, data: 'C2'}],
-# 	[{type: 1, data: 'A2'}, {type: 2, data: 'B2'}],
-# 	[{type: 2, data: 'B2'}, {type: 1, data: 'A2'}],
-# ]
-
-# [
-# ]
