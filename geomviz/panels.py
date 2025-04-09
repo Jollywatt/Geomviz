@@ -23,7 +23,7 @@ class ScenePanel(bpy.types.Panel):
 		row.prop(context.scene, 'geomviz_inventory_item')
 
 		row = layout.row()
-		row.operator(rigs.Copy.bl_idname)
+		row.operator(rigs.InstantiateRig.bl_idname)
 
 
 class ServerPanel(bpy.types.Panel):

@@ -224,7 +224,6 @@ function encode(X::Multivector{CGA{3},3})
 		)
 	else
 		parts = circleparts(X)
-		@show parts.radius
 		rig(
 			"Spear Circle",
 			location=parts.location,

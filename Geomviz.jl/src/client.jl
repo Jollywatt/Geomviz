@@ -18,6 +18,8 @@ function encode(::T) where T
 	@warn "Object not sent to Blender." T
 end
 
+encode(encoded::Dict{String}) = encoded
+
 function encode(objs::Union{Tuple,AbstractVector})
 	isempty(objs) && return
 	data = encode.(objs)
@@ -39,25 +41,36 @@ end
 
 struct Styled{T}
 	obj::T
+	rig_parameters::Dict{String,Any}
 	attributes::Dict{String,Any}
-	Styled(obj::T, attrs::Dict) where T = new{T}(obj, Dict(string(k) => v for (k, v) in attrs))
 end
-Styled(obj; kwargs...) = Styled(obj, Dict(kwargs))
+function Styled(obj, rig_parameters::Pair{String}...; attributes...)
+	attributes = Dict{String,Any}(string(k) => v for (k, v) in attributes)
+	Styled(obj, Dict{String,Any}(rig_parameters), attributes)
+end
 
 function encode(s::Styled)
 	data = encode(s.obj)
 	if data isa Union{Tuple,AbstractVector}
-		merge!.(data, Ref(s.attributes))
-	else
+		for thing in data
+			merge!(thing, s.attributes)
+			merge!(thing["rig_parameters"], s.rig_parameters)
+		end
+	elseif data isa Dict
 		merge!(data, s.attributes)
+		merge!(data["rig_parameters"], s.rig_parameters)
+	else
+		throw(Exception("What's this?", data))
 	end
+
+	data
 end
 
 function rig(rig_name, rig_parameters::Pair{String}...; object_parameters...)
 	object_parameters = [string(k) => v for (k, v) in pairs(object_parameters)]
-	Dict(
+	Dict{String,Any}(
 		"rig_name"=>rig_name,
+		"rig_parameters"=>Dict{String,Any}(rig_parameters),
 		object_parameters...,
-		"rig_parameters"=>Dict(rig_parameters),
 	)
 end

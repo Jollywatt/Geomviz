@@ -118,23 +118,6 @@ def pose(rig: bpy.types.Object, data):
 		rig.name = data["rig_name"]
 		rig.show_name = False
 
-
-	# 	if key == "Rig":
-	# 		pass
-	# 	elif key == "Location":
-	# 		rig.location = val
-	# 	elif key == "Color":
-	# 		rig.color = val
-	# 	elif key == "Show wire":
-	# 		rig.show_wire = val
-	# 	else:
-	# 		try:
-	# 			inp = inputs[key]
-	# 		except KeyError:
-	# 			raise utils.PoseError(rig.geomviz_nodes.name, key)
-
-	# 		mod[inp.identifier] = val
-
 	rig.data.update()
 
 

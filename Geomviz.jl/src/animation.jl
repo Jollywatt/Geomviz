@@ -3,7 +3,7 @@ function canbeidentified(a::Dict, b::Dict)
 	a["rig_name"] == b["rig_name"] && keys(a) == keys(b)
 end
 
-function animate(fn, ts)
+function animate(fn, ts::AbstractVector)
 	frames = map(ts) do t
 		flatmap(encode, fn(t))
 	end
@@ -15,7 +15,7 @@ function animate(fn, ts)
 end
 
 function detect_keyframes(ts, frames)
-	zipped = []
+	zipped = Dict[]
 	tprev = 0
 	for (t, objs) in zip(ts, frames)
 
@@ -25,6 +25,7 @@ function detect_keyframes(ts, frames)
 			for i in eachindex(zipped)
 				used[i] && continue
 				if canbeidentified(zipped[i], obj)
+
 					zipped[i] = merge_keyframes(tprev => zipped[i], t => obj)
 					used[i] = true
 					found = true
