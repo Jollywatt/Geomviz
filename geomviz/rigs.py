@@ -96,7 +96,9 @@ def pose(rig: bpy.types.Object, data):
 			else:
 				try:
 					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
-				except TypeError:
+				except TypeError as e:
+					# print()
+					print(e)
 					raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r} to {val!r}")
 
 
