@@ -54,6 +54,8 @@ def pose(rig: bpy.types.Object, data):
 					xyz_curves[i].keyframe_points.insert(frame, xyz[i], options={'FAST'})
 		else:
 			rig.location = data["location"]
+	else:
+		rig.location = (0,0,0)
 
 	# reset modifier parameters to default
 	sockets = rig.geomviz_nodes.interface.items_tree
@@ -69,7 +71,9 @@ def pose(rig: bpy.types.Object, data):
 			try:
 				inp = sockets[key]
 			except KeyError:
-				raise utils.PoseError(rig.geomviz_nodes.name, key)
+				# raise utils.PoseError(rig.geomviz_nodes.name, key)
+				print(f"WARNING: rig {rig.geomviz_nodes.name!r} has no parameter {key!r}")
+				continue
 
 			if isanimation(val):
 				data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'

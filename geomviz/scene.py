@@ -69,4 +69,8 @@ def handle_scene_data(data):
 	except utils.RigDataError as e:
 		return repr(e)
 	except utils.PoseError as e:
-		return f"Failed to pose {e.name!r}: key {e.key!r} not found"
+		try:
+			keys = bpy.data.node_groups[e.name].interface.items_tree.keys()
+			return f"Failed to pose {e.name!r}: key {e.key!r} not found in {keys!r}"
+		except:
+			return f"Failed to pose {e.name!r}: key {e.key!r} not found"

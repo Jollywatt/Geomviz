@@ -22,7 +22,7 @@ end
 function anim_toridal_rotor()
 	o, oo = Conformal.origin(CGA{3}), Conformal.infinity(CGA{3})
 
-	x = up.(CGA, randn(Multivector{3,1}, 200))
+	x = up.(CGA, randn(Multivector{3,1}, 50))
 
 	s = wedge(rand(x, 3)...)
 	S = wedge(rand(x, 3)...)
@@ -33,7 +33,7 @@ function anim_toridal_rotor()
 	c /= sqrt(c⊙c)
 
 	R(t) = exp(t*hodgedual(c))
-	animate(range(0, π, length=2000)) do t
+	animate(range(0, π, length=300)) do t
 		Rt = R(t)
 		y = sandwich_prod.(Rt, x)
 		[

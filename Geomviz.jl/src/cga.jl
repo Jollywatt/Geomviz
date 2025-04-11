@@ -27,11 +27,11 @@ Metric signature for the conformal geometric algebra over ``n``-dimensional Eucl
 abstract type CGA{n} end
 
 GeometricAlgebra.dimension(P::Type{CGA{n}}) where n = n + 2
-GeometricAlgebra.basis_vector_square(P::Type{CGA{n}}, i::Integer) where n = i == n + 2 ? -1 : 1
-function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
-	indices = [string.(1:n); "p"; "m"]
-	BasisDisplayStyle(n + 2; indices)
-end
+GeometricAlgebra.basis_vector_square(P::Type{CGA{n}}, i::Integer) where n = GeometricAlgebra.basis_vector_square(Cl(n + 1, 1), i)
+# function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
+# 	indices = [string.(1:n); "p"; "m"]
+# 	BasisDisplayStyle(n + 2; indices)
+# end
 
 
 """
@@ -44,8 +44,8 @@ conformal geometric algebra model, using the convention
 """
 origin, infinity
 
-origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); 0.5; 0.5])
-infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -1; +1])
+origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
+infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); +1; +1])
 
 origin(a::Multivector) = origin(signature(a))
 infinity(a::Multivector) = infinity(signature(a))
@@ -88,7 +88,7 @@ end
 
 basecomps(a::Multivector{CGA{n},1}) where n = a.comps[1:n]
 
-dn(x::Multivector{CGA{n},1}) where n = basecomps(normalize(x))
+dn(x::Multivector{CGA{n},1}) where n = Multivector{n,1}(basecomps(normalize(x)))
 
 
 """
@@ -107,6 +107,89 @@ where `o = origin(CGA{Sig})` and `oo = infinity(CGA{Sig})` are the points repres
 For any vector `u` we have `dn(up(u)) == n` and `up∘dn` is idempotent.
 """
 up, dn
+
+
+
+
+"""
+	CGAObject{N,K,D}
+
+A blade in `CGA{N}` of grade `K` representing a `D`-dimensional
+object in Euclidean `N`-space.
+"""
+abstract type CGAObject{N,K,D} end
+
+struct Flat{N,K,D} <: CGAObject{N,K,D}
+	location::Multivector{N,1}
+	direction::Multivector{N,D}
+end
+struct Round{N,K,D} <: CGAObject{N,K,D}
+	carrier::Flat{N,K,D}
+	radius::Float64
+end
+struct Tangent{N,K,D} <: CGAObject{N,K,D}
+	carrier::Flat{N,K,D}
+end
+
+location(x::Flat) = x.location
+location(x::Union{Round,Tangent}) = location(x.carrier)
+
+direction(x::Flat) = x.direction
+direction(x::Union{Round,Tangent}) = direction(x.carrier)
+
+radius(x::Round) = x.radius
+radius(x::Tangent)::Float64 = 0
+
+const PointPair = Round{2}
+const Circle = Round{3}
+const Sphere = Round{4}
+
+const PointFlat = Flat{2}
+const Line = Flat{3}
+const Plane = Flat{4}
+
+
+encode(x::PointFlat) = rig(
+	"Point",
+	location=location(x),
+)
+
+encode(x::PointPair) = rig("PointPair",
+	location=location(x),
+	"Direction"=>direction(x),
+	"Radius"=>radius(x)
+)
+
+encode(x::Circle) = rig("Spear Circle",
+	location=location(x),
+	"Normal"=>1
+)
+
+function classify(x::Union{[Multivector{CGA{3},K} for K in 1:4]...})
+	o, oo = origin(x), infinity(x)
+
+	if x ∧ oo ≈ 0
+		# flats
+		if x ⨽ oo ≈ 0
+
+		end
+	else
+		# rounds
+		if x ⨽ oo ≈ 0
+			:ff
+		else
+			loc = dn(sandwich_prod(x, oo))
+			dir = unembed((x ⨽ -oo) ∧ oo)
+			ρ² = x⊙x
+			ρ = sign(ρ²)sqrt(abs(ρ²))
+			Round{3,grade(x),grade(dir)}(
+				Flat{3,grade(x),grade(dir)}(loc, dir),
+				ρ
+			)
+		end
+	end
+
+end
 
 
 function encode(X::Multivector{CGA{3},1})
