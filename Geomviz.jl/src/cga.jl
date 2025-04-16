@@ -20,20 +20,27 @@ using GeometricAlgebra
 import ..Geomviz: rig, encode, dn, normalize
 
 export origin, infinity
+export classify
+export Flat, PointFlat, Line, Plane
+export Round, PointPair, Circle, Sphere
+export Tangent, Point
+
 
 """
-Metric signature for the conformal geometric algebra over ``n``-dimensional Euclidean space.
+Metric signature for the conformal geometric algebra over a base space with metric signature ``Sig``.
+The conformalised algebra has dimension `dimension(Sig) + 2`, with the two extra basis vectors squaring
+to ``+1`` and ``-1``, respectively.
 """
-abstract type CGA{n} end
+abstract type CGA{Sig} end
 
-GeometricAlgebra.dimension(P::Type{CGA{n}}) where n = n + 2
-GeometricAlgebra.basis_vector_square(P::Type{CGA{n}}, i::Integer) where n = GeometricAlgebra.basis_vector_square(Cl(n + 1, 1), i)
-# function GeometricAlgebra.get_basis_display_style(::Type{CGA{n}}) where {n}
-# 	indices = [string.(1:n); "p"; "m"]
-# 	BasisDisplayStyle(n + 2; indices)
-# end
+GeometricAlgebra.dimension(::Type{CGA{Sig}}) where Sig = dimension(Sig) + 2
+function GeometricAlgebra.basis_vector_square(P::Type{CGA{Sig}}, i::Integer) where Sig
+	(GeometricAlgebra.canonical_signature(Sig)..., +1, -1)[i]
+end
 
 
+origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
+infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); +1; +1])
 """
 	origin(CGA{n})
 	infinity(CGA{n})
@@ -44,17 +51,9 @@ conformal geometric algebra model, using the convention
 """
 origin, infinity
 
-origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
-infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); +1; +1])
-
-origin(a::Multivector) = origin(signature(a))
-infinity(a::Multivector) = infinity(signature(a))
-
 
 embed(x::Multivector{Sig}) where {Sig} = GeometricAlgebra.embed(CGA{Sig}, x)
 unembed(x::Multivector{CGA{Sig}}) where {Sig} = GeometricAlgebra.embed(Sig, x)
-
-
 """
 	embed(::Multivector{Sig,K})::Multivector{CGA{Sig},K}
 	unembed(::Multivector{CGA{Sig},K})::Multivector{Sig,K}
@@ -82,7 +81,7 @@ Shorthand for `up(Multivector{n,1}(comps))` where `n = length(comps)`.
 up(comps...) = up(Multivector{length(comps),1}(comps...))
 
 function normalize(X::Multivector{<:CGA,1})
-	o, oo = origin(X), infinity(X)
+	o, oo = origin(signature(X)), infinity(signature(X))
 	X/-(oo⊙X)
 end
 
@@ -112,23 +111,32 @@ up, dn
 
 
 """
-	CGAObject{N,K,D}
+	CGAObject{D,Sig}
 
-A blade in `CGA{N}` of grade `K` representing a `D`-dimensional
-object in Euclidean `N`-space.
+A blade in `CGA{Sig}` with a `D`-dimensional carrier.
 """
-abstract type CGAObject{N,K,D} end
+abstract type CGAObject{D,Sig} end
 
-struct Flat{N,K,D} <: CGAObject{N,K,D}
-	location::Multivector{N,1}
-	direction::Multivector{N,D}
+
+"""
+	Flat{D,Sig}
+
+A blade of the forn
+``Tₚ[o ∧ E ∧ oo]``
+"""
+struct Flat{D,Sig} <: CGAObject{D,Sig}
+	location::Multivector{Sig,1}
+	direction::Multivector{Sig,D}
 end
-struct Round{N,K,D} <: CGAObject{N,K,D}
-	carrier::Flat{N,K,D}
+struct Round{D,Sig} <: CGAObject{D,Sig}
+	carrier::Flat{D,Sig}
 	radius::Float64
 end
-struct Tangent{N,K,D} <: CGAObject{N,K,D}
-	carrier::Flat{N,K,D}
+struct Tangent{D,Sig} <: CGAObject{D,Sig}
+	carrier::Flat{D,Sig}
+end
+struct Direction{D,Sig} <: CGAObject{D,Sig}
+	direction::Multivector{Sig,D}
 end
 
 location(x::Flat) = x.location
@@ -140,21 +148,21 @@ direction(x::Union{Round,Tangent}) = direction(x.carrier)
 radius(x::Round) = x.radius
 radius(x::Tangent)::Float64 = 0
 
-const PointPair = Round{2}
-const Circle = Round{3}
-const Sphere = Round{4}
 
-const PointFlat = Flat{2}
-const Line = Flat{3}
-const Plane = Flat{4}
+const Point = Tangent{0}
+
+const PointPair = Round{1}
+const Circle = Round{2}
+const Sphere = Round{3}
+
+const PointFlat = Flat{0}
+const Line = Flat{1}
+const Plane = Flat{2}
 
 
-encode(x::PointFlat) = rig(
-	"Point",
-	location=location(x),
-)
+encode(x::Union{Point,PointFlat}) = rig("Point", location=location(x))
 
-encode(x::PointPair) = rig("PointPair",
+encode(x::PointPair) = rig("Point Pair",
 	location=location(x),
 	"Direction"=>direction(x),
 	"Radius"=>radius(x)
@@ -162,164 +170,75 @@ encode(x::PointPair) = rig("PointPair",
 
 encode(x::Circle) = rig("Spear Circle",
 	location=location(x),
-	"Normal"=>1
+	"Radius"=>radius(x),
+	"Normal"=>rdual(direction(x)),
 )
 
-function classify(x::Union{[Multivector{CGA{3},K} for K in 1:4]...})
-	o, oo = origin(x), infinity(x)
+encode(x::Union{Sphere,Round{0}}) = rig("Sphere",
+	location=location(x),
+	"Radius"=>abs(radius(x)),
+	"Imaginary"=>radius(x) < 0,
+)
+
+encode(x::Line) = rig("Spear Line",
+	location=location(x),
+	"Direction"=>direction(x),
+)
+
+encode(x::Plane) = rig("Checker Plane",
+	location=location(x),
+	"Normal"=>rdual(direction(x)),
+)
+
+encode(x::Tangent{1}) = rig("Arrow Vector",
+	location=location(x),
+	"Vector"=>direction(x),
+)
+
+encode(x::Tangent{2}) = rig("Circle 2-blade",
+	location=location(x),
+	"Normal"=>rdual(direction(x)),
+)
+
+
+function classify(x::AbstractMultivector{<:CGA})
+	o, oo = origin(signature(x)), infinity(signature(x))
+
+	x² = x*x
+	x² ≈ scalar(x²) || return nothing
 
 	if x ∧ oo ≈ 0
-		# flats
 		if x ⨽ oo ≈ 0
-
+			# directions
+			dir = unembed(x ⨽ -o)
+			Direction(dir)
+		else
+			# flats
+			loc = dn(x⨽(x⨽o))
+			dir = unembed(involution(x)⨽(o∧oo))
+			Flat(loc, dir)
 		end
 	else
-		# rounds
-		if x ⨽ oo ≈ 0
-			:ff
+		y = x ⨽ oo
+		if y ≈ 0
+			# dual flats
+			classify(hodgedual(x))
 		else
+			# rounds
 			loc = dn(sandwich_prod(x, oo))
-			dir = unembed((x ⨽ -oo) ∧ oo)
-			ρ² = x⊙x
-			ρ = sign(ρ²)sqrt(abs(ρ²))
-			Round{3,grade(x),grade(dir)}(
-				Flat{3,grade(x),grade(dir)}(loc, dir),
-				ρ
-			)
+			dir = unembed((involution(x) ⨽ oo))
+			ρ² = x⊙x/(y⊙y)
+			if abs(ρ²) < sqrt(eps())
+				Tangent(Flat(loc, dir))
+			else
+				ρ = sign(ρ²)sqrt(abs(ρ²))
+				Round(Flat(loc, dir), ρ)
+			end
 		end
 	end
 
 end
 
-
-function encode(X::Multivector{CGA{3},1})
-	o, oo = origin(X), infinity(X)
-
-	norm = -(oo⊙X)
-	if abs(norm) < eps()
-		# has no o component; is a plane
-		# X = n⃗ + d e∞
-		normal = basecomps(X)
-		δ = -(o⊙X)
-		moment = δ*normal/sum(abs2, normal)
-		rig("Checker Plane",
-			location=moment,
-			show_wire=true,
-			"Normal"=>normal,
-			"Holes"=>false,
-		)
-
-	else
-		X /= norm
-		x = basecomps(X)
-		ρ² = X⊙X
-		if abs(ρ²) < 1e-3
-			rig("Point",
-				location=x,
-			)
-		else
-			rig("Sphere",
-				location=x,
-				"Radius"=>sqrt(abs(ρ²)),
-				"Imaginary"=>ρ² < 0,
-			)
-		end
-	end
-
-end
-
-function pointpair_from_bivector(pointpair::Multivector{CGA{3},2})
-	circle = hodgedual(pointpair)
-	parts = circleparts(circle)
-	rig("Point Pair",
-		location=parts.location,
-		"Radius"=>parts.radius,
-		"Direction"=>parts.normal,
-	)
-end
-
-function encode(X::Multivector{CGA{3},2})
-	o, oo = origin(X), infinity(X)
-
-	square = X⊙X
-
-	if abs(square) < sqrt(eps())
-		# tangent
-		A = X⋅oo
-		direction = unembed(A).comps
-		location = unembed(X⨽inv(A)).comps
-		rig("Arrow Vector",
-			location=location,
-			"Vector"=>direction,
-		)
-
-	else
-		pointpair_from_bivector(X)
-	end
-
-end
-
-function circleparts(X::Multivector{CGA{3},3})
-	o, oo = origin(X), infinity(X)
-	carrier::Grade{4} = X∧oo
-	container::Grade{4} = X∧hodgedual(carrier)
-	dualsphere::Grade{1} = normalize(hodgedual(container))
-	x = basecomps(dualsphere)
-	ρ² = dualsphere⊙dualsphere
-	normal = basecomps(hodgedual(carrier))
-	(
-		location=x,
-		radius=sign(ρ²)sqrt(abs(ρ²)),
-		normal=normal,
-	)
-end
-
-function lineparts(X::Multivector{CGA{3},3})
-	o, oo = origin(X), infinity(X)
-	circle = o∧hodgedual(X)
-	(; location, normal) = circleparts(circle)
-	(moment=location, direction=normal)
-
-end
-
-function encode(X::Multivector{CGA{3},3})
-	o, oo = origin(X), infinity(X)
-
-	if abs(X⊙X) < eps()
-		A = X⋅-oo
-		normal = rdual(unembed(A))
-		location = unembed(X⨽inv(A)).comps
-		return rig("Circle 2-blade",
-			location=location,
-			"Normal"=>normal.comps,
-			"Radius"=>sqrt(abs2(normal)),
-		)
-	end
-
-	n = X∧oo
-	if abs(n⊙n) < 1e-3
-		parts = lineparts(X)
-		rig("Spear Line",
-			location=parts.moment,
-			"Direction"=>parts.direction,
-			"Use separation"=>false,
-			"Arrow count"=>0
-		)
-	else
-		parts = circleparts(X)
-		rig(
-			"Spear Circle",
-			location=parts.location,
-			"Radius"=>parts.radius,
-			"Normal"=>parts.normal,
-			"Arrow count"=>0,
-			"Imaginary"=>parts.radius < 0,
-		)
-	end
-end
-
-function encode(X::Multivector{CGA{3},4})
-	encode(hodgedual(X))
-end
+encode(x::Multivector{CGA{3}}) = encode(classify(x))
 
 end

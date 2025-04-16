@@ -10,4 +10,3 @@ def load_ipython_extension(ipython):
     ipython.register_magics(BlenderSender)
     print("Registered BlenderSender magic")
 
-print("hello")

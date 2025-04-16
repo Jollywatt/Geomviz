@@ -1,9 +1,13 @@
 const PORT = Ref(8888)
 
+# Pickle.List(a::GeometricAlgebra.Multivector{Sig,1}) where Sig = Pickle.List(collect(a.comps))
 Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
 Pickle.List(a::GeometricAlgebra.StaticVector) = Pickle.List(collect(a))
 function Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple)
 	Pickle.save(p, io, Dict(string(k) => v for (k, v) in pairs(nt)))
+end
+function Pickle.save(p::Pickle.AbstractPickle, io::IO, mv::Multivector{Sig,1}) where Sig
+	Pickle.save(p, io, mv.comps)
 end
 
 function send_to_server(data, port=PORT[], showresponse=true)

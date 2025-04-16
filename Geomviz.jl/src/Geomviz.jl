@@ -33,8 +33,12 @@ up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
 up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
 up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
-GeometricAlgebra.embed(::Type{CGA}, a::Multivector) = Conformal.embed(a)
-GeometricAlgebra.embed(::Type{SGA}, a::Multivector) = SphericalOneUp.embed(a)
+up(v::Grade{1,CGA{3}}) = Conformal.up(unembed(v))
+up(v::Grade{1,SGA{3}}) = SphericalOneUp.up(unembed(v))
+
+for (Sig, mod) in [Type{CGA} => Conformal, Type{SGA} => SphericalOneUp], T in [BasisBlade, Multivector]
+	@eval GeometricAlgebra.embed(::$Sig, a::$T) = $mod.embed(Multivector(a))
+end
 
 """
 	unembed(a::Multivector)
@@ -42,7 +46,7 @@ GeometricAlgebra.embed(::Type{SGA}, a::Multivector) = SphericalOneUp.embed(a)
 The part of a multivector lying in the base space `Sig` if the multivector is
 embedded in higher space such as `CGA{Sig}` or `SGA{Sig}`.
 """
-unembed(a::Multivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = GeometricAlgebra.embed(Sig, a)
+unembed(a::AbstractMultivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = GeometricAlgebra.embed(Sig, a)
 
 #= blend repl mode =#
 
