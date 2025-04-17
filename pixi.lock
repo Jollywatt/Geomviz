@@ -48,7 +48,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.5-hb89a1cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/numba-0.57.1-py311hbf3c4e2_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/numpy-1.24.4-py311hb8f3215_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.3.1-hfb2fe0b_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/nushell-0.103.0-he48edd9_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.5.0-h81ee809_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/parso-0.8.4-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pexpect-4.9.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pickleshare-0.7.5-py_1003.tar.bz2
@@ -569,8 +570,6 @@ packages:
   - python >=3.11,<3.12.0a0
   - python >=3.11,<3.12.0a0 *_cpython
   - python_abi 3.11.* *_cp311
-  arch: arm64
-  platform: osx
   license: BSD-2-Clause
   license_family: BSD
   purls:
@@ -616,8 +615,6 @@ packages:
   - libopenblas >=0.3.18, !=0.3.20
   - scipy >=1.0
   - cuda-python >=11.6
-  arch: arm64
-  platform: osx
   license: BSD-2-Clause
   license_family: BSD
   purls:
@@ -637,27 +634,42 @@ packages:
   - python_abi 3.11.* *_cp311
   constrains:
   - numpy-base <0a0
-  arch: arm64
-  platform: osx
   license: BSD-3-Clause
   license_family: BSD
   purls:
   - pkg:pypi/numpy?source=hash-mapping
   size: 6726539
   timestamp: 1687809224197
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.3.1-hfb2fe0b_1.conda
-  sha256: 3ab411856c3bef88595473f0dd86e82de4f913f88319548acf262d5b1175b050
-  md5: c665dec48e08311096823956642a501c
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/nushell-0.103.0-he48edd9_0.conda
+  sha256: 45283d0c04b316b1e75f9eb61d87bcaa8d1c77270ea6d43f48ea0474d63f0b97
+  md5: 2c24dae587dec8d2ba8af865be7b0154
+  depends:
+  - __osx >=11.0
+  - libcxx >=18
+  - libzlib >=1.3.1,<2.0a0
+  - openssl >=3.4.1,<4.0a0
+  constrains:
+  - __osx >=11.0
+  arch: arm64
+  platform: osx
+  license: MIT
+  license_family: MIT
+  purls: []
+  size: 8483865
+  timestamp: 1742369844188
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.5.0-h81ee809_0.conda
+  sha256: 53f825acb8d3e13bdad5c869f6dc7df931941450eea7f6473b955b0aaea1a399
+  md5: 3d2936da7e240d24c656138e07fa2502
   depends:
   - __osx >=11.0
   - ca-certificates
-  constrains:
-  - pyopenssl >=22.1
+  arch: arm64
+  platform: osx
   license: Apache-2.0
   license_family: Apache
   purls: []
-  size: 2897767
-  timestamp: 1719363723462
+  size: 3067649
+  timestamp: 1744132084304
 - conda: https://conda.anaconda.org/conda-forge/noarch/parso-0.8.4-pyhd8ed1ab_0.conda
   sha256: bfe404eebb930cc41782d34f8fc04c0388ea692eeebe2c5fc28df8ec8d4d61ae
   md5: 81534b420deb77da8833f2289b8d47ac
