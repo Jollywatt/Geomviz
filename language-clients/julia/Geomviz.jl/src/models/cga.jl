@@ -205,7 +205,7 @@ function classify(x::AbstractMultivector{<:CGA})
 	o, oo = origin(signature(x)), infinity(signature(x))
 
 	x² = x*x
-	x² ≈ scalar(x²) || return nothing
+	isapprox(x², scalar(x²), atol=sqrt(eps())) || return nothing
 
 	if x ∧ oo ≈ 0
 		if x ⨽ oo ≈ 0

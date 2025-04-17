@@ -9,10 +9,11 @@ def is_cga(mv: cl.MultiVector):
 	return isinstance(mv.layout, cl.ConformalLayout)
 
 def encode(mv: cl.MultiVector):
-
 	geom = classify.classify(mv)
 	print(f"Classified as {geom}")
+	return encode_blade(geom)
 
+def encode_blade(geom: cl.tools.classify.Blade):
 	if isinstance(geom, (classify.Point, classify.PointFlat)):
 		return {
 			'rig_name': "Point",
@@ -63,6 +64,7 @@ def encode(mv: cl.MultiVector):
 			'location': from_vector(geom.location),
 			'rig_parameters': {
 				'Direction': from_vector(geom.direction),
+				'Arrow count': 0,
 			}
 		}
 	elif isinstance(geom, (classify.Plane, classify.DualFlat[1])):
