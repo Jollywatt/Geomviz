@@ -18,11 +18,11 @@ function normalize end
 normalize(a::BasisBlade) = normalize(Multivector(a))
 
 include("client.jl")
-include("vga.jl")
-include("pga.jl")
-include("cga.jl")
-include("spherical-1up.jl")
 include("animation.jl")
+include("models/vga.jl")
+include("models/pga.jl")
+include("models/cga.jl")
+include("models/spherical-1up.jl")
 
 import .Projective: PGA
 import .Conformal: CGA
