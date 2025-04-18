@@ -5,7 +5,7 @@ import sys
 from os import path
 import importlib
 
-d = path.dirname(path.dirname(__file__))
+d = path.join(path.dirname(path.dirname(__file__)), "blender-plugin")
 if d not in sys.path:
 	sys.path.append(d)
 

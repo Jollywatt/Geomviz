@@ -133,6 +133,17 @@ class InstantiateRig(bpy.types.Operator):
 	bl_label = "Insert rig"
 	bl_idname = "geomviz.copy_rig"
 
+	@classmethod
+	def poll(self, context):
+		if context.scene.geomviz_collection is None:
+			self.poll_message_set("Select a destination collection first.")
+			return False
+		elif context.scene.geomviz_inventory_item is None:
+			self.poll_message_set("Select a rig node group first.")
+			return False
+		else:
+			return True
+
 	def execute(self, context):
 		item = context.scene.geomviz_inventory_item
 		if item is None:

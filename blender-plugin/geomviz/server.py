@@ -147,9 +147,16 @@ class DataServer():
 
 
 class StartServer(bpy.types.Operator):
-	"""Start the external data server"""
+	"""Start a local server to listen for data from other processes"""
 	bl_idname = "geomviz.start_server"
-	bl_label = "Start external data server"
+	bl_label = "Start listening"
+
+	@classmethod
+	def poll(self, context):
+		enabled = context.scene.geomviz_collection is not None
+		if not enabled:
+			self.poll_message_set("Select a destination collection first.")
+		return enabled
 
 	def execute(self, context):
 		port = context.scene.geomviz_server_port
@@ -167,7 +174,7 @@ class StartServer(bpy.types.Operator):
 class StopServer(bpy.types.Operator):
 	"""Stop the external data server"""
 	bl_idname = "geomviz.stop_server"
-	bl_label = "Stop external data server"
+	bl_label = "Stop listening"
 
 	def execute(self, context):
 		data_server.stop()

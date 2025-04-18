@@ -26,7 +26,7 @@ def load_inventory_from_file(assets_file):
 
 class LoadInventory(bpy.types.Operator):
 	"""Import built-in geomviz rigs as node groups"""
-	bl_label = "Load GA assets"
+	bl_label = "Load default rigs"
 	bl_idname = "geomviz.load_inventory"
 
 	def execute(self, context):
