@@ -12,7 +12,7 @@ def encode(mv):
 	}
 	elif mv.grades() == {2}:
 		return {
-		'rig_name': "Circle 2-blade",
+		'rig_name': "Spear Disk",
 		'rig_parameters': {
 			"Normal": mv.value[5:8].tolist(),
 			"Radius": sqrt(abs(mv))

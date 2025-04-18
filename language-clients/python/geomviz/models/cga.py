@@ -9,10 +9,11 @@ def is_cga(mv: cl.MultiVector):
 	return isinstance(mv.layout, cl.ConformalLayout)
 
 def encode(mv: cl.MultiVector):
-
 	geom = classify.classify(mv)
 	print(f"Classified as {geom}")
+	return encode_blade(geom)
 
+def encode_blade(geom: cl.tools.classify.Blade):
 	if isinstance(geom, (classify.Point, classify.PointFlat)):
 		return {
 			'rig_name': "Point",
@@ -20,7 +21,7 @@ def encode(mv: cl.MultiVector):
 		}
 	elif isinstance(geom, classify.Tangent[3]):
 		return {
-			'rig_name': "Circle 2-blade",
+			'rig_name': "Spear Disk",
 			'location': from_vector(geom.location),
 			'rig_parameters': {
 				'Radius': (abs(geom.direction))**0.5,
@@ -44,7 +45,7 @@ def encode(mv: cl.MultiVector):
 			'rig_parameters': {
 				'Radius': abs(geom.radius),
 				'Normal': from_bivector(geom.direction),
-				'Imaginary': abs(geom.radius) != geom.radius,
+				'Dashed': abs(geom.radius) != geom.radius,
 				'Arrow count': 0,
 			}
 		}
@@ -54,7 +55,7 @@ def encode(mv: cl.MultiVector):
 			'location': from_vector(geom.location),
 			'rig_parameters': {
 				'Radius': abs(geom.radius),
-				'Imaginary': abs(geom.radius) != geom.radius
+				'Dashed': abs(geom.radius) != geom.radius
 			}
 		}
 	elif isinstance(geom, classify.Line):
@@ -63,14 +64,16 @@ def encode(mv: cl.MultiVector):
 			'location': from_vector(geom.location),
 			'rig_parameters': {
 				'Direction': from_vector(geom.direction),
+				'Arrow count': 0,
 			}
 		}
 	elif isinstance(geom, (classify.Plane, classify.DualFlat[1])):
 		if isinstance(geom, classify.DualFlat):
 			geom = geom.flat
 		return {
-			'rig_name': "Checker Plane",
+			'rig_name': "Plane",
 			'location': from_vector(geom.location),
+			'show_wire': True,
 			'rig_parameters': {
 				'Normal': from_bivector(geom.direction),
 				'Holes': False,

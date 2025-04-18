@@ -185,7 +185,7 @@ encode(x::Line) = rig("Spear Line",
 	"Direction"=>direction(x),
 )
 
-encode(x::Plane) = rig("Checker Plane",
+encode(x::Plane) = rig("Plane",
 	location=location(x),
 	"Normal"=>rdual(direction(x)),
 )
@@ -195,7 +195,7 @@ encode(x::Tangent{1}) = rig("Arrow Vector",
 	"Vector"=>direction(x),
 )
 
-encode(x::Tangent{2}) = rig("Circle 2-blade",
+encode(x::Tangent{2}) = rig("Spear Disk",
 	location=location(x),
 	"Normal"=>rdual(direction(x)),
 )
@@ -205,7 +205,7 @@ function classify(x::AbstractMultivector{<:CGA})
 	o, oo = origin(signature(x)), infinity(signature(x))
 
 	x² = x*x
-	x² ≈ scalar(x²) || return nothing
+	isapprox(x², scalar(x²), atol=sqrt(eps())) || return nothing
 
 	if x ∧ oo ≈ 0
 		if x ⨽ oo ≈ 0

@@ -16,4 +16,4 @@ class BlenderSender(Magics):
 	def blend(self, line, local_ns=None):
 		value = eval(line, None, local_ns)
 		encode_and_send(value)
-		return line
+		return value

@@ -108,7 +108,7 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 	origin = projpoint((v0∧reciprocal_point)∨plane)
 	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
-	rig("Checker Plane",
+	rig("Plane",
 		location=origin,
 		show_wire=true,
 		"Normal"=>normal,
