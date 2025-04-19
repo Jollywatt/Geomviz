@@ -30,7 +30,7 @@ function anim_toridal_rotor()
 
 	# create a normalized circle to define the rotor
 	p = up.(CGA, randn(Multivector{3,1}, 3))
-	c = wedge(randn(x, 3)...)
+	c = wedge(rand(x, 3)...)
 	c /= sqrt(c⊙c)
 
 	animate(range(0, π, length=300)) do t

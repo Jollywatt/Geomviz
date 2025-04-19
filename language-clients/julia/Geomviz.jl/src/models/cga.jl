@@ -17,7 +17,7 @@ Conformal geometric algebra has covariant representations of points, point-pairs
 module Conformal
 
 using GeometricAlgebra
-import ..Geomviz: rig, encode, dn, normalize
+import ..Geomviz: rig, encode, dn, normalize, classify
 
 export origin, infinity
 export classify

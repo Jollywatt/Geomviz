@@ -1,7 +1,7 @@
 module SphericalOneUp
 
 using GeometricAlgebra
-import ..Geomviz: rig, encode, dn, normalize
+import ..Geomviz: rig, encode, dn, normalize, classify
 
 """
 Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensional Euclidean space.
@@ -41,14 +41,6 @@ dn(a::BasisBlade; k...) = dn(Multivector(a); k...)
 
 normalize(P::Multivector{<:SGA}) = P/sqrt(abs(P⊙P))
 
-function encode(P::Multivector{SGA{Sig},1}) where Sig
-	p = dn(P)
-	rig("Point",
-		location=Vector(p.comps),
-		"Radius"=>0.05,
-		color=(1,1,1,1),
-	)
-end
 
 smallpoints(Ps; color) = map(Ps) do P
 
@@ -62,84 +54,54 @@ end
 
 Base.abs2(a::Multivector) = scalar_prod(a, a)
 
+origin(sig::Type{SGA{Sig}}) where Sig = basis(sig, 1, dimension(sig))
+center(S) = (-1)^grade(S)*normalize(sandwich_prod(S, origin(signature(S))))
+radius(S) = sqrt(abs2(dn(center(S))) + CURVATURE[]^2)
 
-function encode(C::Multivector{SGA{Sig},2}) where Sig
-	o = basis(signature(C), 1, dimension(C))
-
-	plane = wedge(C, o)
-	point = inner(C, o)
-
-
-	planesize = abs(abs2(plane))
-	if planesize < eps()
-		# line through origin
-		obj = rig("Spear Line",
-			lirection=point.comps[1:end-1],
-			"Use separation"=>false,
-			"Arrow count"=>0,
-		)
-
-	else
-		# circle
-		normal = dn(rdual(plane))
-		centerpoint = dn(normalize(sandwich_prod(C, o)))
-		r = sqrt(abs2(centerpoint) + CURVATURE[]^2)
-
-		obj = rig("Spear Circle",
-			location=centerpoint.comps,
-			"Normal"=>normal.comps,
-			"Radius"=>r,
-			"Arrow count"=>4,
-		)
-
-	end
-
-	if false
-		# randomly sample points on line/circle
-		Ps = randn(Multivector{SGA{Sig},1}, 200)
-		Qs = inner.(Ps, C) # points lying on circle/line
-		[
-			smallpoints(Qs; color=(1,0,1,1));
-			# obj
-		]
-	else
-		obj
-	end
-
-
+abstract type SGAObject{D,Sig} end
+struct Flat{D,Sig} <: SGAObject{D,Sig}
+	location::Multivector{Sig,1}
+	direction::Multivector{Sig,D}
+end
+struct Round{D,Sig} <: SGAObject{D,Sig}
+	carrier::Flat{D,Sig}
+	radius::Float64
 end
 
-function encode(S::Multivector{SGA{Sig},3}) where Sig
-	o = basis(signature(S), 1, dimension(S))
-
-	if iszero(S∧o)
-		# plane through origin
-		normal = dn(rdual(S))
-		obj = rig("Checker Plane",
-			location=(0,0,0),
-			"Normal"=>normal.comps
-		)
+function classify(S::AbstractMultivector{SGA{Sig}}) where Sig
+	k = only(grade(S))
+	oo = -basis(signature(S), 1, dimension(S))
+	C = center(S)
+	if C ≈ oo
+		dir = unembed(Multivector(S⨽oo))
+		loc = zero(Multivector{Sig,1})
+		Flat(loc, dir)
 	else
-		# sphere
-		center = dn(normalize(-sandwich_prod(S, o)))
-		ρ = sqrt(abs2(center) + CURVATURE[]^2)
-
-		obj = rig("Sphere",
-			location=center.comps,
-			"Radius"=>ρ,
-			color=(1,1,1,0.7),
-		)
+		loc = dn(C)
+		dir = unembed((S∧oo)⨽oo)
+		Round(Flat(loc, dir), radius(S))
 	end
-
-	if false
-		Ls = randn(Multivector{SGA{Sig},2}, 200)
-		Qs = inner.(Ls, S) # points lying on sphere/plane
-		[smallpoints(Qs; color=(0,1,1,1))]
-	else
-		obj
-	end
-
 end
 
+encode(x::Flat{0,3}) = rig("Point")
+encode(x::Flat{1,3}) = rig("Line", "Direction"=>x.direction)
+encode(x::Flat{2,3}) = rig("Plane", "Normal"=>rdual(x.direction))
+encode(x::Round{1,3}) = rig("Point Pair",
+	location=x.carrier.location,
+	"Radius"=>x.radius,
+	"Direction"=>x.carrier.direction,
+)
+encode(x::Round{2,3}) = rig("Circle",
+	location=x.carrier.location,
+	"Radius"=>x.radius,
+	"Normal"=>rdual(x.carrier.direction),
+)
+encode(x::Round{3,3}) = rig("Sphere",
+	location=x.carrier.location,
+	"Radius"=>x.radius,
+)
+
+
+encode(a::AbstractMultivector{<:SGA}) = encode(classify(a))
 
 end

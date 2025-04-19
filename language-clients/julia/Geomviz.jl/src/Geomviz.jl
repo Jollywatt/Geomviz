@@ -7,13 +7,14 @@ using REPL: LineEdit
 using GeometricAlgebra
 
 export encode, PORT, Styled, animate
-export up, dn, unembed
+export up, dn, unembed, normalize, classify
 export Projective, PGA
 export Conformal, CGA
 export SphericalOneUp, SGA
 
 function dn end
 function normalize end
+function classify end
 
 normalize(a::BasisBlade) = normalize(Multivector(a))
 
@@ -39,6 +40,7 @@ up(v::Grade{1,SGA{3}}) = SphericalOneUp.up(unembed(v))
 for (Sig, mod) in [Type{CGA} => Conformal, Type{SGA} => SphericalOneUp], T in [BasisBlade, Multivector]
 	@eval GeometricAlgebra.embed(::$Sig, a::$T) = $mod.embed(Multivector(a))
 end
+
 
 """
 	unembed(a::Multivector)
