@@ -16,6 +16,16 @@ blend> a, b, a∧b # press space to enter REPL mode
 ![Blender screenshot](docs/blender-screenshot.png)
 
 
+## Installation instructions
+
+### Blender add-on
+
+From 
+
+### Julia extension for [`GeometricAlgebra.jl`](https://github.com/Jollywatt/GeometricAlgebra.jl)
+
+### Python extension for [`clifford`](https://github.com/pygae/clifford)
+
 ## Serialisation format
 
 ```

@@ -2,19 +2,18 @@
 name = "Geomviz"
 authors = ["jollywatt <jo.alex.w@gmail.com>"]
 channels = ["conda-forge"]
-platforms = ["osx-arm64"]
+platforms = ["osx-arm64", "linux-64"]
 
 [tasks]
+build = "pixi run python -m pip install build; ./build.nu"
 blend = "/Applications/Blender.app/Contents/MacOS/Blender"
 
 [dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.11.12,<3.12"
 bson = ">=0.5.9,<0.6"
 ipython = ">=9.1.0,<10"
 typos = ">=1.31.0,<2"
 clifford = ">=1.4.0,<2"
 numba = "<=0.58"
 nushell = ">=0.103.0,<0.104"
-
-[pypi-dependencies]
-bpy = "*"
+pip = ">=25.0.1,<26"
