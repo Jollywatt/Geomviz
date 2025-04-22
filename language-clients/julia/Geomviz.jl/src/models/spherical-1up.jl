@@ -3,13 +3,14 @@ module SphericalOneUp
 using GeometricAlgebra
 import ..Geomviz: rig, encode, dn, normalize, classify
 
+using Base.ScopedValues
+
 """
 Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensional Euclidean space.
 """
 abstract type SGA{Sig} end
 
-const CURVATURE = Ref{Float64}(1)
-
+const CURVATURE = ScopedValue(1.0)
 
 basesig(::Type{<:SGA{Sig}}) where Sig = Sig
 
@@ -26,14 +27,13 @@ end
 embed(a::AbstractMultivector{Sig}) where Sig = GeometricAlgebra.embed(SGA{Sig}, a)
 unembed(a::AbstractMultivector{SGA{Sig}}) where Sig = GeometricAlgebra.embed(Sig, a)
 
-function up(p::Grade{1,Sig}; λ=CURVATURE[]) where Sig
+function up(p::Grade{1,Sig}; λ = CURVATURE[]) where Sig
 	p² = p⊙p
-	e0 = basis(SGA{Sig}, 1, dimension(Sig) + 1)
-	(2λ*embed(p) + (λ^2 - p²)e0)/(λ^2 + p²)
+	Multivector{SGA{Sig},1}([2λ*p.comps; λ^2 - p²])/(λ^2 + p²)
 end
 up(comps...; kw...) = up(Multivector{length(comps),1}(comps); kw...)
 
-function dn(P::Multivector{SGA{Sig},1}; λ=CURVATURE[]) where Sig
+function dn(P::Multivector{SGA{Sig},1}; λ = CURVATURE[]) where Sig
 	p = Multivector{Sig,1}(P.comps[1:end-1])
 	λ*p/(1 + P.comps[end])
 end
