@@ -4,7 +4,7 @@ Blender plugin for plotting geometric algebra elements in Julia and (eventually)
 
 Here is an example animation showing the action of a rotor on objects in conformal geometric algebra:
 
-![video](docs/animation.webm)
+https://github.com/user-attachments/assets/d4324be5-e6e4-4ed2-a489-cfcfc862718f
 
 <details>
 	<summary>Julia code</summary>
