@@ -14,9 +14,10 @@ def "main clifford" [] {
 }
 
 def "main blender" [] {
-	status "Blender add-on"
+	let version = open blender_addon/geomviz/blender_manifest.toml | get version
+	status $"Blender add-on version ($version)"
 	mkdir dist
-	^zip -r dist/geomviz.blender-add-on.zip blender_addon -x "*.DS_Store" -x "**/__pycache__/*"
+	^zip -r $"dist/geomviz_blender_v($version).zip" blender_addon/* -x "*.DS_Store" -x "**/__pycache__/*"
 }
 
 def main [] {
