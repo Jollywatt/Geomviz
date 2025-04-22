@@ -34,8 +34,8 @@ up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
 up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
 up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
-up(v::Grade{1,CGA{3}}) = Conformal.up(unembed(v))
-up(v::Grade{1,SGA{3}}) = SphericalOneUp.up(unembed(v))
+up(v::AbstractMultivector{<:CGA}) = Conformal.up(unembed(v))
+up(v::AbstractMultivector{<:SGA}) = SphericalOneUp.up(unembed(v))
 
 for (Sig, mod) in [Type{CGA} => Conformal, Type{SGA} => SphericalOneUp], T in [BasisBlade, Multivector]
 	@eval GeometricAlgebra.embed(::$Sig, a::$T) = $mod.embed(Multivector(a))
@@ -55,7 +55,7 @@ unembed(a::AbstractMultivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = Geometri
 function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
-	data = encode_scene(x)
+	data = encode_many(x)
 	!isnothing(data) && send_to_server(data)
 	x
 end
