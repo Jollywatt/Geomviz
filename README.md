@@ -38,18 +38,31 @@ end
 
 
 
-## Installation instructions
+# Installation and usage
 
-### Blender add-on
+## Blender add-on
 
-1. From the [releases page](https://github.com/Jollywatt/Geomviz/releases), download `geomviz_blender_v*.*.*.zip`.
-2. Open Blender and drag and drop the ZIP file somewhere in main Blender window. (Alternatively, install manually with Edit → Preferences → Get Extensions → Install from Disk.)
+### Installation
+
+1. Download [Blender](https://www.blender.org).
+1. From the [Geomviz releases page](https://github.com/Jollywatt/Geomviz/releases), download the Blender extension ZIP file `geomviz_blender_v*.*.*.zip`.
+1. Open Blender and drag and drop the ZIP file somewhere in main Blender window, or install it via Edit → Preferences → Get Extensions → Install from Disk.
 	![Screenshot](docs/blender-install-extension.png)
-3. With "Enable Add-on" checked, confirm installation.
-4. You should now find a "Geomviz" panel under the Scene Properties tab.
+1. Confirm the installation with "Enable Add-on" checked.
+1. You should now find a "Geomviz" panel under the Scene Properties tab.
 	![Screenshot](docs/blender-scene-properties.png)
 
-### Julia client
+### Usage
+
+1. In the Geomviz panel, ensure the default rigs are loaded and a destination collection is selected.
+	_Rigs_ are [geometry node](https://docs.blender.org/manual/en/latest/modeling/geometry_nodes/introduction.html) trees for procedurally generating geometric objects (such as arrows, circles, planes, etc).
+	The Blender add-on comes with a set of predefined rigs for conformal geometric algebra. 
+1. Press "Start listening" to start a local background server which can receive data from a Geomviz client running in a separate process (such as Julia or Python).
+1. From a Geomviz client (e.g., the Julia or Python REPL), create and send some geometric objects. They should immediately appear in the Blender 3D View. 
+
+## Julia client
+
+### Installation
 
 The `Geomviz.jl` client package for Julia requires [`GeometricAlgebra.jl`](https://github.com/Jollywatt/GeometricAlgebra.jl).
 To use it with the Blender add-on, you will need to install both these packages.
@@ -68,7 +81,13 @@ pkg> add https://github.com/Jollywatt/GeometricAlgebra.jl
 pkg> add https://github.com/Jollywatt/Geomviz:clients/Geomviz.jl
 ```
 
-### Python client
+### Usage
+
+_Todo_
+
+## Python client
+
+### Installation
 
 The `geomviz_clifford` client package for Python requires [`clifford`](https://github.com/pygae/clifford).
 To use it with the Blender add-on, you will need to install both these packages.
@@ -81,3 +100,7 @@ pip install https://github.com/Jollywatt/Geomviz/releases/download/v0.0.1/geomvi
 ```python
 >>> import geomviz_clifford
 ```
+
+### Usage
+
+_Todo_
