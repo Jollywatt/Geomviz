@@ -10,7 +10,7 @@ Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensiona
 """
 abstract type SGA{Sig} end
 
-const CURVATURE = Ref(1.0)
+const CURVATURE = ScopedValue(1.0)
 
 
 basesig(::Type{<:SGA{Sig}}) where Sig = Sig
@@ -20,25 +20,24 @@ GeometricAlgebra.basis_vector_square(sig::Type{<:SGA}, i::Integer) = i <= dimens
 
 function GeometricAlgebra.get_basis_display_style(sig::Type{<:SGA})
 	n = dimension(sig)
-	indices = string.(1:(n - 1))
-	push!(indices, "0")
-	BasisDisplayStyle(n; indices)
+	BasisDisplayStyle(n; indices = [string.(1:(n - 1)); "0"])
 end
 
 embed(a::AbstractMultivector{Sig}) where Sig = GeometricAlgebra.embed(SGA{Sig}, a)
 unembed(a::AbstractMultivector{SGA{Sig}}) where Sig = GeometricAlgebra.embed(Sig, a)
 
-function up(p::Grade{1,Sig}; λ = CURVATURE[]) where Sig
+function up(p::Grade{1,Sig}) where Sig
 	p² = p⊙p
+	λ = CURVATURE[]
 	Multivector{SGA{Sig},1}([2λ*Multivector(p).comps; λ^2 - p²])/(λ^2 + p²)
 end
-up(comps...; kw...) = up(Multivector{length(comps),1}(comps); kw...)
+up(comps...) = up(Multivector{length(comps),1}(comps))
 
-function dn(P::Multivector{SGA{Sig},1}; λ = CURVATURE[]) where Sig
+function dn(P::Multivector{SGA{Sig},1}) where Sig
 	p = Multivector{Sig,1}(P.comps[1:end-1])
-	λ*p/(1 + P.comps[end])
+	CURVATURE[]*p/(1 + P.comps[end])
 end
-dn(a::BasisBlade; kw...) = dn(Multivector(a); kw...)
+dn(a::BasisBlade) = dn(Multivector(a))
 
 normalize(P::Multivector{<:SGA}) = P/sqrt(abs(P⊙P))
 
