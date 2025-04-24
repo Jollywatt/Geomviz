@@ -1,0 +1,3 @@
+[deps]
+GeometricAlgebra = "11bbe1ca-eae6-48c2-942c-9f17e43de0f0"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

@@ -1,5 +1,4 @@
 using GeometricAlgebra, Geomviz
-using Combinatorics: powerset
 
 function anim_lambda()
 	x = randn(Multivector{3,1}, 5)
@@ -9,12 +8,12 @@ function anim_lambda()
 		SphericalOneUp.CURVATURE[] = λ
 
 		X = up.(SGA, x)
-		L = [a∧b for (a, b) in powerset(X, 2, 2)]
+		L = [X[i]∧X[j] for i in 1:length(X) for j in 1:i - 1]
 
-		encode((
-			Styled(X, color=(0,0,1,1)),
-			Styled(L, "Circle resolution"=>1024),
-		))
+		encode.([
+			Styled.(X, color=(0,0,1,1))
+			Styled.(L, "Circle resolution"=>1024)
+		])
 	end
 
 end

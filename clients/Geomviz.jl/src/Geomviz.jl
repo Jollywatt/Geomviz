@@ -16,14 +16,15 @@ function dn end
 function normalize end
 function classify end
 
-normalize(a::BasisBlade) = normalize(Multivector(a))
+Base.abs2(a::AbstractMultivector) = scalar_prod(a, a)
+normalize(a::AbstractMultivector) = a/sqrt(abs(abs2(a)))
 
 include("client.jl")
 include("animation.jl")
 include("models/vga.jl")
 include("models/pga.jl")
 include("models/cga.jl")
-include("models/spherical-1up.jl")
+include("models/sga.jl")
 
 import .Projective: PGA
 import .Conformal: CGA
@@ -31,7 +32,7 @@ import .SphericalOneUp: SGA
 
 up(T::Type{<:Projective.ProjectiveSignature}, a::AbstractMultivector) = Projective.up(T, a)
 up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
-up(::Type{SphericalOneUp.SGA}, a::AbstractMultivector) = SphericalOneUp.up(a)
+up(::Type{<:SphericalOneUp.SGA}, a::AbstractMultivector; kw...) = SphericalOneUp.up(a; kw...)
 up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
 up(v::AbstractMultivector{<:CGA}) = Conformal.up(unembed(v))

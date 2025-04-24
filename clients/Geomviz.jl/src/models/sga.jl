@@ -10,7 +10,8 @@ Metric signature for the spherical 1d-up geometric algebra over ``n``-dimensiona
 """
 abstract type SGA{Sig} end
 
-const CURVATURE = ScopedValue(1.0)
+const CURVATURE = Ref(1.0)
+
 
 basesig(::Type{<:SGA{Sig}}) where Sig = Sig
 
@@ -29,7 +30,7 @@ unembed(a::AbstractMultivector{SGA{Sig}}) where Sig = GeometricAlgebra.embed(Sig
 
 function up(p::Grade{1,Sig}; λ = CURVATURE[]) where Sig
 	p² = p⊙p
-	Multivector{SGA{Sig},1}([2λ*p.comps; λ^2 - p²])/(λ^2 + p²)
+	Multivector{SGA{Sig},1}([2λ*Multivector(p).comps; λ^2 - p²])/(λ^2 + p²)
 end
 up(comps...; kw...) = up(Multivector{length(comps),1}(comps); kw...)
 
@@ -37,22 +38,11 @@ function dn(P::Multivector{SGA{Sig},1}; λ = CURVATURE[]) where Sig
 	p = Multivector{Sig,1}(P.comps[1:end-1])
 	λ*p/(1 + P.comps[end])
 end
-dn(a::BasisBlade; k...) = dn(Multivector(a); k...)
+dn(a::BasisBlade; kw...) = dn(Multivector(a); kw...)
 
 normalize(P::Multivector{<:SGA}) = P/sqrt(abs(P⊙P))
 
 
-smallpoints(Ps; color) = map(Ps) do P
-
-	p = dn(normalize(P))
-	rig("Point",
-		location=Vector(p.comps),
-		"Radius"=>0.025,
-		color=color
-	)
-end
-
-Base.abs2(a::Multivector) = scalar_prod(a, a)
 
 origin(sig::Type{SGA{Sig}}) where Sig = basis(sig, 1, dimension(sig))
 center(S) = (-1)^grade(S)*normalize(sandwich_prod(S, origin(signature(S))))
@@ -63,6 +53,7 @@ struct Flat{D,Sig} <: SGAObject{D,Sig}
 	location::Multivector{Sig,1}
 	direction::Multivector{Sig,D}
 end
+Flat(loc::AbstractMultivector, dir::AbstractMultivector) = Flat(Multivector(loc), Multivector(dir))
 struct Round{D,Sig} <: SGAObject{D,Sig}
 	carrier::Flat{D,Sig}
 	radius::Float64
@@ -73,12 +64,12 @@ function classify(S::AbstractMultivector{SGA{Sig}}) where Sig
 	oo = -basis(signature(S), 1, dimension(S))
 	C = center(S)
 	if C ≈ oo
-		dir = unembed(Multivector(S⨽oo))
 		loc = zero(Multivector{Sig,1})
+		dir = normalize(unembed(Multivector(S⨽oo)))
 		Flat(loc, dir)
 	else
 		loc = dn(C)
-		dir = unembed((S∧oo)⨽oo)
+		dir = normalize(unembed((S∧oo)⨽oo))
 		Round(Flat(loc, dir), radius(S))
 	end
 end
