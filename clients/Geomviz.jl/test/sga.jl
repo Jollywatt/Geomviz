@@ -4,7 +4,7 @@ using .SphericalOneUp: CURVATURE
 using Base.ScopedValues
 
 @testset "up, dn" begin
-	for N in 1:5
+	for N in 1:20
 		for λ in logrange(1e-4, 1e4, length=11)
 			x = randn(Multivector{N,1})
 			with(CURVATURE => λ) do
@@ -15,9 +15,9 @@ using Base.ScopedValues
 	end
 end
 
-@testset "point pairs for λ=$λ" for λ in [1, 2, 10, 0.01, 1000]
+@testset "point pairs, λ=$λ" for λ in [1, 2, 10, 0.01, 1000]
 	with(CURVATURE => λ) do
-		for N in 1:5
+		for N in 1:20
 			p = randn(Multivector{3,1})
 			pointpair = classify(up(SGA, p))
 			c = pointpair.carrier.location
@@ -28,3 +28,19 @@ end
 	end
 end
 
+@testset "circles, λ=$λ" for λ in [1, 2, 10, 0.01, 1000]
+	with(CURVATURE => λ) do
+		for N in 1:20
+			p, q = randn(Multivector{3,1}, 2)
+			circle = classify(up(SGA, p)∧up(SGA, q))
+
+			c = circle.carrier.location
+			dir = circle.carrier.direction
+			ρ = circle.radius
+
+			@test abs2(p - c) ≈ ρ^2
+			@test (p - c)∧dir ≈ 0 atol=sqrt(eps())
+		end
+
+	end
+end

@@ -52,11 +52,12 @@ struct Flat{D,Sig} <: SGAObject{D,Sig}
 	location::Multivector{Sig,1}
 	direction::Multivector{Sig,D}
 end
-Flat(loc::AbstractMultivector, dir::AbstractMultivector) = Flat(Multivector(loc), Multivector(dir))
 struct Round{D,Sig} <: SGAObject{D,Sig}
 	carrier::Flat{D,Sig}
 	radius::Float64
 end
+
+Flat(loc::AbstractMultivector, dir::AbstractMultivector) = Flat(Multivector(loc), Multivector(dir))
 
 function classify(S::AbstractMultivector{SGA{Sig}}) where Sig
 	k = only(grade(S))
@@ -64,7 +65,7 @@ function classify(S::AbstractMultivector{SGA{Sig}}) where Sig
 	C = center(S)
 	if C ≈ oo
 		loc = zero(Multivector{Sig,1})
-		dir = normalize(unembed(Multivector(S⨽oo)))
+		dir = normalize(unembed(S⨽oo))
 		Flat(loc, dir)
 	else
 		loc = dn(C)
@@ -85,10 +86,12 @@ encode(x::Round{2,3}) = rig("Circle",
 	location=x.carrier.location,
 	"Radius"=>x.radius,
 	"Normal"=>rdual(x.carrier.direction),
+	"Circle resolution"=>round(Int, 1<<8 + min(x.radius, 1<<13))
 )
 encode(x::Round{3,3}) = rig("Sphere",
 	location=x.carrier.location,
 	"Radius"=>x.radius,
+	"Resolution"=>round(Int, 1<<6 + min(x.radius/2, 1<<9))
 )
 
 
