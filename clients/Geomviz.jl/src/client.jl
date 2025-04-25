@@ -26,7 +26,8 @@ function flatmap(f, a)
 	b isa Union{Tuple,AbstractVector} ? b : [b]
 end
 
-encode_many(objs) = (objects=collect(flatmap(encode, objs)),)
+encode(objs::Union{Tuple,AbstractVector}) = collect(flatmap(encode, objs))
+encode(objs...) = encode(objs)
 
 struct Styled{T}
 	obj::T

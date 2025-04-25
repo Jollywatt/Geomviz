@@ -56,7 +56,7 @@ unembed(a::AbstractMultivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = Geometri
 function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
-	data = encode_many(x)
+	data = (objects=encode([x]),)
 	!isnothing(data) && send_to_server(data)
 	x
 end
