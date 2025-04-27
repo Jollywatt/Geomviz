@@ -177,7 +177,7 @@ encode(x::Circle) = rig("Spear Circle",
 encode(x::Union{Sphere,Round{0}}) = rig("Sphere",
 	location=location(x),
 	"Radius"=>abs(radius(x)),
-	"Imaginary"=>radius(x) < 0,
+	"Holes"=>radius(x) < 0,
 )
 
 encode(x::Line) = rig("Spear Line",
