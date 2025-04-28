@@ -11,6 +11,7 @@ export up, dn, unembed, normalize, classify
 export Projective, PGA
 export Conformal, CGA
 export SphericalOneUp, SGA
+export LieSphereGeometry, LSG
 
 function dn end
 function normalize end
@@ -25,10 +26,12 @@ include("models/vga.jl")
 include("models/pga.jl")
 include("models/cga.jl")
 include("models/sga.jl")
+include("models/lsg.jl")
 
 import .Projective: PGA
 import .Conformal: CGA
 import .SphericalOneUp: SGA
+import .LieSphereGeometry: LSG
 
 up(T::Type{<:Projective.ProjectiveSignature}, a::AbstractMultivector) = Projective.up(T, a)
 up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
