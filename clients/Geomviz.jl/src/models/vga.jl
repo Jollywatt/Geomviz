@@ -12,3 +12,4 @@ encode(a::Multivector{3,2}) = rig(
 	"Normal"=>Vector(rdual(a).comps),
 	"Radius"=>sqrt(sqrt(abs(a⊙a))),
 )
+
