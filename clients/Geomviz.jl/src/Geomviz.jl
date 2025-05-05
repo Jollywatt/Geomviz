@@ -16,6 +16,7 @@ export LieSphereGeometry, LSG
 function dn end
 function normalize end
 function classify end
+function geomviz end
 
 Base.abs2(a::AbstractMultivector) = scalar_prod(a, a)
 normalize(a::AbstractMultivector) = a/sqrt(abs(abs2(a)))
@@ -56,19 +57,25 @@ unembed(a::AbstractMultivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = Geometri
 
 #= blend repl mode =#
 
+geomviz(::Nothing) = nothing
+function geomviz(x)
+	data = (objects=encode([x]),)
+	send_to_server(data)
+end
+
 function replmode(input::String)
 	if startswith(strip(input), '?')
 		print("""
-		This is the Geomviz REPL mode
+		This is the Geomviz REPL mode.
+
+		Input evaluated in this mode is passed to `Geomviz.geomviz()`.
 		""")
-		return input
+		return
 	end
 
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
-	
-	data = (objects=encode([x]),)
-	!isnothing(data) && send_to_server(data)
+	geomviz(x)
 	x
 end
 

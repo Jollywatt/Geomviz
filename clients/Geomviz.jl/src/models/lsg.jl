@@ -1,9 +1,7 @@
 module LieSphereGeometry
 
 using GeometricAlgebra
-import ..Geomviz: rig, encode, dn, normalize, classify
-import ..Geomviz
-
+import ..Geomviz: rig, encode, geomviz, dn, normalize, classify
 import ..Geomviz.Conformal: CGA
 
 export LSG
@@ -47,29 +45,6 @@ function extras(::Type{LSG{Sig}}) where Sig
 end
 
 
-# function classify(x::Multivector{<:LSG,1})
-# 	abs(x⊙x) < eps() || error("not on Lie quadric, x² = $(x⊙x)")
-
-# 	e0 = basis(signature(x), 1, dimension(x))
-# 	o, oo = origin(signature(x)), infinity(signature(x))
-# 	if abs(x⊙e0) < eps()
-# 		missing
-# 	else
-# 		x̂ = x/(x⊙e0)
-# 		embed(CGA{Sig}, x̂)
-# 	end
-
-
-# end
-
-function twiddle(x::Multivector{LSG{Sig},1}) where Sig
-	comps = Vector(x.comps)
-	comps[end-1] *= -1
-	Multivector{LSG{Sig},1}(comps)
-end
-
-
-
 function samplespherecomplex2(ξ::AbstractMultivector{LSG{Sig}}; n=10, σx=1, σr=1) where Sig
 	x = σx*randn(Multivector{Sig,1}, n)
 	o, oo, v0 = extras(LSG{Sig})
@@ -85,14 +60,14 @@ function samplespherecomplex2(ξ::AbstractMultivector{LSG{Sig}}; n=10, σx=1, σ
 	# s
 end
 
-function grad(ξ, x)
-	v = basis(signature(x))
-	# v̂ = @. 2\(v + grade(involution(ξ)*v*reversion(ξ), 1)/abs2(ξ))
-	v̂ = rej.(v, ξ)
-	# x̂ = rej(x, ξ)
-	@assert all(@. abs(v̂⊙ξ) < eps())
-	∇ = sum(@. 2(x⊙v̂)*v̂)
-end
+# function grad(ξ, x)
+# 	v = basis(signature(x))
+# 	# v̂ = @. 2\(v + grade(involution(ξ)*v*reversion(ξ), 1)/abs2(ξ))
+# 	v̂ = rej.(v, ξ)
+# 	# x̂ = rej(x, ξ)
+# 	@assert all(@. abs(v̂⊙ξ) < eps())
+# 	∇ = sum(@. 2(x⊙v̂)*v̂)
+# end
 
 function descend(ξ, x, stepsize=1e-2)
 	for _ in 1:1000
@@ -170,10 +145,10 @@ function sphereroots(ξ::Multivector{LSG{Sig},1}, p::Grade{1,Sig}, r::Real, Δp:
 	b = (ξe - ξo*p)⊙Δp + (r*ξo - ξ0)Δr
 	c = f(p, r)
 
-	iszero(a) && return true, (-c/b,)
+	iszero(a) && return true, [-c/b]
 
 	Δ = b^2 - 4*a*c
-	λ = @. (-b + (+1,-1)*sqrt(complex(Δ)))/(2a)
+	λ = @. (-b + [+1,-1]*sqrt(complex(Δ)))/(2a)
 
 	# @assert all(@. abs2(f(p + λ*Δp, r + λ*Δr)) < eps())
 	# @assert all(@. abs2(liesphere(p + λ*Δp, r + λ*Δr)⊙ξ) < eps())
@@ -199,6 +174,30 @@ function spheresamples(ξ::Grade{1,LSG{Sig}}, p₀, r₀; n=10) where Sig
 	spheres
 end
 
+function spherewalk(ξ::Grade{1,LSG{Sig}}, p₀, r₀; Δt=1, n=10) where Sig
+	ṗ = randn(Multivector{Sig,1})
+	ṙ = randn()
+	ps = SVector{dimension(Sig),Float64}[]
+	rs = Float64[]
+	for _ in 1:n
+		Δp, Δr = grad(ξ, p₀, r₀)
+		exists, λs = sphereroots(ξ, p₀, r₀, Δp, Δr)
+		if exists
+			λ = real(first(λs))
+			p = p₀ + λ*Δp
+			r = r₀ + λ*Δr
+			push!(ps, p.comps)
+			push!(rs, r)
+		else
+			push!(ps, fill(NaN, 3))
+			push!(rs, NaN)
+		end
+		p₀ += ṗ*Δt
+		r₀ += ṙ*Δt
+	end
+	# @assert length(ps) == length(rs) == 2n
+	ps, rs
+end
 
 
 function liesphere(p::Grade{1,Sig}, r) where Sig
@@ -206,7 +205,15 @@ function liesphere(p::Grade{1,Sig}, r) where Sig
 	o + embed(LSG{Sig}, p) + 2\(abs2(p) - r^2)oo + r*v0
 end
 
-function encode(ξ::Grade{1,LSG{3}})
+function sphererig(p, r)
+	if iszero(r)
+		rig("Point", location=p)
+	else
+		rig("Sphere", location=p, "Radius"=>abs(r))
+	end
+end
+
+function spaz(ξ::Grade{1,LSG{3}})
 	frames = 10
 	objects_per_frame = 5
 	nobjs = frames*objects_per_frame
@@ -226,9 +233,39 @@ function encode(ξ::Grade{1,LSG{3}})
 		frame_range=(firstindex(windows), lastindex(windows)),
 		objects=kfs
 	) |> Geomviz.send_to_server
-	nothing
-	# collect(windows)
-	# kfs
 end
+
+function geomviz(ξ::Grade{1,LSG{Sig}}) where Sig
+	nframes = 200
+	nobjs = 3
+
+	objs = map(1:nobjs) do _
+		p₀ = randn(Multivector{Sig,1})
+		r₀ = randn()
+		ps, rs = spherewalk(ξ, p₀, r₀; n=nframes, Δt=0.01)
+
+		for (p, r) in zip(ps, rs)
+			# @show abs(liesphere(Multivector{Sig,1}(p), r)⊙ξ)
+		end
+		rig("Sphere",
+			location=Geomviz.Keyframes(1:nframes .=> ps),
+			"Radius"=>Geomviz.Keyframes(1:nframes .=> abs.(rs)),
+		)
+	end
+
+	(
+		animation=true,
+		frame_range=(1, nframes),
+		objects=objs
+	) |> Geomviz.send_to_server
+end
+
+function grad(ξ::Grade{1,LSG{Sig}}, p, r) where Sig
+	ξ₊, ξ₋, ξ0 = Multivector(ξ).comps[end-2:end]
+	ξo, ξ∞ = ξ₋ - ξ₊, 2\(ξ₋ + ξ₊)
+	ξe = embed(Sig, ξ)
+	(ξe - ξo*p, r*ξo - ξ0)
+end
+
 
 end
