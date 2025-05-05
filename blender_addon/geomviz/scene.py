@@ -24,6 +24,7 @@ def sync(collection, data):
 		try:
 			rig_name = rig_data['rig_name']
 		except KeyError:
+			print(data)
 			raise utils.RigDataError("Missing key `rig_name`")
 		if rig_name in d and len(d[rig_name]) > 0:
 			# use existing rig object

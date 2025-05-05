@@ -57,8 +57,16 @@ unembed(a::AbstractMultivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = Geometri
 #= blend repl mode =#
 
 function replmode(input::String)
+	if startswith(strip(input), '?')
+		print("""
+		This is the Geomviz REPL mode
+		""")
+		return input
+	end
+
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
+	
 	data = (objects=encode([x]),)
 	!isnothing(data) && send_to_server(data)
 	x
@@ -74,13 +82,17 @@ function __init__()
 	if isdefined(Base, :active_repl)
 		initrepl(
 			replmode, 
-			prompt_text="blend> ",
+			prompt_text="geomviz> ",
 			prompt_color=214,
 			valid_input_checker=valid_input_checker,
 			start_key=' ',
-			mode_name="BGVClient",
+			mode_name="Geomviz",
+			startup_text=false,
 		)
+		print("Press space to enter the ")
+		printstyled("geomviz>", color=214)
+		print(" REPL mode.")
 	end
 end
 
-end # module BGVClient
+end # module Geomviz
