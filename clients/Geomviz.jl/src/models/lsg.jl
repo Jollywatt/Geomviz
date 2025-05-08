@@ -4,6 +4,8 @@ using GeometricAlgebra
 import ..Geomviz: rig, encode, geomviz, dn, normalize, classify
 import ..Geomviz.Conformal: CGA
 
+using LinearAlgebra: Diagonal, Symmetric, eigen
+
 export LSG
 
 #= Defining the metric signature =#
@@ -42,44 +44,6 @@ function extras(::Type{LSG{Sig}}) where Sig
 	o = 2\(vm - vp)
 	oo = vm + vp
 	o, oo, v0
-end
-
-
-function samplespherecomplex2(ξ::AbstractMultivector{LSG{Sig}}; n=10, σx=1, σr=1) where Sig
-	x = σx*randn(Multivector{Sig,1}, n)
-	o, oo, v0 = extras(LSG{Sig})
-	p = @. o + embed(LSG{Sig}, x) + 2\abs2(x)oo
-	r = σr*randn(n)
-	s = @. p - 2\abs2(r)oo + r*v0
-
-	# projection of s onto blade ξ
-	# ξ = @. ξ∧s
-	@. 2\(s + grade(involution(ξ)*s*reversion(ξ), 1)/abs2(ξ))
-	# @. 2\(s - grade(involution(ξ)*s*inv(ξ), 1))
-	# @. s - (s⋅ξ)/ξ
-	# s
-end
-
-# function grad(ξ, x)
-# 	v = basis(signature(x))
-# 	# v̂ = @. 2\(v + grade(involution(ξ)*v*reversion(ξ), 1)/abs2(ξ))
-# 	v̂ = rej.(v, ξ)
-# 	# x̂ = rej(x, ξ)
-# 	@assert all(@. abs(v̂⊙ξ) < eps())
-# 	∇ = sum(@. 2(x⊙v̂)*v̂)
-# end
-
-function descend(ξ, x, stepsize=1e-2)
-	for _ in 1:1000
-		x = rej(ξ, x)
-		∇ = grad(ξ, x)
-		@assert abs(∇⊙ξ) < 1e-4
-
-		x² = abs2(x)
-		x -= x²*stepsize*∇
-
-		abs(x²) < 1e-5 && return x
-	end
 end
 
 
@@ -265,6 +229,33 @@ function grad(ξ::Grade{1,LSG{Sig}}, p, r) where Sig
 	ξo, ξ∞ = ξ₋ - ξ₊, 2\(ξ₋ + ξ₊)
 	ξe = embed(Sig, ξ)
 	(ξe - ξo*p, r*ξo - ξ0)
+end
+
+"""
+	sample_diag_method()
+"""
+function sample_diag_method(ξ::Multivector{LSG{Sig},K}) where {Sig,K}
+	@assert length(K) == 1 "must be a homogeneous blade, got K = $K"
+
+	A = stack(ξᵢ.comps for ξᵢ in GeometricAlgebra.fastfactor(ξ))
+
+	η = Diagonal(collect(GeometricAlgebra.canonical_signature(LSG{Sig})))
+	B = Symmetric(A'*η*A)
+	λ, U = eigen(B)
+
+	z = randn(length(λ))
+	I = λ .> 0
+	z[I] /= sqrt(sum(abs2, z[I]))
+	z[.!I] /= sqrt(sum(abs2, z[.!I]))
+	z ./= sqrt.(abs.(λ))
+
+	@assert abs(z'Diagonal(λ)z) < sqrt(eps())
+
+	y = U*z
+	@assert abs(y'B*y) < sqrt(eps())
+
+	x = A*y
+	Multivector{LSG{Sig},1}(x)
 end
 
 
