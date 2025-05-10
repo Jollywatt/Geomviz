@@ -1,10 +1,12 @@
 module LieSphereGeometry
 
 using GeometricAlgebra
-import ..Geomviz: rig, encode, geomviz, dn, normalize, classify
+import ..Geomviz: rig, encode, geomviz, dn, normalize, classify, detect_keyframes
 import ..Geomviz.Conformal: CGA
 
 using LinearAlgebra: Diagonal, Symmetric, eigen
+
+using ..Geomviz
 
 export LSG
 
@@ -39,6 +41,11 @@ function infinity(::Type{LSG{Sig}}) where Sig
 	vm - vp
 end
 
+"""
+	o, oo, v0 = extras(LSG{Sig})
+
+Where `o = 2\\(vm - vp)` is the origin, `oo = vm + vp` is the point at infinity, and `v0` is the other thing.
+"""
 function extras(::Type{LSG{Sig}}) where Sig
 	vp, vm, v0 = (basis(LSG{Sig}, 1, dimension(Sig) + i) for i in 1:3)
 	o = 2\(vm - vp)
@@ -199,7 +206,7 @@ function spaz(ξ::Grade{1,LSG{3}})
 	) |> Geomviz.send_to_server
 end
 
-function geomviz(ξ::Grade{1,LSG{Sig}}) where Sig
+function geomviz_walk(ξ::Grade{1,LSG{Sig}}) where Sig
 	nframes = 200
 	nobjs = 3
 
@@ -231,32 +238,119 @@ function grad(ξ::Grade{1,LSG{Sig}}, p, r) where Sig
 	(ξe - ξo*p, r*ξo - ξ0)
 end
 
+macro assertsmall(lhs, tol)
+	message = sprint(print, lhs)
+	quote
+		let x = $lhs
+			@assert abs(x) <= $tol "$($message) = $x > $($tol)"
+		end
+	end |> esc
+end
+
 """
-	sample_diag_method()
+	project_to_ipns(ξ::Multivector{LSG{Sig},K}, [z::Vector])
+
+Find a vector `x` in the inner product null space of the `k`-blade `ξ` satisfying `x⋅x = x⋅ξ = 0`.
+
+The seed vector `z` should have `dimension(ξ) - k` components and is random by default.
+Similar values of `z` give similar results for a fixed `ξ`.
 """
-function sample_diag_method(ξ::Multivector{LSG{Sig},K}) where {Sig,K}
+function project_to_ipns(ξ::Multivector{LSG{Sig},K}, z::Union{AbstractVector,Nothing}=nothing) where {Sig,K}
 	@assert length(K) == 1 "must be a homogeneous blade, got K = $K"
 
-	A = stack(ξᵢ.comps for ξᵢ in GeometricAlgebra.fastfactor(ξ))
+	A = stack(ξᵢ.comps for ξᵢ in GeometricAlgebra.fastfactor(hodgedual(ξ)))
 
 	η = Diagonal(collect(GeometricAlgebra.canonical_signature(LSG{Sig})))
 	B = Symmetric(A'*η*A)
 	λ, U = eigen(B)
 
-	z = randn(length(λ))
+	if isnothing(z)
+		z = randn(length(λ))
+	end
+	@assert length(z) == dimension(ξ) - grade(ξ)
 	I = λ .> 0
 	z[I] /= sqrt(sum(abs2, z[I]))
 	z[.!I] /= sqrt(sum(abs2, z[.!I]))
 	z ./= sqrt.(abs.(λ))
 
-	@assert abs(z'Diagonal(λ)z) < sqrt(eps())
+	@assert !any(isnan.(z)) z
+	@assert !any(isnan.(λ)) λ
+
+	@assertsmall z'Diagonal(λ)z sqrt(eps())
 
 	y = U*z
-	@assert abs(y'B*y) < sqrt(eps())
+	@assertsmall y'B*y sqrt(eps())
 
 	x = A*y
 	Multivector{LSG{Sig},1}(x)
 end
 
+project_to_ipns(ξ::Multivector, z::Multivector) = project_to_ipns(ξ, collect(z.comps))
+
+function geomviz(ξ::Multivector{LSG{Sig}}) where Sig
+	kerneldim = dimension(ξ) - grade(ξ)
+	z = randn(Multivector{kerneldim,1}, 20)
+	B = randn(Multivector{kerneldim,2})
+	B /= sqrt(abs(abs2(B)))
+
+	t = range(0, π, length=300)
+
+	zt = sandwich_prod.(exp.(B.*t'), z)
+
+	rigs = geomviz.(classify_null.(project_to_ipns.(ξ, zt)))
+
+	anim = detect_keyframes(eachindex(t), eachcol(rigs))
+
+	(
+		animation=true,
+		frame_range=(1, length(t)),
+		objects=anim
+	) |> Geomviz.send_to_server
+end
+
+struct Plane{N}
+	normal::Multivector{N,1,SVector{N,Float64}}
+	distance::Float64
+end
+
+struct Sphere{N}
+	location::Multivector{N,1,SVector{N,Float64}}
+	radius::Float64
+end
+
+geomviz(Π::Plane) = rig("Plane", location=Π.distance, "Normal"=>Π.normal)
+function geomviz(S::Sphere)
+	if abs(S.radius) < 1e-3
+		rig("Point", location=S.location)
+	else
+		rig("Sphere", location=S.location, "Radius"=>max(0, S.radius), "Holes"=>(S.radius < 0))
+	end
+end
+
+function classify_null(ξ::Multivector{LSG{Sig},1}) where Sig
+	ξ² = abs2(ξ)
+	@assert abs(ξ²) < sqrt(eps()) "not a null vector; has square $ξ²"
+
+	ξ₊, ξ₋, ξ0 = Multivector(ξ).comps[end-2:end]
+	ξo, ξ∞ = ξ₋ - ξ₊, 2\(ξ₋ + ξ₊)
+	ξe = embed(Sig, ξ)
+
+	if abs(ξo) < eps()
+		if abs(ξ0) < eps()
+			# point at infinity
+			missing
+		else
+			# plane
+			d = ξ∞/ξ0
+			n̂ = ξe/ξ0
+			Plane(n̂, d)
+		end
+	else
+		# sphere
+		p = ξe/ξo
+		r = ξ0/ξo
+		Sphere(p, r)
+	end
+end
 
 end

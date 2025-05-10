@@ -20,7 +20,7 @@ function detect_keyframes(ts, frames)
 	for (t, objs) in zip(ts, frames)
 
 		used = zeros(Bool, length(zipped)) # which persistent objects are used this frame
-		for obj in objs::AbstractVector{<:AbstractDict}
+		for obj::AbstractDict in objs
 			found = false
 			for i in eachindex(zipped)
 				used[i] && continue
