@@ -76,7 +76,7 @@ function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
 	geomviz(x)
-	x
+	Meta.quot(x)
 end
 
 function valid_input_checker(prompt_state)
