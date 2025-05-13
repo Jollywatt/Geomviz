@@ -234,14 +234,27 @@ function root_of_diagonal_quadratic_form(λ::AbstractVector, z::AbstractVector{T
 end
 
 """
-	project_to_ipns(ξ::Multivector{LSG{Sig},K}, [z::Vector])
+	project_to_ipns(ξ::Multivector{LSG{Sig},K}, z::Vector)
 
-Find a vector `x` in the inner product null space of the `k`-blade `ξ` satisfying `x⋅x = x⋅ξ = 0`.
+Find a ``1``-vector `x::Multivector{LSG{Sig},1}` in the
+_inner product null space_ of the `k`-blade `ξ` such that
+```
+x⋅x == x⋅ξ == 0
+```
+is (approximately) satisfied.
 
-The seed vector `z` should have `dimension(ξ) - k` components and is random by default.
-Similar values of `z` give similar results for a fixed `ξ`.
+The vector `x` is parametrised by the _latent vector_ `z`,
+which should have `length(z) == dimension(ξ) - k`.
+For a fixed blade `ξ`, similar values of `z` give similar results `x`.
 """
-function project_to_ipns(ξ::Multivector{LSG{Sig},K}, z::Union{AbstractVector,Nothing}=nothing) where {Sig,K}
+project_to_ipns(ξ::Multivector, z::AbstractVector) = project_to_ipns(ξ, reshape(z, :, 1))
+
+"""
+	project_to_ipns(ξ::Multivector{LSG{Sig},K}, Z::Matrix)
+
+Find a vector of ``1``-vectors `x`, one for each column in the latent matrix `Z`.
+"""
+function project_to_ipns(ξ::Multivector{LSG{Sig},K}, Z::AbstractMatrix) where {Sig,K}
 	@assert length(K) == 1 "must be a homogeneous blade, got K = $K"
 
 	A = stack(ξᵢ.comps for ξᵢ in GeometricAlgebra.fastfactor(hodgedual(ξ)))
@@ -250,35 +263,35 @@ function project_to_ipns(ξ::Multivector{LSG{Sig},K}, z::Union{AbstractVector,No
 	B = Symmetric(A'*η*A)
 	λ, U = eigen(B)
 
-	z = root_of_diagonal_quadratic_form(λ, z)
+	Z₀ = mapslices(Z, dims=1) do z
+		root_of_diagonal_quadratic_form(λ, z)
+	end
 
-	@assertsmall z'Diagonal(λ)z sqrt(eps())
-
-	y = U*z
-	@assertsmall y'B*y sqrt(eps())
-
-	x = A*y
-	Multivector{LSG{Sig},1}(x)
+	Multivector{LSG{Sig},1}.(eachcol(A*U*Z₀))
 end
-project_to_ipns(ξ::BasisBlade, z::Union{AbstractVector,Nothing}) = project_to_ipns(Multivector(ξ), z)
-project_to_ipns(ξ::Multivector, z::Multivector) = project_to_ipns(ξ, collect(z.comps))
+project_to_ipns(ξ::BasisBlade, z) = project_to_ipns(Multivector(ξ), z)
 
-function geomviz(ξ::Multivector{LSG{Sig}}) where Sig
-	kerneldim = dimension(ξ) - grade(ξ)
-	z = randn(Multivector{kerneldim,1}, 1, 5)
-	B = randn(Multivector{kerneldim,2}, 1, 1, 3)
-	@. B /= sqrt(abs(abs2(B)))
-
+function geomviz(ξ::AbstractMultivector{LSG{Sig}}) where Sig
 	nframes = 300
-
-	t = range(-π/2, π/2, length=nframes)
-
-	# dims: (rotor, vector, time)
-	zt = sandwich_prod.(exp.(B.*t), z)
-
-	rigs = geomviz.(classify_null.(project_to_ipns.(ξ, zt)))
-
 	tscale = 2
+	zdim = dimension(ξ) - grade(ξ)
+
+	# create a bunch of random time-varying latent vectors, z
+	ts = range(-π/2, π/2, length=nframes)
+	vectors = randn(Multivector{zdim,1}, 1, 5)
+	bivectors = randn(Multivector{zdim,2}, 1, 1, 5)
+	@. bivectors /= sqrt(abs(abs2(bivectors)))
+
+	# axes: (t, vector, bivector)
+	zt = sandwich_prod.(exp.(bivectors.*ts), vectors)
+	Z = reinterpret(Float64, reshape(zt, 1, :))
+
+	# get Lie vectors parametrised by latent vectors
+	xs = project_to_ipns(ξ, Z)
+
+	# convert Lie vectors to Sphere/Plane rigs
+	rigs = reshape(geomviz.(classify_null.(xs)), :, length(vectors), length(bivectors))
+
 	anim = detect_keyframes(range(1, length=nframes, step=tscale), eachslice(rigs, dims=1))
 
 	(
@@ -298,7 +311,7 @@ struct Sphere{N}
 	radius::Float64
 end
 
-geomviz(Π::Plane) = rig("Plane", location=Π.distance, "Normal"=>Π.normal)
+geomviz(Π::Plane) = rig("Plane", location=Π.normal*Π.distance/sqrt(abs2(Π.normal)), "Normal"=>Π.normal)
 function geomviz(S::Sphere)
 	if abs(S.radius) < 1e-3
 		rig("Point", location=S.location)
