@@ -265,21 +265,25 @@ project_to_ipns(ξ::Multivector, z::Multivector) = project_to_ipns(ξ, collect(z
 
 function geomviz(ξ::Multivector{LSG{Sig}}) where Sig
 	kerneldim = dimension(ξ) - grade(ξ)
-	z = randn(Multivector{kerneldim,1}, 20)
-	B = randn(Multivector{kerneldim,2})
-	B /= sqrt(abs(abs2(B)))
+	z = randn(Multivector{kerneldim,1}, 1, 5)
+	B = randn(Multivector{kerneldim,2}, 1, 1, 3)
+	@. B /= sqrt(abs(abs2(B)))
 
-	t = range(0, π, length=300)
+	nframes = 300
 
-	zt = sandwich_prod.(exp.(B.*t'), z)
+	t = range(-π/2, π/2, length=nframes)
+
+	# dims: (rotor, vector, time)
+	zt = sandwich_prod.(exp.(B.*t), z)
 
 	rigs = geomviz.(classify_null.(project_to_ipns.(ξ, zt)))
 
-	anim = detect_keyframes(eachindex(t), eachcol(rigs))
+	tscale = 2
+	anim = detect_keyframes(range(1, length=nframes, step=tscale), eachslice(rigs, dims=1))
 
 	(
 		animation=true,
-		frame_range=(1, length(t)),
+		frame_range=(1, tscale*nframes),
 		objects=anim
 	) |> Geomviz.send_to_server
 end

@@ -6,7 +6,7 @@ using ReplMaker
 using REPL: LineEdit
 using GeometricAlgebra
 
-export encode, PORT, Styled, animate
+export geomviz, encode, PORT, Styled, animate
 export up, dn, unembed, normalize, classify
 export Projective, PGA
 export Conformal, CGA
