@@ -23,24 +23,6 @@ end
 
 
 
-toquadric(x::Multivector{CGA{Sig},1}, orientation) where Sig = toquadric(embed(LSG{Sig}, x), orientation)
-function toquadric(x::Multivector{<:LSG,1}, orientation)
-	v0 = basis(signature(x), 1, dimension(x))
-	x + orientation*sqrt(x⊙x)*v0
-end
-
-
-function origin(::Type{LSG{Sig}}) where Sig
-	vp = basis(LSG{Sig}, 1, dimension(Sig) + 1)
-	vm = basis(LSG{Sig}, 1, dimension(Sig) + 2)
-	2\(vm + vp)
-end
-function infinity(::Type{LSG{Sig}}) where Sig
-	vp = basis(LSG{Sig}, 1, dimension(Sig) + 1)
-	vm = basis(LSG{Sig}, 1, dimension(Sig) + 2)
-	vm - vp
-end
-
 """
 	o, oo, v0 = extras(LSG{Sig})
 
@@ -54,35 +36,7 @@ function extras(::Type{LSG{Sig}}) where Sig
 end
 
 
-function quadstep(ξ, x::Grade{1})
-	n = dimension(x)
-	vm, v0 = basis.(signature(x), 1, (n - 1, n))
-	Π = vm∧v0
-	∇::Grade{1} = rej(sandwich_prod(Π, x), ξ)
-	a = abs2(∇)
-	b = 2∇⊙x
-	c = abs2(x)
-	@show a b c
-	λ = real(-b + sqrt(complex(b^2 - 4a*c)))/2a
-	x + λ*∇
-end
-
-function quadsteps(ξ, x::Grade{1})
-	x = rej(x, ξ)
-	# @show x
-	for _ in 1:1
-		x = quadstep(ξ, x)
-		x² = abs2(x)
-		# @show x²
-		abs(x²) < sqrt(eps(eltype(x))) && return x
-	end
-	x
-end
-
-# almost a rejection, but projective and but works if A^2 = 0
-rej(v, A) = v*abs2(A) + grade(involution(A)*v*reversion(A), 1)
-
-
+#=
 function samplespherecomplex(ξ, n=10)
 	x = randn(Multivector{signature(ξ),1}, n)
 	x₀ = quadsteps.(ξ, x)
@@ -238,6 +192,8 @@ function grad(ξ::Grade{1,LSG{Sig}}, p, r) where Sig
 	(ξe - ξo*p, r*ξo - ξ0)
 end
 
+=#
+
 macro assertsmall(lhs, tol)
 	message = sprint(print, lhs)
 	quote
@@ -245,6 +201,36 @@ macro assertsmall(lhs, tol)
 			@assert abs(x) <= $tol "$($message) = $x > $($tol)"
 		end
 	end |> esc
+end
+
+"""
+	root_of_diagonal_quadratic_form(λ, [z])
+
+Find a vector `z₀` near to the initial `z` which satisfies
+```
+z₀'D*z₀ == sum(@. λ*z₀^2) ≈ 0
+```
+where `D = Diagonal(λ)` is a diagonal matrix with main diagonal `λ::AbstractVector`.
+
+If `z` is `nothing`, find a random root near `randn(length(λ))`.
+"""
+root_of_diagonal_quadratic_form(λ::AbstractVector, ::Nothing) = root_of_diagonal_quadratic_form(λ, randn(length(λ)))
+function root_of_diagonal_quadratic_form(λ::AbstractVector, z::AbstractVector{T}) where T
+	if all(>=(0), λ) || all(<=(0), λ)
+		return zero(z)
+	end
+
+	pos = λ .> eps(T)
+	neg = λ .< -eps(T)
+
+	z[pos] /= sqrt(sum(abs2, z[pos]))
+	z[neg] /= sqrt(sum(abs2, z[neg]))
+	z[@. !pos & !neg]
+
+	nonzero = pos .|| neg
+	z[nonzero] ./= sqrt.(abs.(λ[nonzero]))
+
+	return z
 end
 
 """
@@ -264,17 +250,7 @@ function project_to_ipns(ξ::Multivector{LSG{Sig},K}, z::Union{AbstractVector,No
 	B = Symmetric(A'*η*A)
 	λ, U = eigen(B)
 
-	if isnothing(z)
-		z = randn(length(λ))
-	end
-	@assert length(z) == dimension(ξ) - grade(ξ)
-	I = λ .> 0
-	z[I] /= sqrt(sum(abs2, z[I]))
-	z[.!I] /= sqrt(sum(abs2, z[.!I]))
-	z ./= sqrt.(abs.(λ))
-
-	@assert !any(isnan.(z)) z
-	@assert !any(isnan.(λ)) λ
+	z = root_of_diagonal_quadratic_form(λ, z)
 
 	@assertsmall z'Diagonal(λ)z sqrt(eps())
 
@@ -284,7 +260,7 @@ function project_to_ipns(ξ::Multivector{LSG{Sig},K}, z::Union{AbstractVector,No
 	x = A*y
 	Multivector{LSG{Sig},1}(x)
 end
-
+project_to_ipns(ξ::BasisBlade, z::Union{AbstractVector,Nothing}) = project_to_ipns(Multivector(ξ), z)
 project_to_ipns(ξ::Multivector, z::Multivector) = project_to_ipns(ξ, collect(z.comps))
 
 function geomviz(ξ::Multivector{LSG{Sig}}) where Sig
