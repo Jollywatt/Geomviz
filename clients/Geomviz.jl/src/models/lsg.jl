@@ -216,7 +216,7 @@ If `z` is `nothing`, find a random root near `randn(length(λ))`.
 """
 root_of_diagonal_quadratic_form(λ::AbstractVector, ::Nothing) = root_of_diagonal_quadratic_form(λ, randn(length(λ)))
 function root_of_diagonal_quadratic_form(λ::AbstractVector, z::AbstractVector{T}) where T
-	if all(>=(0), λ) || all(<=(0), λ)
+	if all(>(0), λ) || all(<(0), λ)
 		return zero(z)
 	end
 
@@ -256,12 +256,15 @@ Find a vector of ``1``-vectors `x`, one for each column in the latent matrix `Z`
 """
 function project_to_ipns(ξ::Multivector{LSG{Sig},K}, Z::AbstractMatrix) where {Sig,K}
 	@assert length(K) == 1 "must be a homogeneous blade, got K = $K"
+	zdim = dimension(ξ) - grade(ξ)
+	@assert size(Z, 1) == zdim "latent vectors must have length $zdim"
 
 	A = stack(ξᵢ.comps for ξᵢ in GeometricAlgebra.fastfactor(hodgedual(ξ)))
 
 	η = Diagonal(collect(GeometricAlgebra.canonical_signature(LSG{Sig})))
 	B = Symmetric(A'*η*A)
 	λ, U = eigen(B)
+
 
 	Z₀ = mapslices(Z, dims=1) do z
 		root_of_diagonal_quadratic_form(λ, z)
@@ -272,25 +275,31 @@ end
 project_to_ipns(ξ::BasisBlade, z) = project_to_ipns(Multivector(ξ), z)
 
 function geomviz(ξ::AbstractMultivector{LSG{Sig}}) where Sig
-	nframes = 300
-	tscale = 2
+	nframes = 100
+	tscale = 1
 	zdim = dimension(ξ) - grade(ξ)
 
 	# create a bunch of random time-varying latent vectors, z
 	ts = range(-π/2, π/2, length=nframes)
-	vectors = randn(Multivector{zdim,1}, 1, 5)
-	bivectors = randn(Multivector{zdim,2}, 1, 1, 5)
-	@. bivectors /= sqrt(abs(abs2(bivectors)))
+	vectors = randn(Multivector{zdim,1}, 1, 10)
+	if zdim >= 2
+		bivectors = randn(Multivector{zdim,2}, 1, 1, 10)
+		@. bivectors /= sqrt(abs(abs2(bivectors)))
 
-	# axes: (t, vector, bivector)
-	zt = sandwich_prod.(exp.(bivectors.*ts), vectors)
+		# axes: (t, vector, bivector)
+		zt = sandwich_prod.(exp.(bivectors.*ts), vectors)
+	else
+		zt = vectors.*ts
+		zt = reshape(zt, size(zt)..., 1)
+	end
+
 	Z = reinterpret(Float64, reshape(zt, 1, :))
 
 	# get Lie vectors parametrised by latent vectors
 	xs = project_to_ipns(ξ, Z)
 
 	# convert Lie vectors to Sphere/Plane rigs
-	rigs = reshape(geomviz.(classify_null.(xs)), :, length(vectors), length(bivectors))
+	rigs = reshape(geomviz.(classify_null.(xs)), nframes, :)
 
 	anim = detect_keyframes(range(1, length=nframes, step=tscale), eachslice(rigs, dims=1))
 
@@ -316,7 +325,7 @@ function geomviz(S::Sphere)
 	if abs(S.radius) < 1e-3
 		rig("Point", location=S.location)
 	else
-		rig("Sphere", location=S.location, "Radius"=>max(0, S.radius), "Holes"=>(S.radius < 0))
+		rig("Sphere", location=S.location, "Radius"=>S.radius, "Holes"=>(S.radius < 0))
 	end
 end
 

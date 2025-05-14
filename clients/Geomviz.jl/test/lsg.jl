@@ -20,4 +20,6 @@ using LinearAlgebra: Diagonal
 			@test all(isfinite, z)
 		end
 	end
+
+	@test root_of_diagonal_quadratic_form([0], [2]) != [0]
 end
