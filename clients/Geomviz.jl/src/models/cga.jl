@@ -24,6 +24,7 @@ export classify
 export Flat, PointFlat, Line, Plane
 export Round, PointPair, Circle, Sphere
 export Tangent, Point
+export Direction
 
 
 """
@@ -109,21 +110,41 @@ up, dn
 
 
 
-
 """
-	CGAObject{D,Sig}
+	CGAObject{D,Sig} >:
+		Flat{D,Sig}(location::Grade{1,Sig}, direction::Grade{K,Sig})
+		Round{D,Sig}(carrier::Flat{D,Sig}, radius::Float64)
+		Tangent{D,Sig}(carrier::Flat{D,Sig})
+		Direction{D,Sig}(direction::Grade{D,Sig})
 
-A blade in `CGA{Sig}` with a `D`-dimensional carrier.
+A geometric object described by a blade in conformal geometric algebra.
+Any blade in `CGA{Sig}` is of one of the forms represented by these types.
+
+In the list below, ``p, A`` are a position vector and blade in the base space,
+``𝒪, ∞`` are the points at the origin and at infinity, 
+``Tₚ[X]`` is the translation operator and ``r > 0`` is a radius.
+
+- `Flat{k}(p, A)`: A blade of the form ``Tₚ[𝒪 ∧ A ∧ ∞] = up(p) ∧ A ∧ ∞``,
+  representing an affine `k`-plane through ``p`` in the ``A`` direction.
+
+- `Round{k}(Flat(p, A), r)`: A blade of the form ``Tₚ[(𝒪 + r²/2 ∞) ∧ A]``,
+  representing a `(k - 1)`-sphere within the affine `k`-plane `Flat(p, A)`
+  with center `p` and radius `r`.
+
+- `Tangent(Flat(p, A))`: A blade of the form ``Tₚ[𝒪 ∧ A]``, representing a blade ``A``
+  rooted at the point ``p``, equal to the zero-radius round `Round(Flat(p, A), 0)`.
+  Tangents describe the base space's _tangent bundle_ of blades.
+
+- `Direction{k}(A)`: A blade of the form ``A ∧ ∞``, representing a pure `k`-dimensional direction.
+  Like a `Flat` without a location.
+
+See table 14.1 of [^1] for details.
+
+[^1]: Dorst, L., Fontijne, D., & Mann, S. (2010). Geometric Algebra for Computer Science: An Object-Oriented Approach to Geometry. Elsevier.
 """
 abstract type CGAObject{D,Sig} end
 
 
-"""
-	Flat{D,Sig}
-
-A blade of the forn
-``Tₚ[o ∧ E ∧ oo]``
-"""
 struct Flat{D,Sig} <: CGAObject{D,Sig}
 	location::Multivector{Sig,1}
 	direction::Multivector{Sig,D}
@@ -138,6 +159,8 @@ end
 struct Direction{D,Sig} <: CGAObject{D,Sig}
 	direction::Multivector{Sig,D}
 end
+
+@doc (@doc CGAObject) (Flat, Round, Tangent, Direction)
 
 location(x::Flat) = x.location
 location(x::Union{Round,Tangent}) = location(x.carrier)
@@ -158,9 +181,6 @@ const Sphere = Round{3}
 const PointFlat = Flat{0}
 const Line = Flat{1}
 const Plane = Flat{2}
-
-
-encode(x::Union{Point,PointFlat}) = rig("Point", location=location(x))
 
 
 encode(x::Union{Point,PointFlat}) = Rig("Point", location=location(x))
@@ -203,6 +223,9 @@ encode(x::Tangent{2}) = Rig("Spear Disk",
 	"Normal"=>rdual(direction(x)),
 )
 
+
+function opns(x::Multivector{<:CGA})
+end
 
 function classify(x::AbstractMultivector{<:CGA})
 	o, oo = origin(signature(x)), infinity(signature(x))
