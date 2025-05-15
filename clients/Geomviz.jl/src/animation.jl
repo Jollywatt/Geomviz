@@ -3,6 +3,8 @@ function canbeidentified(a::Dict, b::Dict)
 	a["rig_name"] == b["rig_name"] && keys(a) == keys(b)
 end
 
+# canbeidentified(a::Rig, b::Rig) = a.rig_name == b.rig_name
+
 function animate(fn, ts::AbstractVector)
 	frames = map(ts) do t
 		flatmap(encode, fn(t))
@@ -20,7 +22,8 @@ function detect_keyframes(ts, frames)
 	for (t, objs) in zip(ts, frames)
 
 		used = zeros(Bool, length(zipped)) # which persistent objects are used this frame
-		for obj::AbstractDict in objs
+		for obj in objs
+			obj = encode(obj)
 			found = false
 			for i in eachindex(zipped)
 				used[i] && continue

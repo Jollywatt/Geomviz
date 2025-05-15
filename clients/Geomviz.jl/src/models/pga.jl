@@ -12,7 +12,7 @@ module Projective
 
 using GeometricAlgebra
 using GeometricAlgebra: replace_signature
-import ..Geomviz: rig, encode
+import ..Geomviz: Rig, encode
 
 """
 	ProjectiveSignature{Sig,Index,PlaneBased}
@@ -83,7 +83,7 @@ function up(sig::Type{ProjectiveSignature{UpSig,I,true}}, a::Multivector) where 
 end
 
 # vector as point
-encode(a::Multivector{<:PointBasedEuclidean,1}) = rig("Point",
+encode(a::Multivector{<:PointBasedEuclidean,1}) = Rig("Point",
 	location=projpoint(a),
 )
 
@@ -94,7 +94,7 @@ function encode(line::Multivector{<:PointBasedEuclidean,2})
 	direction = nonprojcomps(point⋅line)
 
 	norm = sqrt(sum(abs2, direction))
-	rig("Line",
+	Rig("Line",
 		location=projpoint(point),
 		"Direction"=>direction,
 		# "Arrow separation"=>norm
@@ -108,7 +108,7 @@ function encode(plane::Multivector{<:PointBasedEuclidean,3})
 	origin = projpoint((v0∧reciprocal_point)∨plane)
 	normal = nonprojcomps((rdual(plane)∧v0)⨽v0)
 
-	rig("Plane",
+	Rig("Plane",
 		location=origin,
 		show_wire=true,
 		"Normal"=>normal,

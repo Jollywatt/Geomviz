@@ -17,7 +17,7 @@ Conformal geometric algebra has covariant representations of points, point-pairs
 module Conformal
 
 using GeometricAlgebra
-import ..Geomviz: rig, encode, dn, normalize, classify
+import ..Geomviz: Rig, encode, dn, normalize, classify
 
 export origin, infinity
 export classify
@@ -162,40 +162,43 @@ const Plane = Flat{2}
 
 encode(x::Union{Point,PointFlat}) = rig("Point", location=location(x))
 
-encode(x::PointPair) = rig("Point Pair",
+
+encode(x::Union{Point,PointFlat}) = Rig("Point", location=location(x))
+
+encode(x::PointPair) = Rig("Point Pair",
 	location=location(x),
 	"Direction"=>direction(x),
 	"Radius"=>radius(x)
 )
 
-encode(x::Circle) = rig("Spear Circle",
+encode(x::Circle) = Rig("Spear Circle",
 	location=location(x),
 	"Radius"=>radius(x),
 	"Normal"=>rdual(direction(x)),
 )
 
-encode(x::Union{Sphere,Round{0}}) = rig("Sphere",
+encode(x::Union{Sphere,Round{0}}) = Rig("Sphere",
 	location=location(x),
 	"Radius"=>abs(radius(x)),
 	"Holes"=>radius(x) < 0,
 )
 
-encode(x::Line) = rig("Spear Line",
+encode(x::Line) = Rig("Spear Line",
 	location=location(x),
 	"Direction"=>direction(x),
 )
 
-encode(x::Plane) = rig("Plane",
+encode(x::Plane) = Rig("Plane",
 	location=location(x),
 	"Normal"=>rdual(direction(x)),
 )
 
-encode(x::Tangent{1}) = rig("Arrow Vector",
+encode(x::Tangent{1}) = Rig("Arrow Vector",
 	location=location(x),
 	"Vector"=>direction(x),
 )
 
-encode(x::Tangent{2}) = rig("Spear Disk",
+encode(x::Tangent{2}) = Rig("Spear Disk",
 	location=location(x),
 	"Normal"=>rdual(direction(x)),
 )

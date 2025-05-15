@@ -56,11 +56,34 @@ function encode(s::Styled)
 	data
 end
 
-function rig(rig_name, rig_parameters::Pair{String}...; object_parameters...)
-	object_parameters = [string(k) => v for (k, v) in pairs(object_parameters)]
-	Dict{String,Any}(
-		"rig_name"=>rig_name,
-		"rig_parameters"=>Dict{String,Any}(rig_parameters),
-		object_parameters...,
-	)
+struct Rig
+	rig_name::String
+	object_parameters::Dict{String,Any}
+	rig_parameters::Dict{String,Any}
 end
+
+function Rig(rig_name::String, rig_parameters::Pair{String}...; object_parameters...)
+	object_parameters = Dict(string(k) => v for (k, v) in pairs(object_parameters))
+	Rig(rig_name, object_parameters, Dict{String,Any}(rig_parameters))
+
+end
+
+encode(rig::Rig) = Dict(
+	"rig_name"=>rig.rig_name,
+	"rig_parameters"=>rig.rig_parameters,
+	rig.object_parameters...,
+)
+
+
+Pickle.save(p::Pickle.AbstractPickle, io::IO, rig::Rig) = Pickle.save(p, io, encode(rig))
+
+# function rig(rig_name, rig_parameters::Pair{String}...; object_parameters...)
+# 	object_parameters = [string(k) => v for (k, v) in pairs(object_parameters)]
+# 	Dict{String,Any}(
+# 		"rig_name"=>rig_name,
+# 		"rig_parameters"=>Dict{String,Any}(rig_parameters),
+# 		object_parameters...,
+# 	)
+# end
+
+
