@@ -20,7 +20,7 @@ using GeometricAlgebra
 import ..Geomviz: Rig, encode, dn, normalize, classify
 
 export origin, infinity
-export classify
+export classify, ipns, opns
 export Flat, PointFlat, Line, Plane
 export Round, PointPair, Circle, Sphere
 export Tangent, Point
@@ -182,6 +182,27 @@ const PointFlat = Flat{0}
 const Line = Flat{1}
 const Plane = Flat{2}
 
+"""
+	contains(X::CGAObject{D,Sig}, point::Grade{1,Sig})
+
+Whether the conformal geometric algebra object `X` contains `point`, given as a location vector in the base space.
+
+If `X` is a `Flat{k}` or `Round{k}`, this is true when `point` lies on the `k`-plane or `(k - 1)`-sphere described by `X`.
+A `Tangent` contains exactly one point, `location(X)`, and a `Direction` contains no points.
+"""
+Base.contains(x::Flat{D,Sig}, p::Grade{1,Sig}) where {D,Sig} = isapprox((p - location(x))∧direction(x), 0, atol=eps(eltype(p)))
+Base.contains(x::Round{D,Sig}, p::Grade{1,Sig}) where {D,Sig} = contains(x.carrier, p) && abs2(p - location(x)) ≈ abs2(radius(x))
+Base.contains(x::Tangent, p::Grade{1,Sig}) where {Sig} = location(x) ≈ p
+Base.contains(x::Direction, p) = false
+
+function samplepoint(x::Round{D,Sig}) where {D,Sig}
+	@assert D > 0 "$(typeof(x)) contains no points; cannot sample"
+	p = randn(Multivector{Sig,D - 1})
+	r = p ⨼ direction(x)
+	r *= radius(x)/sqrt(abs2(r))
+	location(x) + r
+end
+samplepoint(x::Flat) = samplepoint(Round(x, randn()))
 
 encode(x::Union{Point,PointFlat}) = Rig("Point", location=location(x))
 
@@ -223,23 +244,14 @@ encode(x::Tangent{2}) = Rig("Spear Disk",
 	"Normal"=>rdual(direction(x)),
 )
 
-
 function opns(x::Multivector{<:CGA})
-end
-
-function classify(x::AbstractMultivector{<:CGA})
 	o, oo = origin(signature(x)), infinity(signature(x))
 
-	x² = x*x
-	isapprox(x², scalar(x²), atol=sqrt(eps())) || return nothing
-
-	if x ∧ oo ≈ 0
-		if x ⨽ oo ≈ 0
-			# directions
+	if x ∧ oo ≈ 0 # flats or directions
+		if x ⨽ oo ≈ 0 # directions
 			dir = unembed(x ⨽ -o)
 			Direction(dir)
-		else
-			# flats
+		else # flats
 			loc = dn(x⨽(x⨽o))
 			dir = unembed(involution(x)⨽(o∧oo))
 			Flat(loc, dir)
@@ -247,10 +259,9 @@ function classify(x::AbstractMultivector{<:CGA})
 	else
 		y = x ⨽ oo
 		if y ≈ 0
-			# dual flats
-			classify(hodgedual(x))
-		else
-			# rounds
+			# empty OPNS
+			nothing
+		else # rounds
 			loc = dn(sandwich_prod(x, oo))
 			dir = unembed((involution(x) ⨽ oo))
 			ρ² = x⊙x/(y⊙y)
@@ -262,6 +273,31 @@ function classify(x::AbstractMultivector{<:CGA})
 			end
 		end
 	end
+
+end
+
+ipns(x) = opns(hodgedual(x))
+
+"""
+	ipns(A)
+	opns(A)
+
+Inner or outer product null space of the blade `A`.
+
+This is the set of points `x ∈ ℝⁿ` satisfying `up(x)⋅A ≈ 0` (IPNS) or `up(x)∧A ≈ 0` (OPNS).
+
+Returns a `CGAObject` or `nothing` if the set is empty.
+"""
+ipns, opns
+
+function classify(x::AbstractMultivector{<:CGA})
+	o, oo = origin(signature(x)), infinity(signature(x))
+
+	x² = x*x
+	isapprox(x², scalar(x²), atol=sqrt(eps())) || return nothing
+
+	obj = opns(x)
+	isnothing(obj) ? ipns(x) : obj
 
 end
 
