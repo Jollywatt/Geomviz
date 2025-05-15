@@ -17,7 +17,6 @@ class GeomvizPanel(bpy.types.Panel):
 		self.layout.use_property_decorate = False
 
 		# asset controls
-
 		self.layout.label(text="Rigs:")
 
 		row = self.layout.row(align=True)

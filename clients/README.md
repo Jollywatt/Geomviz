@@ -4,7 +4,7 @@ This folder contains packages for integrating various geometric algebra implemen
 
 ## Supported packages
 
-| Client | Extension for package | Langauge |
+| Client | Extension for package | Language |
 |--------|-----------------------|----------|
 | `Geomviz.jl` | https://github.com/Jollywatt/GeometricAlgebra.jl | Julia |
 | `geomviz_clifford` | https://github.com/pygae/clifford | Python |
