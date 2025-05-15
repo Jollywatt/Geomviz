@@ -10,8 +10,6 @@ export geomviz, encode, PORT, Styled, animate
 export up, dn, unembed, normalize, classify
 export Projective, PGA
 export Conformal, CGA
-export SphericalOneUp, SGA
-export LieSphereGeometry, LSG
 
 function dn end
 function normalize end
@@ -26,23 +24,17 @@ include("animation.jl")
 include("models/vga.jl")
 include("models/pga.jl")
 include("models/cga.jl")
-include("models/sga.jl")
-include("models/lsg.jl")
 
 import .Projective: PGA
 import .Conformal: CGA
-import .SphericalOneUp: SGA
-import .LieSphereGeometry: LSG
 
 up(T::Type{<:Projective.ProjectiveSignature}, a::AbstractMultivector) = Projective.up(T, a)
 up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
-up(::Type{<:SphericalOneUp.SGA}, a::AbstractMultivector; kw...) = SphericalOneUp.up(a; kw...)
 up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
 
 up(v::AbstractMultivector{<:CGA}) = Conformal.up(unembed(v))
-up(v::AbstractMultivector{<:SGA}) = SphericalOneUp.up(unembed(v))
 
-for (Sig, mod) in [Type{CGA} => Conformal, Type{SGA} => SphericalOneUp], T in [BasisBlade, Multivector]
+for (Sig, mod) in [Type{CGA} => Conformal], T in [BasisBlade, Multivector]
 	@eval GeometricAlgebra.embed(::$Sig, a::$T) = $mod.embed(Multivector(a))
 end
 
@@ -53,7 +45,7 @@ end
 The part of a multivector lying in the base space `Sig` if the multivector is
 embedded in higher space such as `CGA{Sig}` or `SGA{Sig}`.
 """
-unembed(a::AbstractMultivector{<:Union{CGA{Sig},SGA{Sig}}}) where Sig = GeometricAlgebra.embed(Sig, a)
+unembed(a::AbstractMultivector{<:CGA{Sig}}) where Sig = GeometricAlgebra.embed(Sig, a)
 
 #= blend repl mode =#
 
@@ -76,7 +68,7 @@ function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
 	geomviz(x)
-	Meta.quot(x)
+	x
 end
 
 function valid_input_checker(prompt_state)
@@ -88,7 +80,7 @@ end
 function __init__()
 	if isdefined(Base, :active_repl)
 		initrepl(
-			replmode, 
+			Meta.quot∘replmode, 
 			prompt_text="geomviz> ",
 			prompt_color=214,
 			valid_input_checker=valid_input_checker,
@@ -98,7 +90,7 @@ function __init__()
 		)
 		print("Press space to enter the ")
 		printstyled("geomviz>", color=214)
-		print(" REPL mode.")
+		print(" REPL mode (then enter `?` for help).")
 	end
 end
 
