@@ -60,7 +60,8 @@ function replmode(input::String)
 		print("""
 		This is the Geomviz REPL mode.
 
-		Input evaluated in this mode is passed to `Geomviz.geomviz()`.
+		Input evaluated in this mode is passed to `Geomviz.geomviz()`, which sends \
+		objects to be visualised via the Geomviz Blender add-on.
 		""")
 		return
 	end

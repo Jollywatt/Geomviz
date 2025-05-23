@@ -26,6 +26,9 @@ export Round, PointPair, Circle, Sphere
 export Tangent, Point
 export Direction
 
+export translate
+export standardform
+
 
 """
 Metric signature for the conformal geometric algebra over a base space with metric signature ``Sig``.
@@ -69,7 +72,7 @@ embed, unembed
 
 function up(x::Multivector{Sig,1}) where Sig
 	o, oo = origin(CGA{Sig}), infinity(CGA{Sig})
-	o + embed(x) + 2\(x⊙x)*oo
+	o + embed(x) + 2\abs2(x)*oo
 end
 up(x::BasisBlade) = up(Multivector(x))
 up(comps::AbstractVector) = up(Multivector{length(comps),1}(comps))
@@ -302,5 +305,105 @@ function classify(x::AbstractMultivector{<:CGA})
 end
 
 encode(x::Multivector{CGA{3}}) = encode(classify(x))
+
+
+
+
+#= versors =#
+
+function translate(p::Grade{1,CGA{Sig}}) where Sig
+	oo = infinity(CGA{Sig})
+	1 + 2\oo∧p
+end
+
+translate(p::Grade{1,Sig}) where Sig = translate(embed(p))
+translate(p, X) = sandwich_prod(translate(p), X)
+
+
+abstract type CGABlade{Sig,T} end
+
+struct DirectionBlade{Sig,K} <: CGABlade{Sig,K}
+	E::Multivector{Sig,K}
+end
+struct FlatBlade{Sig,K} <: CGABlade{Sig,K}
+	p::Multivector{Sig,1}
+	E::Multivector{Sig,K}
+end
+struct DualFlatBlade{Sig,K} <: CGABlade{Sig,K}
+	p::Multivector{Sig,1}
+	E::Multivector{Sig,K}
+end
+struct RoundBlade{Sig,K} <: CGABlade{Sig,K}
+	p::Multivector{Sig,1}
+	E::Multivector{Sig,K}
+	r²::Float64
+end
+
+Multivector(X::DirectionBlade{Sig}) where Sig = embed(X.E) ∧ infinity(CGA{Sig})
+Multivector(X::FlatBlade{Sig}) where Sig = let (o, oo) = (origin(CGA{Sig}), infinity(CGA{Sig}))
+	translate(X.p, o ∧ embed(X.E) ∧ oo)
+end
+Multivector(X::DualFlatBlade{Sig}) where Sig = translate(X.p, embed(X.E))
+Multivector(X::RoundBlade{Sig}) where Sig = let (o, oo) = (origin(CGA{Sig}), infinity(CGA{Sig}))
+	translate(X.p, (o + 2\X.r²*oo) ∧ embed(X.E))
+end
+
+showformula(::Type{<:DirectionBlade}) = "E∧oo"
+showformula(::Type{<:FlatBlade}) = "translate(p, o∧E∧oo)"
+showformula(::Type{<:DualFlatBlade}) = "translate(p, E)"
+showformula(::Type{<:RoundBlade}) = "translate(p, (o + r²/2*oo)∧E)"
+
+function Base.show(io::IO, mime::MIME"text/plain", X::T) where T <: CGABlade{Sig,K} where {Sig,K}
+	println(io, T, ":")
+	print(io, " Blade of the form ")
+	printstyled(io, showformula(T), color=:cyan)
+	print(io, " with")
+	pad = maximum(length.(string.(fieldnames(T))))
+	for field in fieldnames(T)
+		printstyled(io, "\n   ", rpad(field, pad), color=:cyan)
+		print(io, " = ")
+		val = getfield(X, field)
+		if val isa Multivector
+			GeometricAlgebra.show_multivector(io, val, inline=true, showzeros=false)
+		else
+			show(io, val)
+		end
+	end
+end
+
+function standardform(X::AbstractMultivector{<:CGA})
+	o = origin(signature(X))
+	oo = infinity(signature(X))
+
+	if isapprox(X ∧ oo, 0, atol=sqrt(eps(eltype(X))))
+		if X ⨽ oo ≈ 0
+			E = -unembed(X⨽o)
+			DirectionBlade(E)
+		else
+			Xo = X⨽o # equal to -(o + p)∧E
+			p = dn(X⨽Xo) # project origin onto X
+			E = unembed(oo⨼Xo)
+			FlatBlade(p, E)
+		end
+	else
+		if isapprox(X ⨽ oo, 0, atol=sqrt(eps(eltype(X))))
+			# flat = standardform(hodgedual(X))
+			# DualFlatBlade(flat.p, invhodgedual(flat.E))
+			E = unembed(-(X ∧ oo)⨽o)
+			if isscalar(E)
+				DualFlatBlade(dn(o), E)
+			else
+				p = -E⨽unembed(X⨽o)/abs2(E)
+				DualFlatBlade(p, E)
+			end
+		else
+			p = dn(sandwich_prod(X, oo))
+			E = -involution(unembed(X ⨽ oo))
+			r² = (X⊙involution(X))/(E⊙E)
+			RoundBlade(p, E, r²)
+		end
+	end
+end
+
 
 end
