@@ -19,7 +19,7 @@ module Conformal
 using GeometricAlgebra
 import ..Geomviz: Rig, encode, dn, normalize, classify
 
-export origin, infinity
+export nullbasis, origin, infinity
 export classify, ipns, opns
 export Flat, PointFlat, Line, Plane
 export Round, PointPair, Circle, Sphere
@@ -43,9 +43,11 @@ function GeometricAlgebra.basis_vector_square(P::Type{CGA{Sig}}, i::Integer) whe
 end
 
 
+nullbasis(S::Type{CGA{Sig}}) where Sig = (origin = origin(S), infinity = infinity(S))
 origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
 infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); +1; +1])
 """
+	nullbasis(CGA{n}) -> (origin, infinity)
 	origin(CGA{n})
 	infinity(CGA{n})
 
@@ -53,7 +55,8 @@ The point at the origin `e₀` and the point at infinity `e∞` in the `n`-dimen
 conformal geometric algebra model, using the convention
 ``e₀ = (e₊ + e₋)/2`` and ``e∞ = e₋ - e₊``.
 """
-origin, infinity
+origin, infinity, nullbasis
+
 
 
 embed(x::Multivector{Sig}) where {Sig} = GeometricAlgebra.embed(CGA{Sig}, x)
@@ -336,7 +339,7 @@ end
 struct RoundBlade{Sig,K} <: CGABlade{Sig,K}
 	p::Multivector{Sig,1}
 	E::Multivector{Sig,K}
-	r²::Float64
+	r2::Float64
 end
 
 Multivector(X::DirectionBlade{Sig}) where Sig = embed(X.E) ∧ infinity(CGA{Sig})
@@ -345,22 +348,21 @@ Multivector(X::FlatBlade{Sig}) where Sig = let (o, oo) = (origin(CGA{Sig}), infi
 end
 Multivector(X::DualFlatBlade{Sig}) where Sig = translate(X.p, embed(X.E))
 Multivector(X::RoundBlade{Sig}) where Sig = let (o, oo) = (origin(CGA{Sig}), infinity(CGA{Sig}))
-	translate(X.p, (o + 2\X.r²*oo) ∧ embed(X.E))
+	translate(X.p, (o + 2\X.r2*oo) ∧ embed(X.E))
 end
 
 showformula(::Type{<:DirectionBlade}) = "E∧oo"
 showformula(::Type{<:FlatBlade}) = "translate(p, o∧E∧oo)"
 showformula(::Type{<:DualFlatBlade}) = "translate(p, E)"
-showformula(::Type{<:RoundBlade}) = "translate(p, (o + r²/2*oo)∧E)"
+showformula(::Type{<:RoundBlade}) = "translate(p, (o + r2/2*oo)∧E)"
 
 function Base.show(io::IO, mime::MIME"text/plain", X::T) where T <: CGABlade{Sig,K} where {Sig,K}
-	println(io, T, ":")
-	print(io, " Blade of the form ")
+	print(io, T, " of the form ")
 	printstyled(io, showformula(T), color=:cyan)
-	print(io, " with")
+	print(io, ":")
 	pad = maximum(length.(string.(fieldnames(T))))
 	for field in fieldnames(T)
-		printstyled(io, "\n   ", rpad(field, pad), color=:cyan)
+		printstyled(io, "\n  ", rpad(field, pad), color=:cyan)
 		print(io, " = ")
 		val = getfield(X, field)
 		if val isa Multivector
@@ -375,7 +377,9 @@ function standardform(X::AbstractMultivector{<:CGA})
 	o = origin(signature(X))
 	oo = infinity(signature(X))
 
-	if isapprox(X ∧ oo, 0, atol=sqrt(eps(eltype(X))))
+	zeroish(X) = isapprox(X, 0, atol=sqrt(eps(float(eltype(X)))))
+
+	if zeroish(X ∧ oo)
 		if X ⨽ oo ≈ 0
 			E = -unembed(X⨽o)
 			DirectionBlade(E)
@@ -386,7 +390,7 @@ function standardform(X::AbstractMultivector{<:CGA})
 			FlatBlade(p, E)
 		end
 	else
-		if isapprox(X ⨽ oo, 0, atol=sqrt(eps(eltype(X))))
+		if zeroish(X ⨽ oo)
 			# flat = standardform(hodgedual(X))
 			# DualFlatBlade(flat.p, invhodgedual(flat.E))
 			E = unembed(-(X ∧ oo)⨽o)
@@ -399,11 +403,20 @@ function standardform(X::AbstractMultivector{<:CGA})
 		else
 			p = dn(sandwich_prod(X, oo))
 			E = -involution(unembed(X ⨽ oo))
-			r² = (X⊙involution(X))/(E⊙E)
-			RoundBlade(p, E, r²)
+			r2 = (X⊙involution(X))/(E⊙E)
+			RoundBlade(p, E, r2)
 		end
 	end
 end
+
+
+opns(X::DirectionBlade) = :∞
+
+opns(X::DualFlatBlade) = :∅
+
+opns(X::FlatBlade) = Flat(X.p, X.E)
+
+opns(X::RoundBlade) = Round(Flat(X.p, X.E), X.r2)
 
 
 end
