@@ -152,8 +152,36 @@ translate(p, X) = sandwich_prod(translate(p), X)
 
 #= blade standardisation =#
 
+"""
+	CGAOBlade{Sig,K} >:
+		DirectionBlade{Sig,K}(E)
+		FlatBlade{Sig,K}(E, p)
+		DualFlatBlade{Sig,K}(E, p)
+		RoundBlade{Sig,K}(E, p, r2)
 
-abstract type CGABlade{Sig,T} end
+A blade in the conformal geometric algebra `CGA{Sig}` over base space `Sig`.
+
+| Type | Mathematical form |
+|:-----|:-----|
+| `DirectionBlade(E)` | ``E ∧ ∞`` |
+| `FlatBlade(E, p)` | ``Tₚ[𝒪 ∧ E ∧ ∞]`` |
+| `DualFlatBlade(E, p)` | ``Tₚ[E]`` |
+| `RoundBlade(E, p, r2)` | ``Tₚ[(𝒪 + r2/2 ∞) ∧ E]`` |
+
+Any blade in `CGA{Sig}` is of exactly one of the forms above, where:
+- ``E`` is a `K`-blade in the base space
+- ``p`` is a position vector in the base space
+- ``r2`` is a radius squared, which may be positive or negative
+- ``𝒪`` and ``∞`` are the points at the origin and at infinity
+- ``Tₚ`` is the translation operator sending ``𝒪`` to ``p``
+
+The method [`standardform`](@ref) classifies any blade in `CGA{Sig}` to one of these forms.
+
+See table 14.1 of [^1] for mathematical details.
+
+[^1]: Dorst, L., Fontijne, D., & Mann, S. (2010). Geometric Algebra for Computer Science: An Object-Oriented Approach to Geometry. Elsevier.
+"""
+abstract type CGABlade{Sig,K} end
 
 struct DirectionBlade{Sig,K} <: CGABlade{Sig,K}
 	E::Multivector{Sig,K}
@@ -171,6 +199,9 @@ struct RoundBlade{Sig,K} <: CGABlade{Sig,K}
 	p::Multivector{Sig,1}
 	r2::Float64
 end
+
+@doc (@doc CGABlade) (DirectionBlade, FlatBlade, DualFlatBlade, RoundBlade)
+
 
 GeometricAlgebra.Multivector(X::DirectionBlade{Sig}) where Sig = X.E ∧ infinity(Sig)
 GeometricAlgebra.Multivector(X::FlatBlade{Sig}) where Sig = translate(X.p, origin(Sig) ∧ X.E ∧ infinity(Sig))
