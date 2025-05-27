@@ -16,18 +16,18 @@ Conformal geometric algebra has covariant representations of points, point-pairs
 """
 module Conformal
 
-using GeometricAlgebra
-import ..Geomviz: Rig, encode, dn, normalize, classify
+using StyledStrings
 
+using GeometricAlgebra
+import ..Geomviz: Rig, encode, dn, normalize
+
+export CGA
 export nullbasis, origin, infinity
-export classify, ipns, opns
-export Flat, PointFlat, Line, Plane
-export Round, PointPair, Circle, Sphere
-export Tangent, Point
-export Direction
 
 export translate
-export standardform
+
+export standardform, ipns, opns
+export CGABlade, DirectionBlade, FlatBlade, DualFlatBlade, RoundBlade
 
 
 """
@@ -48,6 +48,7 @@ end
 for fn in [
 	:(GeometricAlgebra.wedge),
 	:(GeometricAlgebra.geometric_prod),
+	:(GeometricAlgebra.sandwich_prod),
 	:(Base.:+)]
 	@eval $fn(a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = $fn(a, embed(b))
 	@eval $fn(a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = $fn(embed(a), b)
@@ -59,6 +60,11 @@ GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{Sig}, b::AbstractMultive
 nullbasis(S::Type{CGA{Sig}}) where Sig = (origin = origin(S), infinity = infinity(S))
 origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
 infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); +1; +1])
+
+origin(n::Integer) = origin(CGA{n})
+infinity(n::Integer) = infinity(CGA{n})
+nullbasis(n::Integer) = nullbasis(CGA{n})
+
 """
 	nullbasis(CGA{n}) -> (origin, infinity)
 	origin(CGA{n})
@@ -75,6 +81,7 @@ origin, infinity, nullbasis
 
 
 embed(x::AbstractMultivector{Sig}) where {Sig} = GeometricAlgebra.embed(CGA{Sig}, x)
+embed(x::AbstractMultivector{CGA{Sig}}) where {Sig} = x
 unembed(x::AbstractMultivector{CGA{Sig}}) where {Sig} = GeometricAlgebra.embed(Sig, x)
 """
 	embed(::Multivector{Sig,K})::Multivector{CGA{Sig},K}
@@ -89,7 +96,7 @@ embed, unembed
 
 
 function up(x::Multivector{Sig,1}) where Sig
-	o, oo = origin(CGA{Sig}), infinity(CGA{Sig})
+	o, oo = origin(Sig), infinity(Sig)
 	o + embed(x) + 2\abs2(x)*oo
 end
 up(x::BasisBlade) = up(Multivector(x))
@@ -131,173 +138,121 @@ up, dn
 
 
 
-"""
-	CGAObject{D,Sig} >:
-		Flat{D,Sig}(location::Grade{1,Sig}, direction::Grade{K,Sig})
-		Round{D,Sig}(carrier::Flat{D,Sig}, radius::Float64)
-		Tangent{D,Sig}(carrier::Flat{D,Sig})
-		Direction{D,Sig}(direction::Grade{D,Sig})
 
-A geometric object described by a blade in conformal geometric algebra.
-Any blade in `CGA{Sig}` is of one of the forms represented by these types.
+#= versors =#
 
-In the list below, ``p, A`` are a position vector and blade in the base space,
-``𝒪, ∞`` are the points at the origin and at infinity, 
-``Tₚ[X]`` is the translation operator and ``r > 0`` is a radius.
-
-- `Flat{k}(p, A)`: A blade of the form ``Tₚ[𝒪 ∧ A ∧ ∞] = up(p) ∧ A ∧ ∞``,
-  representing an affine `k`-plane through ``p`` in the ``A`` direction.
-
-- `Round{k}(Flat(p, A), r)`: A blade of the form ``Tₚ[(𝒪 + r²/2 ∞) ∧ A]``,
-  representing a `(k - 1)`-sphere within the affine `k`-plane `Flat(p, A)`
-  with center `p` and radius `r`.
-
-- `Tangent(Flat(p, A))`: A blade of the form ``Tₚ[𝒪 ∧ A]``, representing a blade ``A``
-  rooted at the point ``p``, equal to the zero-radius round `Round(Flat(p, A), 0)`.
-  Tangents describe the base space's _tangent bundle_ of blades.
-
-- `Direction{k}(A)`: A blade of the form ``A ∧ ∞``, representing a pure `k`-dimensional direction.
-  Like a `Flat` without a location.
-
-See table 14.1 of [^1] for details.
-
-[^1]: Dorst, L., Fontijne, D., & Mann, S. (2010). Geometric Algebra for Computer Science: An Object-Oriented Approach to Geometry. Elsevier.
-"""
-abstract type CGAObject{D,Sig} end
-
-
-struct Flat{D,Sig} <: CGAObject{D,Sig}
-	location::Multivector{Sig,1}
-	direction::Multivector{Sig,D}
-end
-struct Round{D,Sig} <: CGAObject{D,Sig}
-	carrier::Flat{D,Sig}
-	radius::Float64
-end
-struct Tangent{D,Sig} <: CGAObject{D,Sig}
-	carrier::Flat{D,Sig}
-end
-struct Direction{D,Sig} <: CGAObject{D,Sig}
-	direction::Multivector{Sig,D}
+function translate(p::Grade{1,CGA{Sig}}) where Sig
+	oo = infinity(CGA{Sig})
+	1 + 2\oo∧p
 end
 
-@doc (@doc CGAObject) (Flat, Round, Tangent, Direction)
-
-location(x::Flat) = x.location
-location(x::Union{Round,Tangent}) = location(x.carrier)
-
-direction(x::Flat) = x.direction
-direction(x::Union{Round,Tangent}) = direction(x.carrier)
-
-radius(x::Round) = x.radius
-radius(x::Tangent)::Float64 = 0
+translate(p::Grade{1,Sig}) where Sig = translate(embed(p))
+translate(p, X) = sandwich_prod(translate(p), X)
 
 
-const Point = Tangent{0}
+#= blade standardisation =#
 
-const PointPair = Round{1}
-const Circle = Round{2}
-const Sphere = Round{3}
 
-const PointFlat = Flat{0}
-const Line = Flat{1}
-const Plane = Flat{2}
+abstract type CGABlade{Sig,T} end
 
-"""
-	contains(X::CGAObject{D,Sig}, point::Grade{1,Sig})
-
-Whether the conformal geometric algebra object `X` contains `point`, given as a location vector in the base space.
-
-If `X` is a `Flat{k}` or `Round{k}`, this is true when `point` lies on the `k`-plane or `(k - 1)`-sphere described by `X`.
-A `Tangent` contains exactly one point, `location(X)`, and a `Direction` contains no points.
-"""
-Base.contains(x::Flat{D,Sig}, p::Grade{1,Sig}) where {D,Sig} = isapprox((p - location(x))∧direction(x), 0, atol=eps(eltype(p)))
-Base.contains(x::Round{D,Sig}, p::Grade{1,Sig}) where {D,Sig} = contains(x.carrier, p) && abs2(p - location(x)) ≈ abs2(radius(x))
-Base.contains(x::Tangent, p::Grade{1,Sig}) where {Sig} = location(x) ≈ p
-Base.contains(x::Direction, p) = false
-
-function samplepoint(x::Round{D,Sig}) where {D,Sig}
-	@assert D > 0 "$(typeof(x)) contains no points; cannot sample"
-	p = randn(Multivector{Sig,D - 1})
-	r = p ⨼ direction(x)
-	r *= radius(x)/sqrt(abs2(r))
-	location(x) + r
+struct DirectionBlade{Sig,K} <: CGABlade{Sig,K}
+	E::Multivector{Sig,K}
 end
-samplepoint(x::Flat) = samplepoint(Round(x, randn()))
+struct FlatBlade{Sig,K} <: CGABlade{Sig,K}
+	E::Multivector{Sig,K}
+	p::Multivector{Sig,1}
+end
+struct DualFlatBlade{Sig,K} <: CGABlade{Sig,K}
+	E::Multivector{Sig,K}
+	p::Multivector{Sig,1}
+end
+struct RoundBlade{Sig,K} <: CGABlade{Sig,K}
+	E::Multivector{Sig,K}
+	p::Multivector{Sig,1}
+	r2::Float64
+end
 
-encode(x::Union{Point,PointFlat}) = Rig("Point", location=location(x))
+GeometricAlgebra.Multivector(X::DirectionBlade{Sig}) where Sig = X.E ∧ infinity(Sig)
+GeometricAlgebra.Multivector(X::FlatBlade{Sig}) where Sig = translate(X.p, origin(Sig) ∧ X.E ∧ infinity(Sig))
+GeometricAlgebra.Multivector(X::DualFlatBlade{Sig}) where Sig = translate(X.p, X.E)
+GeometricAlgebra.Multivector(X::RoundBlade{Sig}) where Sig = translate(X.p, (origin(Sig) + 2\X.r2*infinity(Sig)) ∧ X.E)
 
-encode(x::PointPair) = Rig("Point Pair",
-	location=location(x),
-	"Direction"=>direction(x),
-	"Radius"=>radius(x)
-)
+function standardform(X::AbstractMultivector{<:CGA})
+	o = origin(signature(X))
+	oo = infinity(signature(X))
 
-encode(x::Circle) = Rig("Spear Circle",
-	location=location(x),
-	"Radius"=>radius(x),
-	"Normal"=>rdual(direction(x)),
-)
+	iszeroish(X) = isapprox(X, 0, atol=sqrt(eps(float(eltype(X)))))
 
-encode(x::Union{Sphere,Round{0}}) = Rig("Sphere",
-	location=location(x),
-	"Radius"=>abs(radius(x)),
-	"Holes"=>radius(x) < 0,
-)
-
-encode(x::Line) = Rig("Spear Line",
-	location=location(x),
-	"Direction"=>direction(x),
-)
-
-encode(x::Plane) = Rig("Plane",
-	location=location(x),
-	"Normal"=>rdual(direction(x)),
-)
-
-encode(x::Tangent{1}) = Rig("Arrow Vector",
-	location=location(x),
-	"Vector"=>direction(x),
-)
-
-encode(x::Tangent{2}) = Rig("Spear Disk",
-	location=location(x),
-	"Normal"=>rdual(direction(x)),
-)
-
-function opns(x::Multivector{<:CGA})
-	o, oo = origin(signature(x)), infinity(signature(x))
-
-	if x ∧ oo ≈ 0 # flats or directions
-		if x ⨽ oo ≈ 0 # directions
-			dir = unembed(x ⨽ -o)
-			Direction(dir)
-		else # flats
-			loc = dn(x⨽(x⨽o))
-			dir = unembed(involution(x)⨽(o∧oo))
-			Flat(loc, dir)
+	if iszeroish(X ∧ oo)
+		if X ⨽ oo ≈ 0
+			E = -unembed(X⨽o)
+			DirectionBlade(E)
+		else
+			Xo = X⨽o # equal to -(o + p)∧E
+			p = dn(X⨽Xo) # project origin onto X
+			E = unembed(oo⨼Xo)
+			FlatBlade(E, p)
 		end
 	else
-		y = x ⨽ oo
-		if y ≈ 0
-			# empty OPNS
-			nothing
-		else # rounds
-			loc = dn(sandwich_prod(x, oo))
-			dir = unembed((involution(x) ⨽ oo))
-			ρ² = x⊙x/(y⊙y)
-			if abs(ρ²) < sqrt(eps())
-				Tangent(Flat(loc, dir))
+		if iszeroish(X ⨽ oo)
+			E = unembed(-(X ∧ oo)⨽o)
+			if isscalar(E)
+				DualFlatBlade(E, dn(o))
 			else
-				ρ = sign(ρ²)sqrt(abs(ρ²))
-				Round(Flat(loc, dir), ρ)
+				p = -E⨽unembed(X⨽o)/abs2(E)
+				DualFlatBlade(E, p)
 			end
+		else
+			p = dn(sandwich_prod(X, oo))
+			E = -involution(unembed(X ⨽ oo))
+			r2 = (X⊙involution(X))/(E⊙E)
+			RoundBlade(E, p, r2)
 		end
 	end
-
 end
 
-ipns(x) = opns(hodgedual(x))
+
+
+
+
+
+abstract type CGAGeometry{Sig} end
+struct PointAtInfinity{Sig} <: CGAGeometry{Sig} end
+struct EmptySet{Sig} <: CGAGeometry{Sig} end
+struct FlatGeometry{K,Sig} <: CGAGeometry{Sig}
+	p::Multivector{Sig,1}
+	E::Multivector{Sig,K}
+end
+struct RoundGeometry{K,Sig} <: CGAGeometry{Sig}
+	p::Multivector{Sig,1}
+	E::Multivector{Sig,K}
+	r2::Float64
+end
+
+
+const Point = RoundGeometry{0,3}
+const PointPair = RoundGeometry{1,3}
+const Circle = RoundGeometry{2,3}
+const Sphere = RoundGeometry{3,3}
+
+const Point = FlatGeometry{0,3}
+const Line = FlatGeometry{1,3}
+const Plane = FlatGeometry{2,3}
+
+
+
+ipns(X::DirectionBlade{Sig}) where Sig = PointAtInfinity{Sig}()
+ipns(X::DualFlatBlade) = FlatGeometry(X.p, hodgedual(X.E))
+ipns(X::FlatBlade{Sig}) where Sig = EmptySet{Sig}()
+ipns(X::RoundBlade) = RoundGeometry(X.p, hodgedual(X.E), -X.r2)
+
+opns(X::DirectionBlade{Sig}) where Sig = PointAtInfinity{Sig}()
+opns(X::DualFlatBlade{Sig}) where Sig = EmptySet{Sig}()
+opns(X::FlatBlade) = FlatGeometry(X.p, X.E)
+opns(X::RoundBlade) = RoundGeometry(X.p, X.E, X.r2)
+
+ipns(X::AbstractMultivector) = ipns(standardform(X))
+opns(X::AbstractMultivector) = opns(standardform(X))
 
 """
 	ipns(A)
@@ -311,70 +266,55 @@ Returns a `CGAObject` or `nothing` if the set is empty.
 """
 ipns, opns
 
-function classify(x::AbstractMultivector{<:CGA})
-	o, oo = origin(signature(x)), infinity(signature(x))
 
-	x² = x*x
-	isapprox(x², scalar(x²), atol=sqrt(eps())) || return nothing
+#= encoding =#
 
-	obj = opns(x)
-	isnothing(obj) ? ipns(x) : obj
 
+signsqrt(x) = sign(x)sqrt(abs(x))
+
+function encode(X::Union{Point,Sphere})
+	if abs(X.r2) < 1e-3
+		Rig("Point", location=X.p)
+	else
+		Rig("Sphere",
+			location=X.p,
+			"Radius"=>signsqrt(X.r2),
+			"Holes"=>X.r2 < 0,
+		)
+	end
 end
 
-encode(x::Multivector{CGA{3}}) = encode(classify(x))
+encode(X::PointPair) = Rig("Point Pair",
+	location=X.p,
+	"Direction"=>X.E,
+	"Radius"=>signsqrt(X.r2),
+)
+
+encode(X::Circle) = Rig("Circle",
+	location=X.p,
+	"Radius"=>signsqrt(X.r2),
+	"Normal"=>rdual(X.E),
+)
+
+encode(X::Line) = Rig("Line",
+	location=X.p,
+	"Direction"=>X.E,
+)
+
+encode(X::Plane) = Rig("Plane",
+	location=X.p,
+	"Normal"=>rdual(X.E),
+)
+
+encode(X::AbstractMultivector{<:CGA}) = encode(standardform(X))
 
 
 
 
-#= versors =#
+#= display methods =#
 
-function translate(p::Grade{1,CGA{Sig}}) where Sig
-	oo = infinity(CGA{Sig})
-	1 + 2\oo∧p
-end
-
-translate(p::Grade{1,Sig}) where Sig = translate(embed(p))
-translate(p, X) = sandwich_prod(translate(p), X)
-
-
-abstract type CGABlade{Sig,T} end
-
-struct DirectionBlade{Sig,K} <: CGABlade{Sig,K}
-	E::Multivector{Sig,K}
-end
-struct FlatBlade{Sig,K} <: CGABlade{Sig,K}
-	p::Multivector{Sig,1}
-	E::Multivector{Sig,K}
-end
-struct DualFlatBlade{Sig,K} <: CGABlade{Sig,K}
-	p::Multivector{Sig,1}
-	E::Multivector{Sig,K}
-end
-struct RoundBlade{Sig,K} <: CGABlade{Sig,K}
-	p::Multivector{Sig,1}
-	E::Multivector{Sig,K}
-	r2::Float64
-end
-
-Multivector(X::DirectionBlade{Sig}) where Sig = embed(X.E) ∧ infinity(CGA{Sig})
-Multivector(X::FlatBlade{Sig}) where Sig = let (o, oo) = (origin(CGA{Sig}), infinity(CGA{Sig}))
-	translate(X.p, o ∧ embed(X.E) ∧ oo)
-end
-Multivector(X::DualFlatBlade{Sig}) where Sig = translate(X.p, embed(X.E))
-Multivector(X::RoundBlade{Sig}) where Sig = let (o, oo) = (origin(CGA{Sig}), infinity(CGA{Sig}))
-	translate(X.p, (o + 2\X.r2*oo) ∧ embed(X.E))
-end
-
-showformula(::Type{<:DirectionBlade}) = "E∧oo"
-showformula(::Type{<:FlatBlade}) = "translate(p, o∧E∧oo)"
-showformula(::Type{<:DualFlatBlade}) = "translate(p, E)"
-showformula(::Type{<:RoundBlade}) = "translate(p, (o + r2/2*oo)∧E)"
-
-function Base.show(io::IO, mime::MIME"text/plain", X::T) where T <: CGABlade{Sig,K} where {Sig,K}
-	print(io, T, " of the form ")
-	printstyled(io, showformula(T), color=:cyan)
-	print(io, ":")
+function showfields(io::IO, X::T) where T
+	iszero(nfields(X)) && return
 	pad = maximum(length.(string.(fieldnames(T))))
 	for field in fieldnames(T)
 		printstyled(io, "\n  ", rpad(field, pad), color=:cyan)
@@ -388,66 +328,27 @@ function Base.show(io::IO, mime::MIME"text/plain", X::T) where T <: CGABlade{Sig
 	end
 end
 
-function standardform(X::AbstractMultivector{<:CGA})
-	o = origin(signature(X))
-	oo = infinity(signature(X))
-
-	zeroish(X) = isapprox(X, 0, atol=sqrt(eps(float(eltype(X)))))
-
-	if zeroish(X ∧ oo)
-		if X ⨽ oo ≈ 0
-			E = -unembed(X⨽o)
-			DirectionBlade(E)
-		else
-			Xo = X⨽o # equal to -(o + p)∧E
-			p = dn(X⨽Xo) # project origin onto X
-			E = unembed(oo⨼Xo)
-			FlatBlade(p, E)
-		end
-	else
-		if zeroish(X ⨽ oo)
-			# flat = standardform(hodgedual(X))
-			# DualFlatBlade(flat.p, invhodgedual(flat.E))
-			E = unembed(-(X ∧ oo)⨽o)
-			if isscalar(E)
-				DualFlatBlade(dn(o), E)
-			else
-				p = -E⨽unembed(X⨽o)/abs2(E)
-				DualFlatBlade(p, E)
-			end
-		else
-			p = dn(sandwich_prod(X, oo))
-			E = -involution(unembed(X ⨽ oo))
-			r2 = (X⊙involution(X))/(E⊙E)
-			RoundBlade(p, E, r2)
-		end
-	end
+showformula(::Type{<:DirectionBlade}) = "E∧oo"
+showformula(::Type{<:FlatBlade}) = "translate(p, o∧E∧oo)"
+showformula(::Type{<:DualFlatBlade}) = "translate(p, E)"
+showformula(::Type{<:RoundBlade}) = "translate(p, (o + r2/2*oo)∧E)"
+function Base.show(io::IO, mime::MIME"text/plain", X::T) where T <: CGABlade{Sig,K} where {Sig,K}
+	print(io, T, " of the form ")
+	printstyled(io, showformula(T), color=:cyan)
+	print(io, ":")
+	showfields(io, X)
 end
 
-abstract type CGAGeometry{Sig} end
-struct PointAtInfinity{Sig} <: CGAGeometry{Sig} end
-struct EmptySet{Sig} <: CGAGeometry{Sig} end
-struct FlatGeometry{Sig,K} <: CGAGeometry{Sig}
-	p::Multivector{Sig,1}
-	E::Multivector{Sig,K}
-end
-struct RoundGeometry{Sig,K} <: CGAGeometry{Sig}
-	p::Multivector{Sig,1}
-	E::Multivector{Sig,K}
-	r::Float64
+showformula(::Type{<:PointAtInfinity}) = ""
+showformula(::Type{<:EmptySet}) = ""
+showformula(::Type{<:FlatGeometry}) = styled"through {cyan:p} with direction {cyan:E}"
+showformula(::Type{<:RoundGeometry}) = styled"around center {cyan:p} with square radius {cyan:r2} and span {cyan:E}"
+function Base.show(io::IO, mime::MIME"text/plain", X::T) where T <: CGAGeometry
+	iszero(nfields(X)) && return print(io, T, "()")
+	print(io, T, " ", showformula(T), ":")
+	showfields(io, X)
 end
 
-
-
-opns(X::DirectionBlade{Sig}) where Sig = PointAtInfinity{Sig}()
-opns(X::DualFlatBlade{Sig}) where Sig = EmptySet{Sig}()
-opns(X::FlatBlade) = FlatGeometry(X.p, X.E)
-opns(X::RoundBlade) = RoundGeometry(X.p, X.E, X.r2)
-
-ipns(X::DirectionBlade{Sig}) where Sig = PointAtInfinity{Sig}()
-ipns(X::DualFlatBlade{Sig}) where Sig = FlatGeometry(X.p, hodgedual(X.E))
-ipns(X::FlatBlade) = EmptySet{Sig}()
-ipns(X::RoundBlade) = RoundGeometry(X.p, hodgedual(X.E), -X.r2)
 
 
 
