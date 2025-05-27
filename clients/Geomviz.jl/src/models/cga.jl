@@ -43,11 +43,28 @@ function GeometricAlgebra.basis_vector_square(P::Type{CGA{Sig}}, i::Integer) whe
 end
 
 
+# Sig/CGA{Sig} interoperability
+
+for fn in [
+	:(GeometricAlgebra.wedge),
+	:(GeometricAlgebra.geometric_prod),
+	:(Base.:+)]
+	@eval $fn(a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = $fn(a, embed(b))
+	@eval $fn(a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = $fn(embed(a), b)
+end
+GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = GeometricAlgebra.graded_prod(fn, a, embed(b))
+GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = GeometricAlgebra.graded_prod(fn, embed(a), b)
+
+
+
+nullbasis(S::Type{CGA{Sig}}) where Sig = (origin = origin(S), infinity = infinity(S))
 origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
 infinity(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); +1; +1])
 """
 	origin(CGA{n})
 	infinity(CGA{n})
+
+Null basis vectors for conformal geometric algebra.
 
 The point at the origin `e₀` and the point at infinity `e∞` in the `n`-dimensional
 conformal geometric algebra model, using the convention
