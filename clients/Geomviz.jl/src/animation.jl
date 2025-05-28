@@ -3,6 +3,8 @@ function canbeidentified(a::Dict, b::Dict)
 	a["rig_name"] == b["rig_name"] && keys(a) == keys(b)
 end
 
+canbeidentified(a::Rig, b::Rig) = a.rig_name == b.rig_name
+
 # canbeidentified(a::Rig, b::Rig) = a.rig_name == b.rig_name
 
 function animate(fn, ts::AbstractVector)
@@ -17,13 +19,13 @@ function animate(fn, ts::AbstractVector)
 end
 
 function detect_keyframes(ts, frames)
-	zipped = Dict[]
+	zipped = Rig[]
 	tprev = 0
 	for (t, objs) in zip(ts, frames)
 
 		used = zeros(Bool, length(zipped)) # which persistent objects are used this frame
 		for obj in objs
-			obj = encode(obj)
+
 			found = false
 			for i in eachindex(zipped)
 				used[i] && continue
@@ -64,6 +66,14 @@ function merge_keyframes((t1, obj1)::Pair{Int,<:Dict}, (t2, obj2)::Pair{Int,<:Di
 	@assert keys(obj1) == keys(obj2)
 	Dict(k => merge_keyframes(t1 => obj1[k], t2 => obj2[k]) for k in keys(obj1))
 end
+
+function merge_keyframes((t1, rig1)::Pair{Int,Rig}, (t2, rig2)::Pair{Int,Rig})
+	@assert canbeidentified(rig1, rig2)
+	rig_parameters = merge_keyframes(t1 => rig1.rig_parameters, t2 => rig2.rig_parameters)
+	object_parameters = merge_keyframes(t1 => rig1.object_parameters, t2 => rig2.object_parameters)
+	Rig(rig1.rig_name, object_parameters, rig_parameters)
+end
+
 
 Pickle.save(p::Pickle.AbstractPickle, io::IO, k::Keyframes) = Pickle.save(p, io, Dict("keyframes" => Tuple.(k.points)))
 

@@ -31,29 +31,30 @@ encode(objs...) = encode(objs)
 
 struct Styled{T}
 	obj::T
+	object_parameters::Dict{String,Any}
 	rig_parameters::Dict{String,Any}
-	attributes::Dict{String,Any}
 end
-function Styled(obj, rig_parameters::Pair{String}...; attributes...)
-	attributes = Dict{String,Any}(string(k) => v for (k, v) in attributes)
-	Styled(obj, Dict{String,Any}(rig_parameters), attributes)
+function Styled(obj, rig_parameters::Pair{String}...; object_parameters...)
+	object_parameters = Dict{String,Any}(string(k) => v for (k, v) in object_parameters)
+	Styled(obj, object_parameters, Dict{String,Any}(rig_parameters))
 end
 
 function encode(s::Styled)
-	data = encode(s.obj)
-	if data isa Union{Tuple,AbstractVector}
-		for thing in data
-			merge!(thing, s.attributes)
-			merge!(thing["rig_parameters"], s.rig_parameters)
+	things = encode(s.obj)
+	if things isa Union{Tuple,AbstractVector}
+		for rig in things
+			merge!(rig.object_parameters, s.object_parameters)
+			merge!(rig.rig_parameters, s.rig_parameters)
 		end
-	elseif data isa Dict
-		merge!(data, s.attributes)
-		merge!(data["rig_parameters"], s.rig_parameters)
+	elseif things isa Rig
+		rig = things
+		merge!(rig.object_parameters, s.object_parameters)
+		merge!(rig.rig_parameters, s.rig_parameters)
 	else
-		throw(Exception("What's this?", data))
+		throw(Exception("What's this?", rig))
 	end
 
-	data
+	things
 end
 
 struct Rig
@@ -65,25 +66,30 @@ end
 function Rig(rig_name::String, rig_parameters::Pair{String}...; object_parameters...)
 	object_parameters = Dict(string(k) => v for (k, v) in pairs(object_parameters))
 	Rig(rig_name, object_parameters, Dict{String,Any}(rig_parameters))
-
 end
 
-encode(rig::Rig) = Dict(
-	"rig_name"=>rig.rig_name,
-	"rig_parameters"=>rig.rig_parameters,
-	rig.object_parameters...,
-)
+encode(rig::Rig) = rig
+
+function Base.show(io::IO, mime::MIME"text/plain", rig::Rig)
+	print(io, typeof(rig), ":")
+	ioc = IOContext(io, :limit=>true)
+	for field in fieldnames(typeof(rig))
+		value = getfield(rig, field)
+		if value isa Dict
+			print(io, "\n $field: ")
+			show(ioc, mime, value)
+		else
+			print(io, "\n $field: ", repr(value))
+		end
+	end
+end
 
 
-Pickle.save(p::Pickle.AbstractPickle, io::IO, rig::Rig) = Pickle.save(p, io, encode(rig))
-
-# function rig(rig_name, rig_parameters::Pair{String}...; object_parameters...)
-# 	object_parameters = [string(k) => v for (k, v) in pairs(object_parameters)]
-# 	Dict{String,Any}(
-# 		"rig_name"=>rig_name,
-# 		"rig_parameters"=>Dict{String,Any}(rig_parameters),
-# 		object_parameters...,
-# 	)
-# end
-
-
+function Pickle.save(p::Pickle.AbstractPickle, io::IO, rig::Rig)
+	d = Dict(
+		"rig_name"=>rig.rig_name,
+		"rig_parameters"=>rig.rig_parameters,
+		rig.object_parameters...,
+	)
+	Pickle.save(p, io, d)
+end

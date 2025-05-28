@@ -8,6 +8,7 @@ using GeometricAlgebra
 
 export geomviz, encode, PORT, Styled, animate
 export up, dn, unembed, normalize, classify
+export ipns, opns
 export Projective, PGA
 export Conformal, CGA
 
@@ -15,6 +16,9 @@ function dn end
 function normalize end
 function classify end
 function geomviz end
+
+function ipns end
+function opns end
 
 Base.abs2(a::AbstractMultivector) = scalar_prod(a, a)
 normalize(a::AbstractMultivector) = a/sqrt(abs(abs2(a)))

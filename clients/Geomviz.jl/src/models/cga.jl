@@ -19,14 +19,14 @@ module Conformal
 using StyledStrings
 
 using GeometricAlgebra
-import ..Geomviz: Rig, encode, dn, normalize
+import ..Geomviz: Rig, encode, dn, normalize, ipns, opns
 
 export CGA
 export nullbasis, origin, infinity
 
 export translate
 
-export standardform, ipns, opns
+export standardform
 export CGABlade, DirectionBlade, FlatBlade, DualFlatBlade, RoundBlade
 
 
@@ -45,17 +45,19 @@ end
 
 # Sig/CGA{Sig} interoperability
 
-for fn in [
-	:(GeometricAlgebra.wedge),
-	:(GeometricAlgebra.geometric_prod),
-	:(GeometricAlgebra.sandwich_prod),
-	:(Base.:+)]
-	@eval $fn(a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = $fn(a, embed(b))
-	@eval $fn(a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = $fn(embed(a), b)
-end
-GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = GeometricAlgebra.graded_prod(fn, a, embed(b))
-GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = GeometricAlgebra.graded_prod(fn, embed(a), b)
+# for fn in [
+# 	:(GeometricAlgebra.wedge),
+# 	:(GeometricAlgebra.geometric_prod),
+# 	:(GeometricAlgebra.sandwich_prod),
+# 	:(Base.:+)]
+# 	@eval $fn(a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = $fn(a, embed(b))
+# 	@eval $fn(a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = $fn(embed(a), b)
+# end
+# GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{CGA{Sig}}, b::AbstractMultivector{Sig}) where Sig = GeometricAlgebra.graded_prod(fn, a, embed(b))
+# GeometricAlgebra.graded_prod(fn, a::AbstractMultivector{Sig}, b::AbstractMultivector{CGA{Sig}}) where Sig = GeometricAlgebra.graded_prod(fn, embed(a), b)
 
+GeometricAlgebra.signature_promote_rule(::Val{CGA{Sig}}, ::Val{Sig}) where Sig = CGA{Sig}
+GeometricAlgebra.signature_convert(::Val{CGA{Sig}}, a::AbstractMultivector{Sig}) where Sig = embed(a)
 
 nullbasis(S::Type{CGA{Sig}}) where Sig = (origin = origin(S), infinity = infinity(S))
 origin(::Type{CGA{n}}) where n = Multivector{CGA{n},1}([zeros(n); -0.5; 0.5])
@@ -266,7 +268,7 @@ const PointPair = RoundGeometry{1,3}
 const Circle = RoundGeometry{2,3}
 const Sphere = RoundGeometry{3,3}
 
-const Point = FlatGeometry{0,3}
+const PointFlat = FlatGeometry{0,3}
 const Line = FlatGeometry{1,3}
 const Plane = FlatGeometry{2,3}
 
@@ -315,11 +317,16 @@ function encode(X::Union{Point,Sphere})
 	end
 end
 
+function encode(X::PointFlat)
+	Rig("Point", location=X.p)
+end
+
 encode(X::PointPair) = Rig("Point Pair",
 	location=X.p,
 	"Direction"=>X.E,
 	"Radius"=>signsqrt(X.r2),
 )
+
 
 encode(X::Circle) = Rig("Circle",
 	location=X.p,
