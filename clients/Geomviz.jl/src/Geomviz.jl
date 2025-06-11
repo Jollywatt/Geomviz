@@ -7,49 +7,10 @@ using REPL: LineEdit
 using GeometricAlgebra
 
 export geomviz, encode, PORT, Styled, animate
-export up, dn, unembed, normalize, classify
-export ipns, opns
-export Projective, PGA
-export Conformal, CGA
-
-function dn end
-function normalize end
-function classify end
-function geomviz end
-
-function ipns end
-function opns end
-
-Base.abs2(a::AbstractMultivector) = scalar_prod(a, a)
-normalize(a::AbstractMultivector) = a/sqrt(abs(abs2(a)))
 
 include("client.jl")
-include("animation.jl")
 include("models/vga.jl")
-include("models/pga.jl")
 include("models/cga.jl")
-
-import .Projective: PGA
-import .Conformal: CGA
-
-up(T::Type{<:Projective.ProjectiveSignature}, a::AbstractMultivector) = Projective.up(T, a)
-up(::Type{<:Conformal.CGA}, a::AbstractMultivector) = Conformal.up(a)
-up(T::Type, comps::Number...) = up(T, Multivector{length(comps),1}(comps))
-
-up(v::AbstractMultivector{<:CGA}) = Conformal.up(unembed(v))
-
-for (Sig, mod) in [Type{CGA} => Conformal], T in [BasisBlade, Multivector]
-	@eval GeometricAlgebra.embed(::$Sig, a::$T) = $mod.embed(Multivector(a))
-end
-
-
-"""
-	unembed(a::Multivector)
-
-The part of a multivector lying in the base space `Sig` if the multivector is
-embedded in higher space such as `CGA{Sig}` or `SGA{Sig}`.
-"""
-unembed(a::AbstractMultivector{<:CGA{Sig}}) where Sig = GeometricAlgebra.embed(Sig, a)
 
 #= blend repl mode =#
 

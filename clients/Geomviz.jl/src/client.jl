@@ -17,8 +17,6 @@ function encode(::T) where T
 	@warn "Object not sent to Blender." T
 end
 
-encode(encoded::Dict{String}) = encoded
-encode(a::BasisBlade) = encode(Multivector(a))
 
 flatmap(f, a::Union{Tuple,AbstractVector}) = Iterators.flatten(flatmap(f, i) for i in a)
 function flatmap(f, a)
