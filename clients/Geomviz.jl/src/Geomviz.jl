@@ -9,6 +9,7 @@ using GeometricAlgebra
 export geomviz, encode, PORT, Styled, animate
 
 include("client.jl")
+include("animation.jl")
 include("models/vga.jl")
 include("models/cga.jl")
 

@@ -1,11 +1,4 @@
-class(a::Dict) = a["rig_name"]
-function canbeidentified(a::Dict, b::Dict)
-	a["rig_name"] == b["rig_name"] && keys(a) == keys(b)
-end
-
 canbeidentified(a::Rig, b::Rig) = a.rig_name == b.rig_name
-
-# canbeidentified(a::Rig, b::Rig) = a.rig_name == b.rig_name
 
 function animate(fn, ts::AbstractVector)
 	frames = map(ts) do t
@@ -55,10 +48,6 @@ struct Keyframes{T} <: AbstractVector{Pair{Int,T}}
 end
 Base.size(k::Keyframes) = size(k.points)
 Base.getindex(k::Keyframes, i) = getindex(k.points, i)
-
-# merge_keyframes(l, r, t1, t2) = l == r ? l : Keyframes([t1 => l, t2 => r])
-# merge_keyframes(l::Keyframes, r, t1, t2) = Keyframes([l.points; t2 => r])
-# merge_keyframes(l::Dict, r::Dict, t1, t2) = Dict(k => merge_keyframes(l[k], r[k], t1, t2) for k in keys(l))
 
 merge_keyframes((t1, obj1)::Pair{Int}, (t2, obj2)::Pair{Int}) = obj1 == obj2 ? obj1 : Keyframes([t1 => obj1; t2 => obj2])
 merge_keyframes((t1, obj1)::Pair{Int,<:Keyframes}, (t2, obj2)::Pair{Int}) = Keyframes([obj1.points; t2 => obj2])
