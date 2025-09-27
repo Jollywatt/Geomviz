@@ -30,12 +30,23 @@ signsqrt(x) = sign(x)sqrt(abs(x))
 
 #= encoding CGABlade subtypes =#
 
+struct TangentBlade{Sig,K} <: CGABlade{Sig,K}
+	E::Multivector{Sig,K}
+	p::Multivector{Sig,1}
+end
+
 encode(X::AbstractMultivector{<:CGA}) = encode(standardform(X))
 
 encode(X::DirectionBlade) = encode(opns(X)) # always just the point at infinity
 encode(X::FlatBlade) = encode(opns(X))
 encode(X::DualFlatBlade) = encode(ipns(X))
-encode(X::RoundBlade) = encode(X.r2 > 0 ? opns(X) : ipns(X))
+function encode(X::RoundBlade)
+	if X.r2 == 0
+		encode(TangentBlade(X.E, X.p))
+	else
+		encode(X.r2 > 0 ? opns(X) : ipns(X))
+	end
+end
 
 
 #= encoding CGAGeometry subtypes =#
@@ -48,6 +59,10 @@ const Sphere = RoundGeometry{3,3}
 const PointFlat = FlatGeometry{3,0}
 const Line = FlatGeometry{3,1}
 const Plane = FlatGeometry{3,2}
+
+const TangentPoint = TangentBlade{3,0}
+const TangentVector = TangentBlade{3,1}
+const TangentPlane = TangentBlade{3,2}
 
 encode(geom::Union{EmptySet,PointAtInfinity}) = nothing
 
@@ -63,9 +78,20 @@ function encode(X::Union{Point,Sphere})
 	end
 end
 
-function encode(X::PointFlat)
+function encode(X::Union{PointFlat,TangentPoint})
 	Rig("Point", location=X.p)
 end
+
+encode(X::TangentVector) = Rig("Arrow Vector",
+	location=X.p,
+	"Vector"=>X.E,
+)
+
+encode(X::TangentPlane) = Rig("Spear Circle",
+	location=X.p,
+	"Normal"=>rdual(X.E),
+	"Radius"=>signsqrt(X.E⊙X.E),
+)
 
 encode(X::PointPair) = Rig("Point Pair",
 	location=X.p,
