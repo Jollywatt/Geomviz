@@ -16,11 +16,6 @@ def register():
 		poll=lambda self, collection: collection.name in self.collection.children,
 	)
 
-	# if there's only one collection in the scene, use it as the default
-	collections = bpy.context.scene.collection.children
-	if len(collections) == 1:
-		bpy.context.scene.geomviz_collection = collections[0]
-
 	bpy.types.Scene.geomviz_inventory_item = bpy.props.PointerProperty(
 		type=bpy.types.NodeTree,
 		name="Rig",
