@@ -13,7 +13,7 @@ if "bpy" in locals():
 	importlib.reload(rigs)
 	importlib.reload(assets)
 	importlib.reload(scene)
-	print('Reloaded')
+	print('Reloaded Geomviz modules')
 else:
 	# Runs first time add-on is loaded
 	from . import utils
@@ -23,7 +23,7 @@ else:
 	from . import rigs
 	from . import assets
 	from . import scene
-	print('Imported')
+	print('Imported Geomviz modules')
 
 import bpy
 

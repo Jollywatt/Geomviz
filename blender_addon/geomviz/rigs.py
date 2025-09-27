@@ -25,6 +25,7 @@ def get_action(obj):
 	if obj.animation_data.action is None:
 		action = bpy.data.actions.new(f"{obj.name} action")
 		obj.animation_data.action = action
+		obj.animation_data.action_slot = action.slots.new('OBJECT', obj.name)
 	return obj.animation_data.action
 
 
@@ -101,7 +102,6 @@ def pose(rig: bpy.types.Object, data):
 				try:
 					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
 				except TypeError as e:
-					# print()
 					print(e)
 					raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r} to {val!r}")
 

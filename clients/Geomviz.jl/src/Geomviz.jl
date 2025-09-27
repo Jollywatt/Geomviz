@@ -21,6 +21,8 @@ function geomviz(x)
 	send_to_server(data)
 end
 
+encode(x::BasisBlade) = encode(Multivector(x))
+
 function replmode(input::String)
 	if startswith(strip(input), '?')
 		print("""
