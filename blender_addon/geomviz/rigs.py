@@ -58,6 +58,18 @@ def pose(rig: bpy.types.Object, data):
 	else:
 		rig.location = (0,0,0)
 
+	if "show" in data:
+		if isanimation(data["show"]):
+			curve = get_fcurve(rig, data_path="hide_viewport")
+			for frame, show in data["show"]["keyframes"]:
+				curve.keyframe_points.insert(frame, not show, options={'FAST'})
+		else:
+			rig.hide_viewport = not data["show"]
+	else:
+		rig.hide_viewport = False
+
+
+
 	# reset modifier parameters to default
 	sockets = rig.geomviz_nodes.interface.items_tree
 	for socket in sockets:
@@ -88,6 +100,8 @@ def pose(rig: bpy.types.Object, data):
 							except TypeError as e:
 								print(e)
 								raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+						for pt in fcurve.keyframe_points:
+							pt.interpolation = 'CONSTANT'
 				else:
 					fcurve = get_fcurve(rig, data_path, index=0)
 					for frame, v in val["keyframes"]:
@@ -96,6 +110,9 @@ def pose(rig: bpy.types.Object, data):
 						except TypeError as e:
 							print(e)
 							raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+					for pt in fcurve.keyframe_points:
+						pt.interpolation = 'CONSTANT'
+
 
 
 			else:

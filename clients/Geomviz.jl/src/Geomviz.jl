@@ -7,6 +7,7 @@ using REPL: LineEdit
 using GeometricAlgebra
 
 export geomviz, encode, PORT, Styled, animate
+export Rig, Keyframes
 
 include("client.jl")
 include("animation.jl")

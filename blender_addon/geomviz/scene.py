@@ -51,8 +51,8 @@ def sync(collection, data):
 			(s, e) = map(int, data["frame_range"])
 			bpy.context.scene.frame_start = s
 			bpy.context.scene.frame_end = e
-			# bpy.ops.screen.animation_cancel()
-			# bpy.ops.screen.animation_play()
+			bpy.ops.screen.animation_cancel()
+			bpy.ops.screen.animation_play()
 		else:
 			print("No frame range specified")
 	else:

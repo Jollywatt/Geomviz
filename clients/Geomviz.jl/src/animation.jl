@@ -1,68 +1,99 @@
-canbeidentified(a::Rig, b::Rig) = a.rig_name == b.rig_name
-
-function animate(fn, ts::AbstractVector)
-	frames = map(ts) do t
-		flatmap(encode, fn(t))
-	end
-	(
-		animation=true,
-		frame_range=(firstindex(ts), lastindex(ts)),
-		objects=detect_keyframes(eachindex(ts), frames),
-	) |> send_to_server
-end
-
-function detect_keyframes(ts, frames)
-	zipped = Rig[]
-	tprev = 0
-	for (t, objs) in zip(ts, frames)
-
-		used = zeros(Bool, length(zipped)) # which persistent objects are used this frame
-		for obj in objs
-
-			found = false
-			for i in eachindex(zipped)
-				used[i] && continue
-				if canbeidentified(zipped[i], obj)
-
-					zipped[i] = merge_keyframes(tprev => zipped[i], t => obj)
-					used[i] = true
-					found = true
-					break
-				end
-			end
-
-			if !found
-				push!(zipped, obj)
-				push!(used, true)
-			end
-
-
-		end
-		tprev = t
-	end
-	zipped
-end
-
 struct Keyframes{T} <: AbstractVector{Pair{Int,T}}
 	points::Vector{Pair{Int,T}}
 end
 Base.size(k::Keyframes) = size(k.points)
 Base.getindex(k::Keyframes, i) = getindex(k.points, i)
 
-merge_keyframes((t1, obj1)::Pair{Int}, (t2, obj2)::Pair{Int}) = obj1 == obj2 ? obj1 : Keyframes([t1 => obj1; t2 => obj2])
-merge_keyframes((t1, obj1)::Pair{Int,<:Keyframes}, (t2, obj2)::Pair{Int}) = Keyframes([obj1.points; t2 => obj2])
-function merge_keyframes((t1, obj1)::Pair{Int,<:Dict}, (t2, obj2)::Pair{Int,<:Dict})
-	@assert keys(obj1) == keys(obj2)
-	Dict(k => merge_keyframes(t1 => obj1[k], t2 => obj2[k]) for k in keys(obj1))
-end
-
-function merge_keyframes((t1, rig1)::Pair{Int,Rig}, (t2, rig2)::Pair{Int,Rig})
-	@assert canbeidentified(rig1, rig2)
-	rig_parameters = merge_keyframes(t1 => rig1.rig_parameters, t2 => rig2.rig_parameters)
-	object_parameters = merge_keyframes(t1 => rig1.object_parameters, t2 => rig2.object_parameters)
-	Rig(rig1.rig_name, object_parameters, rig_parameters)
-end
-
-
 Pickle.save(p::Pickle.AbstractPickle, io::IO, k::Keyframes) = Pickle.save(p, io, Dict("keyframes" => Tuple.(k.points)))
+
+
+function add_keyframe!(anim::Keyframes, (t, new))
+	(tprev, val) = last(anim.points)
+	val == new && return anim
+	push!(anim.points, t => new)
+	return anim
+end
+
+function add_keyframe!(old::Rig, (t, new)::Pair{<:Number,Rig})
+	@assert old.rig_name == old.rig_name
+	objp = mergewith!(old.object_parameters, new.object_parameters) do l, r
+		add_keyframe!(l::Keyframes, t => r)
+	end
+	rigp = mergewith!(old.rig_parameters, new.rig_parameters) do l, r
+		add_keyframe!(l::Keyframes, t => r)
+	end
+end
+
+identifiable(a::Rig, b::Rig) = a.rig_name == b.rig_name
+
+function transpose_keyframes(frames::Keyframes)
+	scene = Rig[]
+	tstart = first(first(frames))
+	for (t, objs) in frames
+
+		used = zeros(Bool, size(scene))
+
+		for obj in objs
+
+			found = false
+			# see if object is already in scene that can be used
+			for i in eachindex(scene)
+				used[i] && continue
+				identifiable(scene[i], obj) || continue
+
+				found = true
+				used[i] = true
+
+				add_keyframe!(scene[i], t => obj)
+				add_keyframe!(scene[i].object_parameters["show"], t => true)
+
+				break
+			end
+
+			# need to create new scene object
+			if !found
+				o = Dict{String,Any}(k => Keyframes([t => v]) for (k, v) in obj.object_parameters)
+				if t > tstart
+					o["show"] = Keyframes([t - 1 => false, t => true])
+				else
+					o["show"] = Keyframes([t => true])
+				end
+				r = Dict(k => Keyframes([t => v]) for (k, v) in obj.rig_parameters)
+				anim_rig = Rig(obj.rig_name, o, r)
+
+				push!(scene, anim_rig)
+				push!(used, true)
+			end
+
+		end
+
+		# mute unused scene objects
+		for i in eachindex(scene)
+			used[i] && continue
+
+			add_keyframe!(scene[i].object_parameters["show"], t => false)
+
+		end
+	end
+	scene
+end
+
+struct Animation
+	
+end
+
+function animate(fn, times)
+	frames = Keyframes(map(enumerate(times)) do (i, t)
+		i => flatmap(encode, fn(t))
+	end)
+	scene = transpose_keyframes(frames)
+
+	info = (
+		frame_range = (first(first(frames)), first(last(frames))),
+		objects = scene,
+		animation = true,
+	)
+
+	send_to_server(info)
+end
 
