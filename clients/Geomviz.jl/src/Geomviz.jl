@@ -6,19 +6,40 @@ using ReplMaker
 using REPL: LineEdit
 using GeometricAlgebra
 
-export geomviz, encode, PORT, Styled, animate
+export geomviz, encode, Styled, animate
 export Rig, Keyframes
 
-include("client.jl")
+include("encode.jl")
 include("animation.jl")
 include("models/vga.jl")
 include("models/cga.jl")
 
 #= blend repl mode =#
 
+const PORT = Ref(8888)
+
+function send_to_server(data, port=PORT[])
+	sock = connect(ip"127.0.0.1", port)
+	binary = Pickle.stores(data)
+	write(sock, binary)
+	close(sock)
+end
+
+"""
+	geomviz(x)
+
+Visualise `x` in Blender.
+
+The object is serialised with `encode(x)` and sent to the Blender server on port `Geomviz.PORT`.
+Methods should be added to `encode` to support new object types.
+
+Note that the `geomviz>` REPL mode may be activated by typing a space at the start of the standard REPL.
+"""
+function geomviz end
+
 geomviz(::Nothing) = nothing
 function geomviz(x)
-	data = (objects=encode([x]),)
+	data = (objects=encode((x,)),)
 	send_to_server(data)
 end
 

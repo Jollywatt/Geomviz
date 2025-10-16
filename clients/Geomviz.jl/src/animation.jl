@@ -84,7 +84,7 @@ end
 
 function animate(fn, times)
 	frames = Keyframes(map(enumerate(times)) do (i, t)
-		i => flatmap(encode, fn(t))
+		i => filter!(!isnothing, collect(flatmap(encode, fn(t))))
 	end)
 	scene = transpose_keyframes(frames)
 

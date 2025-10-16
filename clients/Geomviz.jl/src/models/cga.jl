@@ -36,6 +36,7 @@ struct TangentBlade{Sig,K} <: CGABlade{Sig,K}
 end
 
 encode(X::AbstractMultivector{<:CGA}) = encode(standardform(X))
+encode(X::AbstractMultivector{CGA}) = encode(GeometricAlgebra.signature_convert(Val(CGA{3}), X))
 
 encode(X::DirectionBlade) = encode(opns(X)) # always just the point at infinity
 encode(X::FlatBlade) = encode(opns(X))
