@@ -12,6 +12,7 @@ class GeomvizPanel(bpy.types.Panel):
 	bl_context = 'scene'
 
 	def draw(self, context):
+		print("Drawing panel")
 
 		self.layout.use_property_split = True
 		self.layout.use_property_decorate = False

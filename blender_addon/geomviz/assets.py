@@ -9,7 +9,7 @@ def load_inventory_from_file(assets_file):
 
 		# purge old node groups of the same name
 		# we want to replace them, since we don't need to keep both
-		# (which is the default behaviour when names collide)
+		# (keeping both is the default behaviour when names collide)
 		for name in data_from.node_groups:
 			try:
 				node_group = bpy.data.node_groups[name]

@@ -36,12 +36,17 @@ class DataServer():
 	status = "Idle"
 	data_queue = queue.Queue()
 	heartbeat = 0.
+	queue_check_delay = 1/30 # pause between checks for incoming data
 
 	def set_status(self, status):
 		self.status = status
 		print(f"DataServer status: {status}")
-		if isinstance(self.panel_area, bpy.types.Area):
-			self.panel_area.tag_redraw()
+		# if isinstance(self.panel_area, bpy.types.Area):
+		# 	self.panel_area.tag_redraw()
+		if bpy.context.screen != None:
+			for area in bpy.context.screen.areas:
+				if area.ui_type == 'PROPERTIES':
+					area.tag_redraw()
 
 	def start(self, port):
 		self.port = port
@@ -133,6 +138,7 @@ class DataServer():
 		while not self.data_queue.empty():
 			data = self.data_queue.get()
 			status = scene.handle_scene_data(data)
+			print(f"got status {status}")
 			self.set_status("Idle" if status is None else status)
 			self.data_queue.task_done()
 
@@ -140,7 +146,7 @@ class DataServer():
 		self.heartbeat = time()
 
 		if data_server.running:
-			return 1/30
+			return self.queue_check_delay
 
 		print("CLOSING TIMER")
 
