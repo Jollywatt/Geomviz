@@ -12,8 +12,6 @@ class GeomvizPanel(bpy.types.Panel):
 	bl_context = 'scene'
 
 	def draw(self, context):
-		print("Drawing panel")
-
 		self.layout.use_property_split = True
 		self.layout.use_property_decorate = False
 
@@ -32,8 +30,7 @@ class GeomvizPanel(bpy.types.Panel):
 
 		global server
 		row = self.layout.row()
-		icon = 'RADIOBUT_ON' if server.data_server.running else 'RADIOBUT_OFF'
-		row.label(text=f"{server.data_server.status}", icon=icon)
+		row.label(text=f"{server.data_server.status}", icon=server.data_server.status_icon)
 
 		row = self.layout.row()
 		if server.data_server.running:

@@ -34,15 +34,15 @@ class DataServer():
 	port = None
 	panel_area = None
 	status = "Idle"
+	status_icon = 'RADIOBUT_OFF'
 	data_queue = queue.Queue()
 	heartbeat = 0.
 	queue_check_delay = 1/30 # pause between checks for incoming data
 
-	def set_status(self, status):
+	def set_status(self, status, icon):
 		self.status = status
+		self.status_icon = icon
 		print(f"DataServer status: {status}")
-		# if isinstance(self.panel_area, bpy.types.Area):
-		# 	self.panel_area.tag_redraw()
 		if bpy.context.screen != None:
 			for area in bpy.context.screen.areas:
 				if area.ui_type == 'PROPERTIES':
@@ -57,14 +57,14 @@ class DataServer():
 			try:
 				sock.bind(('127.0.0.1', self.port))
 			except OSError as e:
-				self.set_status(f"Error: {e}")
+				self.set_status(f"Error: {e}", 'ERROR')
 				return
 
 			sock.settimeout(1)
 			sock.listen()
 
 			self.running = True
-			self.set_status(f"Listening on port {self.port}...")
+			self.set_status(f"Listening on port {self.port}...", 'RADIOBUT_ON')
 
 			while self.running:
 				try:
@@ -95,7 +95,7 @@ class DataServer():
 
 	def stop(self):
 		if self.running:
-			self.set_status("Stopped")
+			self.set_status("Stopped", 'RADIOBUT_OFF')
 			print("Stopped existing running server")
 
 		global geomviz_timer_pointer
@@ -125,7 +125,7 @@ class DataServer():
 			data = validate_data(binary)
 		except Exception as e:
 			conn.send(f"Error: {e}".encode())
-			self.set_status(f"Error: {e}")
+			self.set_status(f"Error: {e}", 'ERROR')
 		else:
 			conn.send(f"Received {len(binary)} bytes.".encode())
 			self.data_queue.put(data)
@@ -137,9 +137,8 @@ class DataServer():
 		# reading data left by the server's thread in the shared queue
 		while not self.data_queue.empty():
 			data = self.data_queue.get()
-			status = scene.handle_scene_data(data)
-			print(f"got status {status}")
-			self.set_status("Idle" if status is None else status)
+			status, icon = scene.handle_scene_data(data)
+			self.set_status(status, icon)
 			self.data_queue.task_done()
 
 		# send a heartbeat which keeps the server thread alive
