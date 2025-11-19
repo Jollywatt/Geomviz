@@ -1,5 +1,5 @@
 import bpy
-
+from bpy_extras.anim_utils import action_ensure_channelbag_for_slot
 from . import utils
 
 def empty_mesh():
@@ -20,28 +20,27 @@ def new(nodes: bpy.types.NodeTree):
 def isanimation(obj):
 	return isinstance(obj, dict) and "keyframes" in obj
 
-def get_action(obj):
+def get_channelbag(obj):
 	obj.animation_data_create()
 	if obj.animation_data.action is None:
 		action = bpy.data.actions.new(f"{obj.name} action")
 		obj.animation_data.action = action
 		obj.animation_data.action_slot = action.slots.new('OBJECT', obj.name)
-	return obj.animation_data.action
+	return action_ensure_channelbag_for_slot(obj.animation_data.action, obj.animation_data.action_slot)
 
 
 def get_fcurve(obj, data_path, index=0):
-	action = get_action(obj)
-	fcurve = action.fcurves.find(data_path, index=index)
-	if fcurve is None:
-		fcurve = action.fcurves.new(data_path, index=index)
+	channelbag = get_channelbag(obj)
+	fcurve = channelbag.fcurves.ensure(data_path, index=index, group_name=f"Geomviz Rig")
 	return fcurve
 
 def clear_fcurve(obj, data_path, index=0):
 	action = obj.animation_data.action
 	if action is not None:
-		fcurve = action.fcurves.find(data_path, index=index)
+		channelbag = action_get_channelbag_for_slot(obj.animation_data.action, obj.animation_data.action_slot)
+		fcurve = channelbag.fcurves.find(data_path, index=index)
 		if fcurve is not None:
-			action.fcurves.remove(fcurve)
+			channelbag.fcurves.remove(fcurve)
 
 def pose(rig: bpy.types.Object, data):
 
