@@ -64,7 +64,7 @@ function encode(::T) where T
 	@warn "Object not sent to Blender." T
 end
 
-encode(objs::Union{Tuple,AbstractVector}) = collect(flatmap(encode, objs))
+encode(objs::Union{Tuple,AbstractVector}) = collect(Iterators.filter(!isnothing, flatmap(encode, objs)))
 encode(objs...) = encode(objs)
 
 encode(rig::Rig) = rig

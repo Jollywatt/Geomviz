@@ -63,16 +63,5 @@ def sync(collection, data):
 	return f"Synced {count} {'object' if count == 1 else 'objects'}"
 
 def handle_scene_data(data):
-	try:
-		print("Synchronising scene...")
-		return sync(bpy.context.scene.geomviz_collection, data), 'RADIOBUT_ON'
-	except utils.UnknownRigError as e:
-		return f"Unknown rig: {e.name!r}", 'ERROR'
-	except utils.RigDataError as e:
-		return repr(e), 'ERROR'
-	except utils.PoseError as e:
-		try:
-			keys = bpy.data.node_groups[e.name].interface.items_tree.keys()
-			return f"Failed to pose {e.name!r}: key {e.key!r} not found in {keys!r}", 'ERROR'
-		except:
-			return f"Failed to pose {e.name!r}: key {e.key!r} not found", 'ERROR'
+	print("Synchronising scene...")
+	return sync(bpy.context.scene.geomviz_collection, data)

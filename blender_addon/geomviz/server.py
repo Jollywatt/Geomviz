@@ -9,6 +9,11 @@ from . import rigs
 from . import scene
 from . import utils
 
+class ServerStatus:
+	def __init__(self, message, icon):
+		self.message = message
+		self.icon = icon
+
 def validate_data(binary):
 	try:
 		data = pickle.loads(binary)
@@ -95,7 +100,7 @@ class DataServer():
 
 	def stop(self):
 		if self.running:
-			self.set_status("Stopped", 'RADIOBUT_OFF')
+			self.set_status("Idle", 'RADIOBUT_OFF')
 			print("Stopped existing running server")
 
 		global geomviz_timer_pointer
@@ -122,13 +127,8 @@ class DataServer():
 				break
 
 		try:
-			data = validate_data(binary)
-		except Exception as e:
-			conn.send(f"Error: {e}".encode())
-			self.set_status(f"Error: {e}", 'ERROR')
-		else:
 			conn.send(f"Received {len(binary)} bytes.".encode())
-			self.data_queue.put(data)
+			self.data_queue.put(binary)
 		finally:
 			conn.close()
 
@@ -136,10 +136,15 @@ class DataServer():
 		# this runs as a registered bpy.app timer
 		# reading data left by the server's thread in the shared queue
 		while not self.data_queue.empty():
-			data = self.data_queue.get()
-			status, icon = scene.handle_scene_data(data)
-			self.set_status(status, icon)
-			self.data_queue.task_done()
+			binary = self.data_queue.get()
+			try:
+				data = validate_data(binary)
+				status = scene.handle_scene_data(data)
+				self.set_status(status, 'RADIOBUT_ON')
+			except utils.GeomvizError as e:
+				self.set_status(e.message, e.icon)
+			else:
+				self.data_queue.task_done()
 
 		# send a heartbeat which keeps the server thread alive
 		self.heartbeat = time()

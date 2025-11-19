@@ -39,7 +39,9 @@ function geomviz end
 
 geomviz(::Nothing) = nothing
 function geomviz(x)
-	data = (objects=encode((x,)),)
+	objects = encode((x,))
+	isempty(objects) && return
+	data = (objects=objects,)
 	send_to_server(data)
 end
 
