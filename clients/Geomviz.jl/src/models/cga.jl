@@ -20,9 +20,9 @@ module Conformal
 import ..Geomviz: Rig, encode
 
 using GeometricAlgebra
-using GeometricAlgebra.Conformal
-using GeometricAlgebra.Conformal: DirectionBlade, FlatBlade, DualFlatBlade, RoundBlade
-using GeometricAlgebra.Conformal: EmptySet, PointAtInfinity, FlatGeometry, RoundGeometry
+using BladeBasedModels.Conformal
+using BladeBasedModels.Conformal: DirectionBlade, FlatBlade, DualFlatBlade, RoundBlade
+using BladeBasedModels.Conformal: EmptySet, PointAtInfinity, FlatGeometry, RoundGeometry
 
 
 signsqrt(x) = sign(x)sqrt(abs(x))
@@ -65,7 +65,7 @@ const TangentPoint = TangentBlade{3,0}
 const TangentVector = TangentBlade{3,1}
 const TangentPlane = TangentBlade{3,2}
 
-encode(geom::Union{EmptySet,PointAtInfinity}) = nothing
+encode(geom::Union{EmptySet,PointAtInfinity}) = Rig("Empty")
 
 function encode(X::Union{Point,Sphere})
 	if abs(X.r2) < 1e-3

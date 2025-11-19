@@ -5,6 +5,7 @@ using Pickle
 using ReplMaker
 using REPL: LineEdit
 using GeometricAlgebra
+using BladeBasedModels.Conformal
 
 export geomviz, encode, Styled, animate
 export Rig, Keyframes
