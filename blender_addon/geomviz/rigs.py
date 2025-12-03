@@ -2,18 +2,22 @@ import bpy
 from bpy_extras.anim_utils import action_ensure_channelbag_for_slot
 from . import utils
 
-def empty_mesh():
-	name = "Empty mesh"
-	if name not in bpy.data.meshes:
-		bpy.data.meshes.new(name)
-	return bpy.data.meshes[name]
+def empty_mesh(reuse=True):
+	name = "Empty mesh" if reuse else "Mesh"
+	if reuse and name in bpy.data.meshes:
+		mesh = bpy.data.meshes[name]
+	else:
+		mesh = bpy.data.meshes.new(name)
+	return mesh
 
 
 def new(nodes: bpy.types.NodeTree):
-	obj = bpy.data.objects.new(nodes.name, empty_mesh())
+	reuse = False if nodes.name == "Mesh" else True
+	obj = bpy.data.objects.new(nodes.name, empty_mesh(reuse))
 	obj.geomviz_nodes = nodes
 	mod = obj.modifiers.new(nodes.name, "NODES")
 	mod.node_group = nodes
+	print(f"new with mesh name {obj.data.name}")
 	return obj
 
 
@@ -42,6 +46,21 @@ def clear_fcurve(obj, data_path, index=0):
 		if fcurve is not None:
 			channelbag.fcurves.remove(fcurve)
 
+def pose_mesh(rig: bpy.types.Object, data):
+	rig.data.clear_geometry()
+	# rig.update_from_editmode() # ensure object mode
+	vertices = data["vertices"]
+	edges = data.get("edges", [])
+	faces = data.get("faces", [])
+	try:
+		rig.data.from_pydata(vertices, edges, faces) # fails in edit mode
+	except RuntimeError as e:
+		raise utils.GeomvizError(f"Mesh rig: {e}")
+
+	rig.data.validate()
+	rig.update_from_editmode() # ensure object mode
+
+
 def pose(rig: bpy.types.Object, data):
 
 	rig.animation_data_clear()
@@ -68,6 +87,8 @@ def pose(rig: bpy.types.Object, data):
 		rig.hide_viewport = False
 
 
+	# ensure modifier points to correct geometry nodes tree
+	rig.modifiers[rig.geomviz_nodes.name].node_group = rig.geomviz_nodes
 
 	# reset modifier parameters to default
 	sockets = rig.geomviz_nodes.interface.items_tree
@@ -76,6 +97,10 @@ def pose(rig: bpy.types.Object, data):
 			rig.modifiers[rig.geomviz_nodes.name][socket.identifier] = socket.default_value
 		except AttributeError:
 			pass
+
+	if data["rig_name"] == "Mesh":
+		pose_mesh(rig, data)
+
 
 	# set modifier parameters
 	if "rig_parameters" in data:
@@ -117,6 +142,7 @@ def pose(rig: bpy.types.Object, data):
 			else:
 				try:
 					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
+					print(f"set {rig.geomviz_nodes.name}[{inp.identifier}] = {val}")
 				except TypeError as e:
 					print(e)
 					raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r} to {val!r}")
