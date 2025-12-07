@@ -4,16 +4,12 @@ using Sockets
 using Pickle
 using ReplMaker
 using REPL: LineEdit
-using GeometricAlgebra
-using BladeBasedModels.Conformal
 
 export geomviz, encode, Styled, animate
 export Rig, Keyframes
 
 include("encode.jl")
 include("animation.jl")
-include("models/vga.jl")
-include("models/cga.jl")
 
 #= blend repl mode =#
 
@@ -45,8 +41,6 @@ function geomviz(x)
 	data = (objects=objects,)
 	send_to_server(data)
 end
-
-encode(x::BasisBlade) = encode(Multivector(x))
 
 function replmode(input::String)
 	if startswith(strip(input), '?')

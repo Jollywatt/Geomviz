@@ -38,10 +38,7 @@ end
 
 
 
-Pickle.List(a::GeometricAlgebra.SingletonVector) = Pickle.List(collect(a))
-Pickle.List(a::GeometricAlgebra.StaticVector) = Pickle.List(collect(a))
 Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple) = Pickle.save(p, io, Dict(string(k) => v for (k, v) in pairs(nt)))
-Pickle.save(p::Pickle.AbstractPickle, io::IO, mv::Grade{1}) = Pickle.save(p, io, Multivector(mv).comps)
 function Pickle.save(p::Pickle.AbstractPickle, io::IO, rig::Rig)
 	d = Dict(
 		"rig_name"=>rig.rig_name,
