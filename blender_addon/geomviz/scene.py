@@ -62,6 +62,19 @@ def sync(collection, data):
 	count = len(data['objects'])
 	return f"Synced {count} {'object' if count == 1 else 'objects'}"
 
+def render_scene(options):
+	if "filepath" not in options:
+		raise utils.InvalidDataException("render options missing `filepath` key")
+
+	bpy.context.scene.render.filepath = options["filepath"]
+	bpy.ops.render.render(write_still = True)
+
+
 def handle_scene_data(data):
 	print("Synchronising scene...")
-	return sync(bpy.context.scene.geomviz_collection, data)
+
+	if "render" in data:
+		render_scene(data["render"])
+
+	if "objects" in data:
+		return sync(bpy.context.scene.geomviz_collection, data)

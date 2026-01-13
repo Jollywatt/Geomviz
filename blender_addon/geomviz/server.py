@@ -28,7 +28,8 @@ def validate_data(binary):
 					else:
 						raise utils.InvalidDataException(f"Rig data is not a dictionary: {rig!r}.")
 			else:
-				raise utils.InvalidDataException(f"Data is missing 'objects' key: {data!r}.")
+				pass
+				# raise utils.InvalidDataException(f"Data is missing 'objects' key: {data!r}.")
 		else:
 			raise utils.InvalidDataException(f"Data is of unexpected type {type(data)}.")
 
