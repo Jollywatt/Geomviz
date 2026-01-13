@@ -42,6 +42,7 @@ class DataServer():
 	status = "Idle"
 	status_icon = 'RADIOBUT_OFF'
 	data_queue = queue.Queue()
+	ping_every = 2.
 	heartbeat = 0.
 	queue_check_delay = 1/30 # pause between checks for incoming data
 
@@ -83,7 +84,7 @@ class DataServer():
 					self.put_to_queue(conn)
 
 				# check that the main thread is still alive
-				if time() - self.heartbeat > 1:
+				if time() - self.heartbeat > self.ping_every:
 					# end server thread to avoid hanging blender on exit
 					break
 
