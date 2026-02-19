@@ -1,11 +1,11 @@
-[project]
+[workspace]
 name = "Geomviz"
 authors = ["jollywatt <jo.alex.w@gmail.com>"]
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "linux-64"]
 
 [tasks]
-build = "pixi run python -m pip install build; ./build.nu"
+build = "./build.nu"
 blend = "/Applications/Blender.app/Contents/MacOS/Blender"
 
 [dependencies]
@@ -18,3 +18,5 @@ numba = "<=0.58"
 nushell = ">=0.103.0,<0.104"
 pip = ">=25.0.1,<26"
 grip = ">=4.6.2,<5"
+python-build = ">=1.5.0,<2"
+zip = ">=3.0,<4"
