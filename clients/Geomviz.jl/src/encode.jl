@@ -58,7 +58,13 @@ end
 
 
 function encode(::T) where T
-	@warn "Object not sent to Blender." T
+	@error "$T not sent to Blender."
+	@info """
+	If applicable, define a method `encode(::$T)` that returns a `Rig` or a collection of `Rig`s to be sent to Blender.
+	"""
+	if nameof(T) in (:BasisBlade, :Multivector)
+		@info "Did you forget to import GeometricAlgebraModels?"
+	end
 end
 
 encode(objs::Union{Tuple,AbstractVector}) = collect(Iterators.filter(!isnothing, flatmap(encode, objs)))
@@ -83,4 +89,3 @@ function encode(s::Styled)
 
 	things
 end
-

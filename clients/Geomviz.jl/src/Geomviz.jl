@@ -50,6 +50,7 @@ function send_and_receive(data, port=PORT[])
 		@error "from Geomviz server:\n$message"
 	elseif startswith(response, "Success:")
 		@info "$message"
+		return true
 	else
 		@warn "Geomviz server response:" response
 	end
@@ -72,7 +73,9 @@ function geomviz(x)
 	objects = encode((x,))
 	isempty(objects) && return
 	data = (objects=objects,)
-	send_and_receive(data)
+	success = send_and_receive(data)
+	success == true || return nothing
+	x
 end
 
 #= blend repl mode =#
@@ -92,7 +95,6 @@ function replmode(input::String)
 	isdefined(Main, :Revise) && Main.eval(:(Revise.revise()))
 	x = Main.eval(Meta.parse(input))
 	geomviz(x)
-	x
 end
 
 function valid_input_checker(prompt_state)

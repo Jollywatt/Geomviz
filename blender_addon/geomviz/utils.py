@@ -17,14 +17,19 @@ class InvalidDataException(GeomvizError):
 class UnknownRigError(GeomvizError):
 	def __init__(self, name):
 		super().__init__(f"Unknown rig: {name!r}")
-		self.name = name		
+		self.name = name
 
 class RigDataError(GeomvizError):
-	def __init__(self, message):
+	def __init__(self, message, detail=None):
+		if detail is not None:
+			message += f"\n({detail})"
 		super().__init__(message)
 
 class PoseError(GeomvizError):
-	def __init__(self, name, key):
+	def __init__(self, name, key, keys=None):
+		message = f"Rig {name!r} has no parameter {key!r}"
+		if keys is not None:
+			message += f", expected one of {keys!r}"
+		super().__init__(message)
 		self.name = name
 		self.key = key
-

@@ -108,9 +108,7 @@ def pose(rig: bpy.types.Object, data):
 			try:
 				inp = sockets[key]
 			except KeyError:
-				# raise utils.PoseError(rig.geomviz_nodes.name, key)
-				print(f"WARNING: rig {rig.geomviz_nodes.name!r} has no parameter {key!r}")
-				continue
+				raise utils.PoseError(rig.geomviz_nodes.name, key, keys=sockets.keys())
 
 			if isanimation(val):
 				data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
@@ -122,8 +120,7 @@ def pose(rig: bpy.types.Object, data):
 							try:
 								fcurve.keyframe_points.insert(frame, v[i])
 							except TypeError as e:
-								print(e)
-								raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+								raise utils.RigDataError(f"Can't set {key!r}[{i}] property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}", detail=e)
 						for pt in fcurve.keyframe_points:
 							pt.interpolation = 'CONSTANT'
 				else:
@@ -132,8 +129,7 @@ def pose(rig: bpy.types.Object, data):
 						try:
 							fcurve.keyframe_points.insert(frame, v)
 						except TypeError as e:
-							print(e)
-							raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r}[{i}] ({inp.identifier!r}) to {v!r} at frame {frame!r}")
+							raise utils.RigDataError(f"Can't set {key!r}[{i}] property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}", detail=e)
 					for pt in fcurve.keyframe_points:
 						pt.interpolation = 'CONSTANT'
 
@@ -144,13 +140,12 @@ def pose(rig: bpy.types.Object, data):
 					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
 					print(f"set {rig.geomviz_nodes.name}[{inp.identifier}] = {val}")
 				except TypeError as e:
-					print(e)
-					raise utils.RigDataError(f"can't set {rig.geomviz_nodes.name!r} socket {key!r} to {val!r}")
+					raise utils.RigDataError(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} to {val!r}", detail=e)
 
 
 	if "color" in data:
 		if isanimation(data["color"]):
-			raise utils.RigDataError("can't animate color yet")
+			raise utils.RigDataError("Can't animate color yet")
 		else:
 			rig.color = data["color"]
 	else:
