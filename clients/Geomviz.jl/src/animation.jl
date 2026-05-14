@@ -79,7 +79,7 @@ function transpose_keyframes(frames::Keyframes)
 end
 
 struct Animation
-	
+
 end
 
 function animate(fn, times)
@@ -94,6 +94,6 @@ function animate(fn, times)
 		animation = true,
 	)
 
-	send_to_server(info)
+	send_and_receive(info)
+	return
 end
-

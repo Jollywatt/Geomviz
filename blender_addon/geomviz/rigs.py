@@ -1,6 +1,7 @@
 import bpy
 from bpy_extras.anim_utils import action_ensure_channelbag_for_slot
 from . import utils
+from contextlib import contextmanager
 
 def empty_mesh(reuse=True):
 	name = "Empty mesh" if reuse else "Mesh"
@@ -24,6 +25,13 @@ def new(nodes: bpy.types.NodeTree):
 def isanimation(obj):
 	return isinstance(obj, dict) and "keyframes" in obj
 
+@contextmanager
+def catch_rig_error(label):
+	try:
+		yield
+	except ValueError or TypeError as e:
+		raise utils.RigDataError(label, detail=e)
+
 def get_channelbag(obj):
 	obj.animation_data_create()
 	if obj.animation_data.action is None:
@@ -32,19 +40,11 @@ def get_channelbag(obj):
 		obj.animation_data.action_slot = action.slots.new('OBJECT', obj.name)
 	return action_ensure_channelbag_for_slot(obj.animation_data.action, obj.animation_data.action_slot)
 
-
 def get_fcurve(obj, data_path, index=0):
 	channelbag = get_channelbag(obj)
 	fcurve = channelbag.fcurves.ensure(data_path, index=index, group_name=f"Geomviz Rig")
 	return fcurve
 
-def clear_fcurve(obj, data_path, index=0):
-	action = obj.animation_data.action
-	if action is not None:
-		channelbag = action_get_channelbag_for_slot(obj.animation_data.action, obj.animation_data.action_slot)
-		fcurve = channelbag.fcurves.find(data_path, index=index)
-		if fcurve is not None:
-			channelbag.fcurves.remove(fcurve)
 
 def pose_mesh(rig: bpy.types.Object, data):
 	rig.data.clear_geometry()
@@ -69,10 +69,12 @@ def pose(rig: bpy.types.Object, data):
 		if isanimation(data["location"]):
 			xyz_curves = [get_fcurve(rig, data_path="location", index=i) for i in range(3)]
 			for frame, xyz in data["location"]["keyframes"]:
-				for i in range(3):
-					xyz_curves[i].keyframe_points.insert(frame, xyz[i], options={'FAST'})
+				with catch_rig_error(f"Can't set location of {rig.geomviz_nodes.name!r} to {data['location']!r} at frame {frame!r}"):
+					for i in range(3):
+						xyz_curves[i].keyframe_points.insert(frame, xyz[i], options={'FAST'})
 		else:
-			rig.location = data["location"]
+			with catch_rig_error(f"Can't set location of {rig.geomviz_nodes.name!r} to {data['location']!r}"):
+				rig.location = data["location"]
 	else:
 		rig.location = (0,0,0)
 
@@ -101,7 +103,6 @@ def pose(rig: bpy.types.Object, data):
 	if data["rig_name"] == "Mesh":
 		pose_mesh(rig, data)
 
-
 	# set modifier parameters
 	if "rig_parameters" in data:
 		for key, val in data["rig_parameters"].items():
@@ -117,37 +118,29 @@ def pose(rig: bpy.types.Object, data):
 					for i in range(len(inp.default_value)):
 						fcurve = get_fcurve(rig, data_path, index=i)
 						for frame, v in val["keyframes"]:
-							try:
+							with catch_rig_error(f"Can't set {key!r}[{i}] property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}"):
 								fcurve.keyframe_points.insert(frame, v[i])
-							except TypeError as e:
-								raise utils.RigDataError(f"Can't set {key!r}[{i}] property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}", detail=e)
 						for pt in fcurve.keyframe_points:
 							pt.interpolation = 'CONSTANT'
 				else:
 					fcurve = get_fcurve(rig, data_path, index=0)
 					for frame, v in val["keyframes"]:
-						try:
+						with catch_rig_error(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}"):
 							fcurve.keyframe_points.insert(frame, v)
-						except TypeError as e:
-							raise utils.RigDataError(f"Can't set {key!r}[{i}] property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}", detail=e)
 					for pt in fcurve.keyframe_points:
 						pt.interpolation = 'CONSTANT'
 
-
-
 			else:
-				try:
+				with catch_rig_error(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {val!r}"):
 					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
-					print(f"set {rig.geomviz_nodes.name}[{inp.identifier}] = {val}")
-				except TypeError as e:
-					raise utils.RigDataError(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} to {val!r}", detail=e)
 
 
 	if "color" in data:
 		if isanimation(data["color"]):
 			raise utils.RigDataError("Can't animate color yet")
 		else:
-			rig.color = data["color"]
+			with catch_rig_error(f"Can't set color of {rig.geomviz_nodes.name!r} to {data['color']!r}"):
+				rig.color = data["color"]
 	else:
 		rig.color = (1,1,1,1)
 
