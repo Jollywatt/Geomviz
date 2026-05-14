@@ -11,15 +11,48 @@ export Rig, Keyframes
 include("encode.jl")
 include("animation.jl")
 
-#= blend repl mode =#
 
 const PORT = Ref(8888)
 
-function send_to_server(data, port=PORT[])
-	sock = connect(ip"127.0.0.1", port)
+function send_and_receive(data, port=PORT[])
+	local sock
+	try
+		sock = connect(ip"127.0.0.1", port)
+	catch err
+		if err isa Base.IOError
+			@error """
+				Could not connect to Geomviz server.
+				""" err port
+			@info """
+				Is the Geomviz server in Blender listening on port $port?
+				If listening on another port, configure with `Geomviz.PORT[] = ...`"
+				"""
+			return
+		else
+			rethrow()
+		end
+	end
+
 	binary = Pickle.stores(data)
 	write(sock, binary)
+	closewrite(sock)
+	Timer(1) do _
+		if isopen(sock)
+			@warn "Received no response from Geomviz server: timed out"
+			close(sock)
+		end
+	end
+	response = read(sock, String)
 	close(sock)
+
+	message = chopprefix(response, r"(Error|Success):\s*")
+	if startswith(response, "Error:")
+		@error "from Geomviz server:\n$message"
+	elseif startswith(response, "Success:")
+		@info "$message"
+	else
+		@warn "Geomviz server response:" response
+	end
 end
 
 """
@@ -39,8 +72,11 @@ function geomviz(x)
 	objects = encode((x,))
 	isempty(objects) && return
 	data = (objects=objects,)
-	send_to_server(data)
+	send_and_receive(data)
 end
+
+#= blend repl mode =#
+
 
 function replmode(input::String)
 	if startswith(strip(input), '?')
@@ -68,7 +104,7 @@ end
 function __init__()
 	if isdefined(Base, :active_repl)
 		initrepl(
-			Meta.quot∘replmode, 
+			Meta.quot∘replmode,
 			prompt_text="geomviz> ",
 			prompt_color=214,
 			valid_input_checker=valid_input_checker,

@@ -78,10 +78,11 @@ class DataServer():
 					conn, addr = sock.accept()
 				except socket.timeout:
 					pass
-				except:
+				except Exception as e:
 					raise
 				else:
 					self.put_to_queue(conn)
+
 
 				# check that the main thread is still alive
 				if time() - self.heartbeat > self.ping_every:
@@ -122,31 +123,38 @@ class DataServer():
 		while True:
 			try:
 				packet = conn.recv(1 << 12)
-				if not packet: break
+				if not packet:
+					break
 				binary += packet
 			except socket.timeout:
 				print("Connection timed out.")
 				break
 
-		try:
-			conn.send(f"Received {len(binary)} bytes.".encode())
-			self.data_queue.put(binary)
-		finally:
-			conn.close()
+		self.data_queue.put((conn, binary))
+
+		# try:
+		# 	conn.send(f"Received {len(binary)} bytes.".encode())
+		# finally:
+		# 	conn.close()
+
 
 	def read_from_queue(self):
 		# this runs as a registered bpy.app timer
 		# reading data left by the server's thread in the shared queue
 		while not self.data_queue.empty():
-			binary = self.data_queue.get()
+			(conn, binary) = self.data_queue.get()
 			try:
 				data = validate_data(binary)
 				status = scene.handle_scene_data(data)
-				self.set_status(status, 'RADIOBUT_ON')
 			except utils.GeomvizError as e:
 				self.set_status(e.message, e.icon)
+				conn.send(f"Error: {e.message}".encode())
 			else:
+				self.set_status(status, 'RADIOBUT_ON')
+				conn.send(f"Success: {status}".encode())
 				self.data_queue.task_done()
+			finally:
+				conn.close()
 
 		# send a heartbeat which keeps the server thread alive
 		self.heartbeat = time()
@@ -203,4 +211,3 @@ except NameError:
 	pass
 
 data_server = DataServer()
-
