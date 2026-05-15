@@ -1,6 +1,6 @@
 name = "Geomviz"
 uuid = "b876c574-87dc-4bec-8a9b-542e2b22a39c"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["jollywatt <jo.alex.w@gmail.com>"]
 
 [deps]
