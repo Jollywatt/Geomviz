@@ -94,6 +94,6 @@ function animate(fn, times)
 		animation = true,
 	)
 
-	send_and_receive(info)
-	return
+	# send_and_receive(info)
+	# return
 end

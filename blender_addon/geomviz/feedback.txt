@@ -1,0 +1,77 @@
+Slide One:
+
+"My research is about inferring balance on graphs using Baysian methods."
+
+Slide Two:
+
+
+  Me
+  /\
+ /  \
+Co--Mo
+
+
+"What is balance? It's a property of graphs with binary-coloured edges, which we can think of relationships between people."
+"Two people can be friends (blue), enemies (red) or have no relationship (no edge)."
+"Balance is a global property of the graph that, means that all the relationships are _consistent_, in some sense."
+
+Slide Three:
+
+
+ Strong balance:       Weak balance:    
+  .        .           .        .      
+ / \      / \         / \      / \     
+/   \    /   \       /   \    /   \    
+-----    -----       -----    -----    
+  .        .           .        .      
+ / \      / \         / \      / \     
+/   \    /   \       /   \    /   \    
+-----    -----       -----    -----    
+
+
+"If you look at all the possible triangles that can occur in this kind of graphs, you get four cases: everyone can be friends, one pair of friends can share an enemy, et cetera."
+"A graph is called _strongly balanced_ if it only contains these triangles. _Weakly balanced_ graphs can also include 'hateful triangles'..."
+
+Slide Four:
+
+
+   . . . .  -----     . .. . 
+ : . : .:.  ------- : . : ..:
+  . US :) .  -----  . THEM >:(. 
+  . .:::.  --------  . .::. :
+
+"Why do we have these definitions? Because it turns out that strongly balanced graphs can always be partitioned into two enemy-free 'tribes',
+and weakly balanced graphs partition into k tribes for k > 2. This is called George's Sad Childhood Theorem."
+"In other words, balanced graphs have relationships that can be consistently explained by putting everyone in different tribes."
+
+Slide Five:
+
+     .  •  .
+    •        •      Weakly balanced := every cycle is even
+   •  cycles  .
+   .          .     Strongly balanced := no cycle has exactly one negative
+    •        .
+      •   .
+
+"These definitions generalise naturally from triangles to cycles, and we get the same results relating to when the graph can be partitioned into a certain number of tribes."
+
+Slide Six:
+
+
+PROBLEMS WITH REAL DATA
+
+"The problem with the notion of balance as a global property of a graph is that it can be highly sensitive to individuals."
+"For example, if I have a real social network that is _almost_ balanced, but there's one guy who hates everyone, then balance is destroyed."
+"What we would like is a robust way of determining whether a real graph is balanced in an approximate sence."
+
+
+Slide Seven:
+
+P(S ∣ ψ, u, b, 𝔎, Γ, ϵ) = Σ(κ=1)^∞ [ σ(ϑ)·σ(Ҩ)·σ(ξ) ] ÷ √( Σ_{∀∂} φ(℧) + μ(★)² )
+
+"The best way to do this is - of course - the Baysian way, where we propose a generative model that allows for random variation in the data."
+
+
+Slide Eight:
+
+Takeaway!

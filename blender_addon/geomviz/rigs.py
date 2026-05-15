@@ -29,7 +29,7 @@ def isanimation(obj):
 def catch_rig_error(label):
 	try:
 		yield
-	except ValueError or TypeError as e:
+	except (ValueError, TypeError) as e:
 		raise utils.RigDataError(label, detail=e)
 
 def get_channelbag(obj):
@@ -61,17 +61,33 @@ def pose_mesh(rig: bpy.types.Object, data):
 	rig.update_from_editmode() # ensure object mode
 
 
+def animate_scalar_property(rig, data_path, keyframes, label=None):
+	curve = get_fcurve(rig, data_path=data_path)
+	curve.keyframe_points.add(len(keyframes))
+	for i, (frame, val) in enumerate(keyframes):
+		with catch_rig_error(f"Can't set property {label or data_path!r} of {rig.geomviz_nodes.name!r} to {val!r} at frame {frame!r}"):
+			curve.keyframe_points[i].co = (frame, val)
+			curve.keyframe_points[i].interpolation = 'CONSTANT'
+
+def animate_vector_property(rig, data_path, keyframes, vector_len, label=None):
+	curves = [get_fcurve(rig, data_path=data_path, index=ax) for ax in range(vector_len)]
+	for curve in curves:
+		curve.keyframe_points.add(len(keyframes))
+	for i, (frame, vals) in enumerate(keyframes):
+		if len(vals) != vector_len:
+			raise utils.RigDataError(f"Vector property {label or data_path!r} must have size {vector_len}; got {vals!r}")
+		with catch_rig_error(f"Can't set vector property {label or data_path!r} of {rig.geomviz_nodes.name!r} to {vals!r} at frame {frame!r}"):
+			for ax in range(vector_len):
+				curves[ax].keyframe_points[i].co = (frame, vals[ax])
+				curves[ax].keyframe_points[i].interpolation = 'CONSTANT'
+
 def pose(rig: bpy.types.Object, data):
 
 	rig.animation_data_clear()
 
 	if "location" in data:
 		if isanimation(data["location"]):
-			xyz_curves = [get_fcurve(rig, data_path="location", index=i) for i in range(3)]
-			for frame, xyz in data["location"]["keyframes"]:
-				with catch_rig_error(f"Can't set location of {rig.geomviz_nodes.name!r} to {data['location']!r} at frame {frame!r}"):
-					for i in range(3):
-						xyz_curves[i].keyframe_points.insert(frame, xyz[i], options={'FAST'})
+			animate_vector_property(rig, "location", data["location"]["keyframes"], vector_len=3)
 		else:
 			with catch_rig_error(f"Can't set location of {rig.geomviz_nodes.name!r} to {data['location']!r}"):
 				rig.location = data["location"]
@@ -80,14 +96,19 @@ def pose(rig: bpy.types.Object, data):
 
 	if "show" in data:
 		if isanimation(data["show"]):
-			curve = get_fcurve(rig, data_path="hide_viewport")
-			for frame, show in data["show"]["keyframes"]:
-				curve.keyframe_points.insert(frame, not show, options={'FAST'})
+			keyframes = [(frame, not show) for frame, show in data["show"]["keyframes"]]
+			animate_scalar_property(rig, "hide_viewport", keyframes)
+			animate_scalar_property(rig, "hide_render", keyframes)
 		else:
 			rig.hide_viewport = not data["show"]
+			rig.hide_render = not data["show"]
 	else:
 		rig.hide_viewport = False
+		rig.hide_render = False
 
+
+	if data["rig_name"] == "Mesh":
+		pose_mesh(rig, data)
 
 	# ensure modifier points to correct geometry nodes tree
 	rig.modifiers[rig.geomviz_nodes.name].node_group = rig.geomviz_nodes
@@ -99,9 +120,6 @@ def pose(rig: bpy.types.Object, data):
 			rig.modifiers[rig.geomviz_nodes.name][socket.identifier] = socket.default_value
 		except AttributeError:
 			pass
-
-	if data["rig_name"] == "Mesh":
-		pose_mesh(rig, data)
 
 	# set modifier parameters
 	if "rig_parameters" in data:
@@ -115,20 +133,9 @@ def pose(rig: bpy.types.Object, data):
 				data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
 				is_vector_like = inp.socket_type in ('NodeSocketVector',)
 				if is_vector_like:
-					for i in range(len(inp.default_value)):
-						fcurve = get_fcurve(rig, data_path, index=i)
-						for frame, v in val["keyframes"]:
-							with catch_rig_error(f"Can't set {key!r}[{i}] property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}"):
-								fcurve.keyframe_points.insert(frame, v[i])
-						for pt in fcurve.keyframe_points:
-							pt.interpolation = 'CONSTANT'
+					animate_vector_property(rig, data_path, val["keyframes"], label=key, vector_len=len(inp.default_value))
 				else:
-					fcurve = get_fcurve(rig, data_path, index=0)
-					for frame, v in val["keyframes"]:
-						with catch_rig_error(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {v!r} at frame {frame!r}"):
-							fcurve.keyframe_points.insert(frame, v)
-					for pt in fcurve.keyframe_points:
-						pt.interpolation = 'CONSTANT'
+					animate_scalar_property(rig, data_path, val["keyframes"], label=key)
 
 			else:
 				with catch_rig_error(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {val!r}"):
@@ -137,7 +144,7 @@ def pose(rig: bpy.types.Object, data):
 
 	if "color" in data:
 		if isanimation(data["color"]):
-			raise utils.RigDataError("Can't animate color yet")
+			animate_vector_property(rig, "color", data["color"]["keyframes"], vector_len=4)
 		else:
 			with catch_rig_error(f"Can't set color of {rig.geomviz_nodes.name!r} to {data['color']!r}"):
 				rig.color = data["color"]
