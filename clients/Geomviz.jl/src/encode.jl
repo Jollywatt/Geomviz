@@ -1,8 +1,30 @@
+"""
+	encode(x)
+
+Convert a (collection of) objects into a (collection of) `Rig`s to be sent to Blender.
+If `x` is a collection, its elements are encoded and flattened and `nothing` values are ignored.
+"""
+function encode end
+
+encode(::Nothing) = nothing
+
+flatmap(f, a::Union{Tuple,AbstractVector}) = Iterators.flatten(flatmap(f, i) for i in a)
+flatmap(f, a) = let b = f(a)
+	b isa Union{Tuple,AbstractVector} ? b : (b,)
+end
+encode(objs::Union{Tuple,AbstractVector}) = collect(Iterators.filter(!isnothing, flatmap(encode, objs)))
+encode(objs...) = encode(objs)
+
+
+#= Rigs =#
+
 struct Rig
 	rig_name::String
 	object_parameters::Dict{String,Any}
 	rig_parameters::Dict{String,Any}
 end
+
+encode(rig::Rig) = rig
 
 function Rig(rig_name::String, rig_parameters::Pair{String}...; object_parameters...)
 	object_parameters = Dict(string(k) => v for (k, v) in pairs(object_parameters))
@@ -24,20 +46,6 @@ function Base.show(io::IO, mime::MIME"text/plain", rig::Rig)
 end
 
 
-struct Styled{T}
-	obj::T
-	object_parameters::Dict{String,Any}
-	rig_parameters::Dict{String,Any}
-end
-
-function Styled(obj, rig_parameters::Pair{String}...; object_parameters...)
-	object_parameters = Dict{String,Any}(string(k) => v for (k, v) in object_parameters)
-	Styled(obj, object_parameters, Dict{String,Any}(rig_parameters))
-end
-
-
-
-
 Pickle.save(p::Pickle.AbstractPickle, io::IO, nt::NamedTuple) = Pickle.save(p, io, Dict(string(k) => v for (k, v) in pairs(nt)))
 function Pickle.save(p::Pickle.AbstractPickle, io::IO, rig::Rig)
 	d = Dict(
@@ -50,27 +58,18 @@ end
 
 
 
-flatmap(f, a::Union{Tuple,AbstractVector}) = Iterators.flatten(flatmap(f, i) for i in a)
-function flatmap(f, a)
-	b = f(a)
-	b isa Union{Tuple,AbstractVector} ? b : (b,)
+#= Style wrapper =#
+
+struct Styled{T}
+	obj::T
+	object_parameters::Dict{String,Any}
+	rig_parameters::Dict{String,Any}
 end
 
-
-function encode(::T) where T
-	@error "$T not sent to Blender."
-	@info """
-	If applicable, define a method `encode(::$T)` that returns a `Rig` or a collection of `Rig`s to be sent to Blender.
-	"""
-	if nameof(T) in (:BasisBlade, :Multivector)
-		@info "Did you forget to import GeometricAlgebraModels?"
-	end
+function Styled(obj, rig_parameters::Pair{String}...; object_parameters...)
+	object_parameters = Dict{String,Any}(string(k) => v for (k, v) in object_parameters)
+	Styled(obj, object_parameters, Dict{String,Any}(rig_parameters))
 end
-
-encode(objs::Union{Tuple,AbstractVector}) = collect(Iterators.filter(!isnothing, flatmap(encode, objs)))
-encode(objs...) = encode(objs)
-
-encode(rig::Rig) = rig
 
 function encode(s::Styled)
 	things = encode(s.obj)
@@ -88,4 +87,17 @@ function encode(s::Styled)
 	end
 
 	things
+end
+
+
+
+# fallback method
+function encode(::T) where T
+	@error "$T not sent to Blender."
+	@info """
+	If applicable, define a method `encode(::$T)` that returns a `Rig` or a collection of `Rig`s to be sent to Blender.
+	"""
+	if nameof(T) in (:BasisBlade, :Multivector)
+		@info "Did you forget to import GeometricAlgebraModels?"
+	end
 end

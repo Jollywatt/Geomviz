@@ -78,22 +78,43 @@ function transpose_keyframes(frames::Keyframes)
 	scene
 end
 
-struct Animation
+function simplify_single_keyframes(keyframes::Keyframes)
+	length(keyframes) == 1 && return first(keyframes.points).second
+	keyframes
+end
 
+simplify_single_keyframes(rig::Rig) = Rig(
+	rig.rig_name,
+	Dict(k => simplify_single_keyframes(v) for (k, v) in rig.object_parameters),
+	Dict(k => simplify_single_keyframes(v) for (k, v) in rig.rig_parameters),
+)
+
+function add_animation_metadata(rig::Rig, frames)
+	rig.object_parameters["animated"] = true
+	rig.object_parameters["frame_range"] = (first(frames), last(frames))
+	rig
 end
 
 function animate(fn, times)
-	frames = Keyframes(map(enumerate(times)) do (i, t)
-		i => filter!(!isnothing, collect(flatmap(encode, fn(t))))
-	end)
-	scene = transpose_keyframes(frames)
+	frames = eachindex(times)
+	rigs_by_frame = Keyframes(frames .=> encode.(tuple.(fn.(times))))
+	animated_rigs = transpose_keyframes(rigs_by_frame)
+	animated_rigs = simplify_single_keyframes.(animated_rigs)
+	animated_rigs = add_animation_metadata.(animated_rigs, Ref(frames))
+	animated_rigs
+end
 
-	info = (
-		frame_range = (first(first(frames)), first(last(frames))),
-		objects = scene,
-		animation = true,
-	)
 
-	# send_and_receive(info)
-	# return
+function get_animation_meta(rigs)
+	animated = false
+	(start, stop) = (1,1)
+	for rig in rigs
+		animated |= get(rig.object_parameters, "animated", false)
+		if "frame_range" in keys(rig.object_parameters)
+			(rstart, rstop) = rig.object_parameters["frame_range"]
+			start = min(start, rstart)
+			stop = max(stop, rstop)
+		end
+	end
+	(animated, frame_range=(start, stop))
 end

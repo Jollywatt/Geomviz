@@ -68,11 +68,16 @@ Note that the `geomviz>` REPL mode may be activated by typing a space at the sta
 """
 function geomviz end
 
-geomviz(::Nothing) = nothing
+function encode_scene(x)
+	objects = encode(tuple(x))
+	(
+		objects=objects,
+		get_animation_meta(objects)...,
+	)
+end
+
 function geomviz(x)
-	objects = encode((x,))
-	isempty(objects) && return
-	data = (objects=objects,)
+	data = encode_scene(x)
 	success = send_and_receive(data)
 	success == true || return nothing
 	x

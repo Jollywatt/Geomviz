@@ -46,7 +46,7 @@ def sync(collection, data):
 			collection.objects.link(obj)
 			# print(f"new: {rig_name}")
 
-	if data.get("animation", False):
+	if data.get("animated", False):
 		if "frame_range" in data:
 			(s, e) = map(int, data["frame_range"])
 			bpy.context.scene.frame_start = s
@@ -57,7 +57,7 @@ def sync(collection, data):
 			print("No frame range specified")
 	else:
 		bpy.ops.screen.animation_cancel()
-		
+
 
 	count = len(data['objects'])
 	return f"Synced {count} {'object' if count == 1 else 'objects'}"
