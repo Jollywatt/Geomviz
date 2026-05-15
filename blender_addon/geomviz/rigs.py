@@ -113,33 +113,37 @@ def pose(rig: bpy.types.Object, data):
 	# ensure modifier points to correct geometry nodes tree
 	rig.modifiers[rig.geomviz_nodes.name].node_group = rig.geomviz_nodes
 
+	sockets_by_name = {}
+	for item in rig.geomviz_nodes.interface.items_tree:
+		if hasattr(item, 'identifier'): # ignore panels and non-sockets
+			sockets_by_name[item.name] = item
+
 	# reset modifier parameters to default
-	sockets = rig.geomviz_nodes.interface.items_tree
-	for socket in sockets:
+	for name, socket in sockets_by_name.items():
 		try:
 			rig.modifiers[rig.geomviz_nodes.name][socket.identifier] = socket.default_value
 		except AttributeError:
-			pass
+			pass # some sockets (e.g. geometry sockets) don't have default values
 
 	# set modifier parameters
 	if "rig_parameters" in data:
 		for key, val in data["rig_parameters"].items():
 			try:
-				inp = sockets[key]
+				socket = sockets_by_name[key]
 			except KeyError:
-				raise utils.PoseError(rig.geomviz_nodes.name, key, keys=sockets.keys())
+				raise utils.PoseError(rig.geomviz_nodes.name, key, keys=list(sockets_by_name.keys()))
 
 			if isanimation(val):
-				data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{inp.identifier}"]'
-				is_vector_like = inp.socket_type in ('NodeSocketVector',)
+				data_path = f'modifiers["{rig.geomviz_nodes.name}"]["{socket.identifier}"]'
+				is_vector_like = socket.socket_type in ('NodeSocketVector',)
 				if is_vector_like:
-					animate_vector_property(rig, data_path, val["keyframes"], label=key, vector_len=len(inp.default_value))
+					animate_vector_property(rig, data_path, val["keyframes"], label=key, vector_len=len(socket.default_value))
 				else:
 					animate_scalar_property(rig, data_path, val["keyframes"], label=key)
 
 			else:
-				with catch_rig_error(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} ({inp.identifier!r}) to {val!r}"):
-					rig.modifiers[rig.geomviz_nodes.name][inp.identifier] = val
+				with catch_rig_error(f"Can't set {key!r} property of {rig.geomviz_nodes.name!r} ({socket.identifier!r}) to {val!r}"):
+					rig.modifiers[rig.geomviz_nodes.name][socket.identifier] = val
 
 
 	if "color" in data:
