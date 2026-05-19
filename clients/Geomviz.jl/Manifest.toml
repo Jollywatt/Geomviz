@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.2"
+julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "7b1e888f14bf5b4646e3ccf9966d453c0cbaef06"
+project_hash = "34abed9b5dde0730c0c82d3d88e7d7a423f6c681"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -48,7 +48,7 @@ version = "1.11.0"
 deps = ["LinearAlgebra", "Pickle", "REPL", "ReplMaker", "Sockets", "StyledStrings"]
 path = "."
 uuid = "b876c574-87dc-4bec-8a9b-542e2b22a39c"
-version = "0.1.0"
+version = "0.1.2"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
